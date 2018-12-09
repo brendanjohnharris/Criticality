@@ -1,9 +1,6 @@
-function tbl = top_operations(on_what, N, data, absolute)
+function tbl = top_operations(on_what, N, data)
     %find_folder = which('save_data.m');
     %filepath = [find_folder(1:end-length('save_data.m')), filename];
-    if nargin < 4 || isempty(absolute)
-        absolute = true;
-    end
     if nargin < 3 || isempty(data)
         load('time_series_data.mat', 'time_series_data')
         data = time_series_data;
@@ -32,22 +29,28 @@ function tbl = top_operations(on_what, N, data, absolute)
         tempcorr = data(n).Correlation(:, 1);
         corrs(:, n) = tempcorr(idxcor);
     end
-    if absolute
-        Mean = nanmean(abs(corrs), 2);
-        Standard_Deviation = nanstd(abs(corrs), 0, 2);
-    else
-        Mean = nanmean(corrs, 2);
-        Standard_Deviation = nanstd(corrs, 0, 2);
-    end
+%     if absolute
+%         Mean = nanmean(abs(corrs), 2);
+%         Standard_Deviation = nanstd(abs(corrs), 0, 2);
+%     else
+%         Mean = nanmean(corrs, 2);
+%         Standard_Deviation = nanstd(corrs, 0, 2);
+%     end
     sortScore = nanmean(abs(corrs), 2);
     %Score = Mean;
-    [~, idxs] = sort(-sortScore);
+    [Mean_Absolute_Correlation, idxs] = sort(-sortScore);
+    Mean_Absolute_Correlation = -Mean_Absolute_Correlation;
     Operation_ID = Operation_ID(idxs);
     Operation_Name = Operation_Name(idxs);
-    Correlation = corrs(idxs);
+    if size(data, 1) == 1
+        Correlation = corrs(idxs);
+        tbl = table(Operation_ID, Operation_Name, Correlation);
+    else
+        tbl = table(Operation_ID, Operation_Name, Mean_Absolute_Correlation);
+    end
     %Mean = Mean(idxs);
     %Score = Score(idxs);
-    Standard_Deviation = Standard_Deviation(idxs);
-    tbl = table(Operation_ID, Operation_Name, Correlation);%, Standard_Deviation, Score);
+    %Standard_Deviation = Standard_Deviation(idxs);
+    %, Standard_Deviation, Score);
     tbl = tbl(1:N, :);   
 end
