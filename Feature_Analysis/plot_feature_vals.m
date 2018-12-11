@@ -1,6 +1,13 @@
-function plot_feature_vals(op_id, data, on_what)
+function plot_feature_vals(op_id, data, on_what, combined)
         a = figure('Name', sprintf("Spearman's Correlation"));
-        ps = numSubplots(length(data));
+        if nargin < 4 || isempty(combined)
+            combined = false;
+        end
+        if ~combined
+            ps = numSubplots(length(data));
+        else
+            legendcell = cell(1, size(data, 1));
+        end
         set(a, 'units','normalized','outerposition',[0 0.5 1 0.5]);
         figure(a)
     for ind = 1:length(data)
@@ -11,15 +18,28 @@ function plot_feature_vals(op_id, data, on_what)
         sortedcor = data(ind).Correlation(idxcor, :);
         %correlation = data(ind).Correlation(op_id, :);
         correlation = sortedcor(op_id, :);
-        subplot(ps(1), ps(2), ind)
+        if ~combined
+            subplot(ps(1), ps(2), ind)
+        else
+            hold on
+        end
         % 
         %name = (time_series_data(ind).Parameters.betarange(1));
         %a = figure('Name', sprintf("Spearman's Correlation for eta = %g", name));
         plot(deltamu, TS_DataMat, 'o', 'MarkerSize', 2, 'MarkerFaceColor', 'b')
         if strcmp(on_what, 'noise')
-            title(['Noise: ', num2str(data(ind).Parameters.eta), ', ', 'Correlation: ', num2str(correlation(1))])
+            if ~combined
+                title(['Noise: ', num2str(data(ind).Parameters.eta), ', ', 'Correlation: ', num2str(correlation(1))])
+            else
+                legendcell{ind} = ['Noise: ', num2str(data(ind).Parameters.eta), ', ', 'Correlation: ', num2str(correlation(1))];
+            end       
         elseif strcmp(on_what, 'distance')
-            title(['Distance: ', num2str(data(ind).Parameters.betarange(1))])
+            if ~combined
+                title(['Distance: ', num2str(data(ind).Parameters.betarange(1))])
+            else
+                legendcell{ind} = ['Distance: ', num2str(data(ind).Parameters.betarange(1))];
+            end
+        end
 %         title(sprintf('%s\n(ID %g), Correlation: %.3g', ...
 %             operations(([operations.ID] == correlation(:, 2))).Name,...
 %             correlation(:, 2), correlation(:, 1)), 'interpreter', 'none')
@@ -27,5 +47,8 @@ function plot_feature_vals(op_id, data, on_what)
         ylabel('Feature Value')
         %savefig(a, sprintf("Spearman's_Correlation_for_eta_=_%g.fig", name))
     end
+    if combined
+       legend(legendcell)
+    end  
 end
 

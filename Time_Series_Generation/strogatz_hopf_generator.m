@@ -1,4 +1,4 @@
-function [timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
+function [r, timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
 % STROGATZ_HOPF_GENERATOR Produces time series for hctsa from the general 
 %   normal form of a Hopf bifurcation as found in the Strogatz textbook.
 %
@@ -60,15 +60,15 @@ function [timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
     addParameter(p,'betarange',(-1:0.1:1)) 
     addParameter(p,'type','supercritical')
     %addParameter(p,'theta_c',10)
-    addParameter(p,'tmax',110)
+    addParameter(p,'tmax',1010)
     addParameter(p,'s0', [1, 0])
     addParameter(p,'bifurcation_point', 0)
     addParameter(p,'etarange', 0.16)
-    addParameter(p,'numpoints', 1100000)
+    addParameter(p,'numpoints', 11000000)
     addParameter(p,'savelength', 10000)
     addParameter(p, 'savedata', false)
     addParameter(p, 'bistable_point', [])
-    addParameter(p, 'transient_cutoff', 100000)
+    addParameter(p, 'transient_cutoff', 1000000)
     addParameter(p, 'method', 'Euler-Maruyama')
     addParameter(p, 'rngseed', rng)
     addParameter(p, 'foldername', [])
@@ -125,6 +125,7 @@ function [timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
         end
         timeSeriesData(1+length(betarange)*(i-1):length(betarange)*i, :) = r;
     end
+    r = timeSeriesData;
     timeSeriesData = timeSeriesData(:, transient_cutoff:savestep:end-1);
     labels = {};
     for n = etarange
