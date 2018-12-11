@@ -1,4 +1,4 @@
-function [r, timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
+function [timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
 % STROGATZ_HOPF_GENERATOR Produces time series for hctsa from the general 
 %   normal form of a Hopf bifurcation as found in the Strogatz textbook.
 %
@@ -125,7 +125,6 @@ function [r, timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargi
         end
         timeSeriesData(1+length(betarange)*(i-1):length(betarange)*i, :) = r;
     end
-    r = timeSeriesData;
     timeSeriesData = timeSeriesData(:, transient_cutoff:savestep:end-1);
     labels = {};
     for n = etarange
