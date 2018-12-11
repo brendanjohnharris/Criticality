@@ -154,7 +154,9 @@ function [timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
 %         if exist('numSubplots.m', 'file')
 %            print(gcf, fullfile(folder, 'trajectories.jpg'), '-djpeg', '-r600')
 %         end
-        save(fullfile(folder, sprintf('%s.mat', type)),...
+        %save(fullfile(folder, sprintf('%s.mat', type)),...
+            %'timeSeriesData', 'labels', 'keywords')
+        save(fullfile(folder, 'timeseries.mat'),...
             'timeSeriesData', 'labels', 'keywords')
         parameters = p.Results;
         save(fullfile(folder, 'parameters.mat'), 'parameters')
