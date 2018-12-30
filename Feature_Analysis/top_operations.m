@@ -26,6 +26,7 @@ function tbl = top_operations(on_what, N, data, weight_by_NaN)
         N = numops;
     end
     Operation_Name = data(1).Operations.Name; % Same order as Operation_ID, currently
+    Operation_Keywords = data(1).Operations.Keywords; % Same order as Operation_ID, currently
     corrs = zeros(numops, length(data));
     for n = 1:length(data)
         [~, idxcor] = intersect(data(n).Correlation(:, 2), Operation_ID); 
@@ -50,17 +51,18 @@ function tbl = top_operations(on_what, N, data, weight_by_NaN)
 %     end
     Operation_ID = Operation_ID(idxs); % Gets Operation_IDs into score order
     Operation_Name = Operation_Name(idxs); %Gets Operation_Names in score order
+    Operation_Keywords = Operation_Keywords(idxs); % Gets Operation_Keywords in score order
     if size(data, 1) == 1
         Correlation = corrs(idxs); % Get Correlation in score order
-        tbl = table(Operation_ID, Operation_Name, Correlation);
+        tbl = table(Operation_ID, Operation_Name, Operation_Keywords, Correlation);
     else
         %Score = Mean;
         if weight_by_NaN
             NaN_Weighted_Mean_Correlation = sorted_sortScore;
-            tbl = table(Operation_ID, Operation_Name, NaN_Weighted_Mean_Correlation, Percent_Not_NaN);
+            tbl = table(Operation_ID, Operation_Name, Operation_Keywords, NaN_Weighted_Mean_Correlation, Percent_Not_NaN);
         else
             Mean_Absolute_Correlation = sorted_sortScore;
-            tbl = table(Operation_ID, Operation_Name, Mean_Absolute_Correlation, Percent_Not_NaN);
+            tbl = table(Operation_ID, Operation_Name, Operation_Keywords, Mean_Absolute_Correlation, Percent_Not_NaN);
         end
     end
     %Mean = Mean(idxs);
