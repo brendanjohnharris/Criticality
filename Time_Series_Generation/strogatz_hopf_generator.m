@@ -60,15 +60,15 @@ function [timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
     addParameter(p,'betarange',(-1:0.1:1)) 
     addParameter(p,'type','supercritical')
     %addParameter(p,'theta_c',10)
-    addParameter(p,'tmax',1010)
+    addParameter(p,'tmax',600)
     addParameter(p,'s0', [1, 0])
     addParameter(p,'bifurcation_point', 0)
     addParameter(p,'etarange', 0.16)
-    addParameter(p,'numpoints', 11000000)
-    addParameter(p,'savelength', 10000)
+    addParameter(p,'numpoints', 600000)
+    addParameter(p,'savelength', 5000)
     addParameter(p, 'savedata', false)
     addParameter(p, 'bistable_point', [])
-    addParameter(p, 'transient_cutoff', 1000000)
+    addParameter(p, 'transient_cutoff', 100000)
     addParameter(p, 'method', 'Euler-Maruyama')
     addParameter(p, 'rngseed', rng)
     addParameter(p, 'foldername', [])
@@ -87,9 +87,9 @@ function [timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
     method = p.Results.method;
     rng(p.Results.rngseed)
     %% Calculating
-    timeSeriesData = repmat([zeros(length(betarange), 1) + s0(1), zeros(length(betarange), numpoints-1)], length(etarange), 1);
-    dt = tmax./numpoints;
     savestep = ceil((numpoints-transient_cutoff)./savelength);
+    timeSeriesData = repmat([zeros(length(betarange), 1) + s0(1), zeros(length(betarange), length(transient_cutoff:savestep:numpoints-1)-1)], length(etarange), 1);
+    dt = tmax./numpoints;
     for i = 1:length(etarange)
         fprintf('------------------------%g%% complete, %gs elapsed------------------------\n', round(100*(i-1)./length(etarange)), round(toc))
         eta = etarange(i);
@@ -123,9 +123,9 @@ function [timeSeriesData, labels, keywords] = strogatz_hopf_generator(varargin)
             otherwise
                 error("'%s' is not a supported integration method", method)
         end
-        timeSeriesData(1+length(betarange)*(i-1):length(betarange)*i, :) = r;
+        timeSeriesData(1+length(betarange)*(i-1):length(betarange)*i, :) = r(:, transient_cutoff:savestep:end-1);
     end
-    timeSeriesData = timeSeriesData(:, transient_cutoff:savestep:end-1);
+    %timeSeriesData = timeSeriesData(:, transient_cutoff:savestep:end-1);
     labels = {};
     for n = etarange
     % Labels are of the format 'control_parameter|noise_parameter'
