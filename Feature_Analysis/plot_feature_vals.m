@@ -1,5 +1,5 @@
 function plot_feature_vals(op_id, data, on_what, combined)
-        a = figure('Name', sprintf("Spearman's Correlation"));
+        a = figure;
         if nargin < 4 || isempty(combined)
             combined = false;
         end
@@ -29,7 +29,8 @@ function plot_feature_vals(op_id, data, on_what, combined)
         plot(deltamu, TS_DataMat, 'o', 'MarkerSize', 2, 'MarkerFaceColor', 'b')
         if strcmp(on_what, 'noise')
             if ~combined
-                title(['Noise: ', num2str(data(ind).Parameters.eta), ', ', 'Correlation: ', num2str(correlation(1))])
+                %title(['Noise: ', num2str(data(ind).Parameters.eta), ', ', 'Correlation: ', num2str(correlation(1))])
+                title(['Noise: ', num2str(data(ind).Parameters.eta)])
             else
                 legendcell{ind} = ['Noise: ', num2str(data(ind).Parameters.eta), ', ', 'Correlation: ', num2str(correlation(1))];
             end       
@@ -50,5 +51,9 @@ function plot_feature_vals(op_id, data, on_what, combined)
     if combined
        legend(legendcell)
     end  
+    ops = data.Operations;
+    opname = ops.Name{op_id};
+    suptitle(strrep(opname, '_', ' '))
+    set(a,'color','w');
 end
 
