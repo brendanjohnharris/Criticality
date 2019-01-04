@@ -5,7 +5,7 @@
 #PBS -j oe
 # Specify a queue:
 #PBS -q physics
-#PBS -l nodes=2:ppn=16
+#PBS -l nodes=node22:ppn=32
 # Set your minimum acceptable walltime, format: day-hours:minutes:seconds
 #PBS -l walltime=02:00:00
 # Email user if job ends or aborts
