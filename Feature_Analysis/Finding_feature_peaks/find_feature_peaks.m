@@ -1,4 +1,4 @@
-function [peakparameters, etarange, peakvals] = find_feature_peaks(direction, op_file, parameter_file, inparallel, resolution, peak_bounds, save_file, vocal)
+function [peakparameters, etarange, peakvals] = find_feature_peaks(direction, op_file, parameter_file, inparallel, resolution, peak_bounds, save_file)
     % Should improve to work with multiple operations; use same time series
     % to improve efficiency
     % direction is 1 for maximum turning point, -1 for minimum turning point (opposite of 'concavity')
@@ -49,10 +49,8 @@ function [peakparameters, etarange, peakvals] = find_feature_peaks(direction, op
     peakvals = peakparameters;
     %% Start FOR loop
     if inparallel
-        if vocal
-            D = parallel.pool.DataQueue;
-            afterEach(D, @counting);
-        end
+        D = parallel.pool.DataQueue;
+        afterEach(D, @counting);
         parfor ind = 1:etalength
             %fprintf('Calculating: %g of %g\n', ind, etalength);
             eta = etarange(ind);
@@ -80,9 +78,7 @@ function [peakparameters, etarange, peakvals] = find_feature_peaks(direction, op
                         strogatz_hopf_generator('input_struct', p), op_table, mop_table, 0));
                     peakparameters(ind) = betarange2(peakind);
             end
-            if vocal
-                send(D, ind);
-            end
+            send(D, ind);
         end
     else
         for ind = 1:etalength
