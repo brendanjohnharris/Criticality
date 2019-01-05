@@ -1,14 +1,9 @@
 function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(direction, op_file, parameter_file, inparallel, resolution, peak_bounds, save_file)
     % Should improve to work with multiple operations; use same time series
     % to improve efficiency
-    % direction is 1 for maximum turning point, -1 for minimum turning point (opposite of 'concavity')
+    % direction is a vector contains the direction of each feature1 for maximum turning point, -1 for minimum turning point (opposite of 'concavity')
     %% Checking Inputs
     tstart = tic;
-    if nargin < 1 || isempty(direction)
-       direction = sign(predict_direction(op_file, parameter_file, inparallel, 0, [-5:0.5:5], [0.001, 0.04, 0.32, 0.64, 1.28])); % Could just move the values so their minimum is at zero, take the absolute value, find the index of the new max
-       direction_names = {'minimum', 'maximum'};
-       fprintf('It is predicted that the values of this feature have a %s\n', direction_names{0.5*direction+1.5})
-    end
     if nargin < 2 || isempty(op_file)
         op_file = 'test_op_file.txt';
     end
@@ -38,14 +33,25 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
     parameters = f{1};
     betarange1 = peakmin:1./r1:peakmax;
     op_table = SQL_add('ops', op_file, 0, 0);
-    [op_table, mop_table] = TS_LinkOperationsWithMasters(op_table, SQL_add('mops', 'INP_mops.txt', 0, 0));
+    [op_table2, mop_table] = TS_LinkOperationsWithMasters(op_table, SQL_add('mops', 'INP_mops.txt', 0, 0));
+    if nargin < 1 || isempty(direction)
+        direction = zeros(1, height(op_table));
+        fprintf('-----------Direction Predictions-----------\n')
+        for n = 1:height(op_table) % Fix to work in parallel
+           direction(n) = sign(predict_direction(op_table(n, :), mop_table, parameter_file, 0, [-5:0.5:5], [0.001, 0.04, 0.32, 0.64, 1.28]));
+           direction_names = {'Down', 'Up'};
+           fprintf('	%s: %s\n', op_table(n, :).Name{1}, direction_names{0.5*direction(n)+1.5})
+        end
+    end
+    
+    
     etarange = parameters.etarange;
     etalength = length(etarange);
     count = 0;
     
     
     %% Make output variables
-    peakparameters = zeros(length(etarange), height(op_table)); % operations in the same order, along columns, as the lines in the'op_file' input
+    peakparameters = zeros(length(etarange), height(op_table2)); % operations in the same order, along columns, as the lines in the'op_file' input
     peakvals = peakparameters;
     %% Start FOR loop
     if inparallel
@@ -59,11 +65,14 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
             p.betarange = betarange1;
             p.etarange = eta;
             [time_series_data1] = strogatz_hopf_generator('input_struct', p);
-            feature_vals = generate_feature_vals(time_series_data1, op_table, mop_table, 0);
-            if direction == 1
-                [~, peak_ind] = max(feature_vals);
-            elseif direction == -1
-                [~, peak_ind] = min(feature_vals);
+            feature_vals = generate_feature_vals(time_series_data1, op_table2, mop_table, 0);
+            peak_ind = zeros(1, length(feature_vals, 2));
+            for x = 1:size(feature_vals, 2)
+                if direction(x) == 1
+                    [~, peak_ind(x)] = max(feature_vals(:, x));
+                elseif direction(x) == -1
+                    [~, peak_ind(x)] = min(feature_vals(:, x));
+                end
             end
             betarange2 = betarange1(max(1, min(peak_ind)-1)):1./resolution:betarange1(min(length(feature_vals), max(peak_ind)+1))+1/resolution; % + 1/r2 to be safe, min and max so that betarange2 covers the correct range for all features
 
@@ -71,11 +80,11 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
             p.betarange = betarange2;
             if direction == 1
                     [peakvals(ind, :), peakind] = max(generate_feature_vals(...
-                        strogatz_hopf_generator('input_struct', p), op_table, mop_table, 0));
+                        strogatz_hopf_generator('input_struct', p), op_table2, mop_table, 0));
                     peakparameters(ind, :) = betarange2(peakind);
             elseif direction == -1
                     [peakvals(ind, :), peakind] = min(generate_feature_vals(...
-                        strogatz_hopf_generator('input_struct', p), op_table, mop_table, 0));
+                        strogatz_hopf_generator('input_struct', p), op_table2, mop_table, 0));
                     peakparameters(ind, :) = betarange2(peakind);
             end
             send(D, ind);
@@ -89,11 +98,13 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
             p.betarange = betarange1;
             p.etarange = eta;
             [time_series_data1] = strogatz_hopf_generator('input_struct', p);
-            feature_vals = generate_feature_vals(time_series_data1, op_table, mop_table, 0);
-            if direction == 1
-                [~, peak_ind] = max(feature_vals);
-            elseif direction == -1
-                [~, peak_ind] = min(feature_vals);
+            feature_vals = generate_feature_vals(time_series_data1, op_table2, mop_table, 0);
+            for x = 1:size(feature_vals, 2)
+                if direction(x) == 1
+                    [~, peak_ind(x)] = max(feature_vals(:, x));
+                elseif direction(x) == -1
+                    [~, peak_ind(x)] = min(feature_vals(:, x));
+                end
             end
             betarange2 = betarange1(max(1, min(peak_ind)-1)):1./resolution:betarange1(min(length(feature_vals), max(peak_ind)+1))+1/resolution; % + 1/r2 to be safe, min and max so that betarange2 covers the correct range for all features
 
@@ -101,11 +112,11 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
             p.betarange = betarange2;
             if direction == 1
                     [peakvals(ind, :), peakind] = max(generate_feature_vals(...
-                        strogatz_hopf_generator('input_struct', p), op_table, mop_table, 0));
+                        strogatz_hopf_generator('input_struct', p), op_table2, mop_table, 0));
                     peakparameters(ind, :) = betarange2(peakind);
             elseif direction == -1
                     [peakvals(ind, :), peakind] = min(generate_feature_vals(...
-                        strogatz_hopf_generator('input_struct', p), op_table, mop_table, 0));
+                        strogatz_hopf_generator('input_struct', p), op_table2, mop_table, 0));
                     peakparameters(ind, :) = betarange2(peakind);
             end
             counting
