@@ -66,7 +66,7 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
             p.etarange = eta;
             [time_series_data1] = strogatz_hopf_generator('input_struct', p);
             feature_vals = generate_feature_vals(time_series_data1, op_table2, mop_table, 0);
-            peak_ind = zeros(1, length(feature_vals, 2));
+            peak_ind = zeros(1, size(feature_vals, 2));
             for x = 1:size(feature_vals, 2)
                 if direction(x) == 1
                     [~, peak_ind(x)] = max(feature_vals(:, x));
@@ -74,7 +74,7 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
                     [~, peak_ind(x)] = min(feature_vals(:, x));
                 end
             end
-            betarange2 = betarange1(max(1, min(peak_ind)-1)):1./resolution:betarange1(min(length(feature_vals), max(peak_ind)+1))+1/resolution; % + 1/r2 to be safe, min and max so that betarange2 covers the correct range for all features
+            betarange2 = betarange1(max(1, min(peak_ind)-1)):1./resolution:betarange1(min(size(feature_vals, 1), max(peak_ind)+1))+1/resolution; % + 1/r2 to be safe, min and max so that betarange2 covers the correct range for all features
 
             %% Second Pass
             p.betarange = betarange2;
