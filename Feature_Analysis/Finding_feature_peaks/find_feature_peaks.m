@@ -64,7 +64,7 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
         p.betarange = betarange1;
         p.etarange = eta;
         [time_series_data1] = strogatz_hopf_generator('input_struct', p);
-        if parallel
+        if inparallel
             [~, feature_vals1] = evalc("generate_feature_vals(time_series_data1, op_table2, mop_table, 1);");
         else
             feature_vals1 = generate_feature_vals(time_series_data1, op_table2, mop_table, 0);
@@ -80,7 +80,7 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
 
         %% Second Pass
         p.betarange = betarange2;
-        if parallel
+        if inparallel
             [~, feature_vals2] = evalc("generate_feature_vals(strogatz_hopf_generator('input_struct', p), op_table2, mop_table, 1);");
         else
             feature_vals2 = generate_feature_vals(strogatz_hopf_generator('input_struct', p), op_table2, mop_table, 0);
