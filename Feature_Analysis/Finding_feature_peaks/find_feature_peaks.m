@@ -1,7 +1,7 @@
-function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(direction, op_file, parameter_file, inparallel, resolution, peak_bounds, save_file)
-    % Should improve to work with multiple operations; use same time series
-    % to improve efficiency
+function [peakparameters, etarange, peakvals, op_table2] = find_feature_peaks(direction, op_file, parameter_file, inparallel, resolution, peak_bounds, save_file, optional_etarange)
     % direction is a vector contains the direction of each feature1 for maximum turning point, -1 for minimum turning point (opposite of 'concavity')
+    % if etarange is given as an input argument then it will override the etarange
+    % given in the input file
     %% Checking Inputs
     tstart = tic;
     if nargin < 2 || isempty(op_file)
@@ -31,6 +31,9 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
     %delta = peakmax - peakmin;
     f = struct2cell(load(parameter_file)); % Parameters should be the only variable in input_file
     parameters = f{1};
+    if nargin == 8 && ~isempty(optional_etarange)
+        parameters.etarange = optional_etarange;
+    end
     betarange1 = peakmin:1./r1:peakmax;
     op_table = SQL_add('ops', op_file, 0, 0);
     [op_table2, mop_table] = TS_LinkOperationsWithMasters(op_table, SQL_add('mops', 'INP_mops.txt', 0, 0));
@@ -39,7 +42,7 @@ function [peakparameters, etarange, peakvals, op_table] = find_feature_peaks(dir
     if nargin < 1 || isempty(direction)
         direction = zeros(1, height(op_table));
         fprintf('-----------Direction Predictions-----------\n')
-        for n = 1:height(op_table) % Fix to work in parallel
+        for n = 1:height(op_table)
            direction(n) = sign(predict_direction(op_table(n, :), mop_table, parameter_file, 0, [-5:0.5:5], [0.001, 0.04, 0.32, 0.64, 1.28]));
            direction_names = {'Down', 'Up'};
            fprintf('	%s: %s\n', op_table(n, :).Name{1}, direction_names{0.5*direction(n)+1.5})
