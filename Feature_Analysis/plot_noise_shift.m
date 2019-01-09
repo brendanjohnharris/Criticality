@@ -14,7 +14,7 @@ function yvals = plot_noise_shift(data, opid, direction)
         elseif direction == 0
             [~, ind] = min(data(i).TS_DataMat(:, opid));
         end
-        yvals(i) = data(i).Parameters.betarange(ind);
+        yvals(i) = data(i).Parameters.cp_range(ind);
     end
     figure
     plot(xvals, yvals, 'o', 'MarkerSize', 2, 'MarkerFaceColor', 'b')

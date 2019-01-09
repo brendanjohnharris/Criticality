@@ -90,7 +90,7 @@ function save_data(filepath, keywords, source, datafile, parameterfile, correlat
             'Parameters', [], 'Date', date, 'Keywords', keywords), length(parameters.etarange), 1);
     for i = 1:length(parameters.etarange)
         %fprintf('------------------------%g%% complete, %gs elapsed------------------------\n', round(100*(i-1)./length(parameters.etarange)), round(toc))
-        savestruct(i, 1).TS_DataMat = TS_DataMat(1+length(parameters.betarange)*(i-1):length(parameters.betarange)*i, :);
+        savestruct(i, 1).TS_DataMat = TS_DataMat(1+length(parameters.cp_range)*(i-1):length(parameters.cp_range)*i, :);
         savestruct(i, 1).Correlation = correlation.Correlations{[cellfun(@(x) x, correlation.Eta)] == parameters.etarange(i)};
         temparameters.eta = parameters.etarange(i);
         savestruct(i, 1).Parameters = temparameters;

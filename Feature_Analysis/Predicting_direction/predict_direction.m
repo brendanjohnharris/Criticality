@@ -1,8 +1,8 @@
-function [avg_direction, directions] = predict_direction(ops, mops, input_file, plots, betarange, etarange)
+function [avg_direction, directions] = predict_direction(ops, mops, input_file, plots, cp_range, etarange)
     % Set a coarse beta and eta range for speed, but a MUST wide range for
     % generality and accuracy (enough to cover the range of peaks as well as extra so that the quadratic fit is accurate. The results will be innacurate at higher noises, so
     % increase the range of beta
-    % If betarange and/or etarange are provided then they will be used over
+    % If cp_range and/or etarange are provided then they will be used over
     % the ranges contained in the input file
     if nargin < 4 || isempty(plots)
         plots = 0;
@@ -16,8 +16,8 @@ function [avg_direction, directions] = predict_direction(ops, mops, input_file, 
     [ops, mops] = TS_LinkOperationsWithMasters(ops, mops);
     f = struct2cell(load(input_file));
     parameters = f{1};
-    if nargin > 4 && ~isempty(betarange)
-        parameters.betarange = betarange;
+    if nargin > 4 && ~isempty(cp_range)
+        parameters.cp_range = cp_range;
     end
     if nargin > 5 && ~isempty(etarange)
         parameters.etarange = etarange;
@@ -28,43 +28,19 @@ function [avg_direction, directions] = predict_direction(ops, mops, input_file, 
         for ind = 1:length(etarange)
             p = parameters;
             p.etarange = etarange(ind);
-            time_series_data = strogatz_hopf_generator('input_struct', p);
-            feature_vals = generate_feature_vals(time_series_data, ops, mops, 0);
-            fit = polyfit(p.betarange, feature_vals',2);
-            %m = (polyder(fit));
-            %directions(ind) = -sign((polyval(m, p.betarange(end))- polyval(m, p.betarange(1)))/(p.betarange(end) - p.betarange(1)));     % Gets integral of concavity divided by length, i.e average concavity
+            time_series_data = time_series_generator('input_struct', p);
+            [~, feature_vals] = evalc("generate_feature_vals(time_series_data, ops, mops, 0);");
+            fit = polyfit(p.cp_range, feature_vals',2);
             directions(ind) = -sign(fit(1));
             dir_vec = {'Down', 'Up'};
             if plots
                 figure
-                plot(p.betarange, feature_vals', 'o', 'markersize', 2)
+                plot(p.cp_range, feature_vals', 'o', 'markersize', 2)
                 hold on
                 title(sprintf('\\eta = %g, Direction: %g (%s)', etarange(ind), directions(ind), dir_vec{0.5.*directions(ind)+1.5}), 'interpreter', 'Tex') 
-                Y = polyval(fit, p.betarange);
-                plot(p.betarange, Y, ':')
+                Y = polyval(fit, p.cp_range);
+                plot(p.cp_range, Y, ':')
             end
         end
-%     else 
-%         parfor ind = 1:length(etarange)
-%             p = parameters;
-%             p.etarange = etarange(ind);
-%             time_series_data = strogatz_hopf_generator('input_struct', p);
-%             feature_vals = generate_feature_vals(time_series_data, ops, mop_table, 0);
-%             fit = polyfit(p.betarange, feature_vals', 2);
-%             %m = (polyder(fit));
-%             %directions(ind) = -sign((polyval(m, p.betarange(end))- polyval(m, p.betarange(1)))/(p.betarange(end) - p.betarange(1)));     % Gets integral of concavity divided by length, i.e average concavity
-%             directions(ind) = -sign(fit(1));
-%             dir_vec = {'Down', 'Up'};
-%             if plots
-%                 figure
-%                 plot(p.betarange, feature_vals', 'o', 'markersize', 2)
-%                 hold on
-%                 title(sprintf('\\eta = %g, Direction: %g (%s)', etarange(ind), directions(ind), dir_vec{0.5.*directions(ind)+1.5}), 'interpreter', 'Tex')
-%                 Y = polyval(fit, p.betarange);
-%                 plot(p.betarange, Y, ':')
-%             end
-%         end
-%     end
     avg_direction = mean(directions);
-    
 end

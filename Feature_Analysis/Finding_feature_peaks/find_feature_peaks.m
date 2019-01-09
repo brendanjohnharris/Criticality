@@ -34,7 +34,7 @@ function [peakparameters, etarange, peakvals, op_table2] = find_feature_peaks(di
     if nargin == 8 && ~isempty(optional_etarange)
         parameters.etarange = optional_etarange;
     end
-    betarange1 = peakmin:1./r1:peakmax;
+    cp_range1 = peakmin:1./r1:peakmax;
     op_table = SQL_add('ops', op_file, 0, 0);
     [op_table2, mop_table] = TS_LinkOperationsWithMasters(op_table, SQL_add('mops', 'INP_mops.txt', 0, 0));
     
@@ -65,9 +65,9 @@ function [peakparameters, etarange, peakvals, op_table2] = find_feature_peaks(di
         eta = etarange(ind);
         %% First Pass
         p = parameters;
-        p.betarange = betarange1;
+        p.cp_range = cp_range1;
         p.etarange = eta;
-        [time_series_data1] = strogatz_hopf_generator('input_struct', p);
+        [time_series_data1] = time_series_generator('input_struct', p);
         if inparallel
             [~, feature_vals1] = evalc("generate_feature_vals(time_series_data1, op_table2, mop_table, 1);");
         else
@@ -80,14 +80,14 @@ function [peakparameters, etarange, peakvals, op_table2] = find_feature_peaks(di
                 [~, peak_ind(x)] = min(feature_vals1(:, x));
             end
         end
-        betarange2 = betarange1(max(1, min(peak_ind)-1)):1./resolution:betarange1(min(length(feature_vals1), max(peak_ind)+1))+1/resolution; % + 1/r2 to be safe, min and max so that betarange2 covers the correct range for all features
+        cp_range2 = cp_range1(max(1, min(peak_ind)-1)):1./resolution:cp_range1(min(length(feature_vals1), max(peak_ind)+1))+1/resolution; % + 1/r2 to be safe, min and max so that cp_range2 covers the correct range for all features
 
         %% Second Pass
-        p.betarange = betarange2;
+        p.cp_range = cp_range2;
         if inparallel
-            [~, feature_vals2] = evalc("generate_feature_vals(strogatz_hopf_generator('input_struct', p), op_table2, mop_table, 1);");
+            [~, feature_vals2] = evalc("generate_feature_vals(time_series_generator('input_struct', p), op_table2, mop_table, 1);");
         else
-            feature_vals2 = generate_feature_vals(strogatz_hopf_generator('input_struct', p), op_table2, mop_table, 0);
+            feature_vals2 = generate_feature_vals(time_series_generator('input_struct', p), op_table2, mop_table, 0);
         end
         for u = 1:size(feature_vals2, 2)
             if direction(u) == 1
@@ -95,7 +95,7 @@ function [peakparameters, etarange, peakvals, op_table2] = find_feature_peaks(di
             elseif direction(u) == -1
                     [peakvals(ind, u), peakind] = min(feature_vals2(:, u));
             end
-            peakparameters(ind, u) = betarange2(peakind);
+            peakparameters(ind, u) = cp_range2(peakind);
         end
         counting
     end

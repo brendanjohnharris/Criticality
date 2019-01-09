@@ -1,1 +1,0 @@
-AC_3		AC_3		correlation

@@ -11,7 +11,7 @@ function plot_feature_vals(op_id, data, on_what, combined)
         set(a, 'units','normalized','outerposition',[0 0.5 1 0.5]);
         figure(a)
     for ind = 1:length(data)
-        deltamu = data(ind).Parameters.betarange;
+        deltamu = data(ind).Parameters.cp_range;
         operations = [data(ind).Operations.ID];
         TS_DataMat = data(ind).TS_DataMat(:, op_id); % Only works for un-normalised data, and where operations is in order and 'continuous'
         [~, idxcor] = intersect(data(ind).Correlation(:, 2), operations);
@@ -24,7 +24,7 @@ function plot_feature_vals(op_id, data, on_what, combined)
             hold on
         end
         % 
-        %name = (time_series_data(ind).Parameters.betarange(1));
+        %name = (time_series_data(ind).Parameters.cp_range(1));
         %a = figure('Name', sprintf("Spearman's Correlation for eta = %g", name));
         plot(deltamu, TS_DataMat, 'o', 'MarkerSize', 2, 'MarkerFaceColor', 'b')
         if strcmp(on_what, 'noise')
@@ -36,9 +36,9 @@ function plot_feature_vals(op_id, data, on_what, combined)
             end       
         elseif strcmp(on_what, 'distance')
             if ~combined
-                title(['Distance: ', num2str(data(ind).Parameters.betarange(1))])
+                title(['Distance: ', num2str(data(ind).Parameters.cp_range(1))])
             else
-                legendcell{ind} = ['Distance: ', num2str(data(ind).Parameters.betarange(1))];
+                legendcell{ind} = ['Distance: ', num2str(data(ind).Parameters.cp_range(1))];
             end
         end
 %         title(sprintf('%s\n(ID %g), Correlation: %.3g', ...

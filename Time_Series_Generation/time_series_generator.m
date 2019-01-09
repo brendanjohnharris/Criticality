@@ -50,7 +50,7 @@ function timeSeriesData = time_series_generator(varargin)
         p = struct('Results', f{1}); % p doesn't include extra input parser fields but is still in the same form
         input_file = p.Results.input_file;
     elseif ~isempty(p.Results.input_struct)
-        p = struct('Results', input_struct);
+        p = struct('Results', p.Results.input_struct);
     end
 
 %% Unpack input parser struct, for easier variable access (using an additional function)
@@ -83,6 +83,11 @@ function timeSeriesData = time_series_generator(varargin)
             case 'hopf'
                 for n = 1:numpoints-1
                     r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt + W(:, n);
+                end
+            
+            case 'supercritical_hopf_radius'
+                for n = 1:numpoints-1
+                    %r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt + W(:, n);
                 end
             
             case 'supercritical_hopf_radius_(strogatz)'

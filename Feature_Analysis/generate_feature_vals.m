@@ -11,7 +11,7 @@ function  feature_vals = generate_feature_vals(time_series_data, operations, mas
         end
     else
         for i = 1:length(feature_vals)
-            [~, feature_vals(i, :)] = evalc("TS_CalculateFeatureVector(time_series_data(i, :)', 0, operations, master_operations, [], 0)");
+            feature_vals(i, :) = TS_CalculateFeatureVector(time_series_data(i, :)', 0, operations, master_operations, [], 0);
         end
     end
 end

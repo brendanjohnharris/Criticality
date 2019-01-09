@@ -1,0 +1,11 @@
+DN_rms	            rms	                distribution,location,raw,locdep,spreaddep
+DN_Spread_std	    standard_deviation	        distribution,spread,raw,spreaddep
+AC_3		AC_3		correlation
+IN_AutoMutualInfoStats_40_gaussian.ami1  IN_AutoMutualInfoStats_40_gaussian_ami1  information,correlation,AMI
+DK_crinkle_statistic	DK_crinkle_statistic	misc
+CO_trev_1.denom	CO_trev_1_denom	correlation,nonlinear
+SB_TransitionMatrix_51.maxeigcov	SB_TransitionMatrix_51_maxeigcov	symbolic,transitionmat
+PH_Walker_prop_01.sw_ac1rat	PH_Walker_prop_01_sw_ac1rat	trend
+EN_SampEn_5_02.sampen1	EN_SampEn_5_02_sampen1	entropy,sampen
+SP_Summaries_welch_rect.wmax_95     SP_Summaries_welch_rect_wmax_95    spectral
+NL_embed_PCA_1_10.top2	    NL_embed_PCA_1_10_top2	embedding,pca

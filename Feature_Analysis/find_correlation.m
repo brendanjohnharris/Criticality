@@ -20,7 +20,7 @@ function find_correlation(plots, datafile, parameterfile)
     m.TS_DataMat = TS_DataMat;
     %% Load the other required variables
     Operations = m.Operations;
-    % Assumes the 'betarange' in the parameters file is in order and
+    % Assumes the 'cp_range' in the parameters file is in order and
     % repeated consistently over 'etarange'
     
     load(parameterfile)
@@ -29,11 +29,11 @@ function find_correlation(plots, datafile, parameterfile)
     
     %mu = str2double(cellfun(@(x) (x), regexp(data(1, :),...
         %'-?\d*\.?\d*','Match')))'; % '[-](\d?[.]\d*|\d*)|(\d?[.]\d*|\d*)'
-    mu = parameters.betarange';
+    mu = parameters.cp_range';
     correlation_cell = cell(1, length(parameters.etarange));
     for i = 1:length(parameters.etarange)
         % r is spearmans correlation coefficient
-        r = corr(mu, TS_DataMat(1+length(parameters.betarange)*(i-1):length(parameters.betarange)*i, :), 'type', 'Spearman')'; % mu wrong shape!!!???!!
+        r = corr(mu, TS_DataMat(1+length(parameters.cp_range)*(i-1):length(parameters.cp_range)*i, :), 'type', 'Spearman')'; % mu wrong shape!!!???!!
         [~, idxs] = maxk(abs(r), length(r)); % Sort counts NaN's as largest
         IDs = [Operations.ID]; %Assumes operation indices match TS_DataMat columns
         % First colum of entries of correlation_cell is the correlation, the
