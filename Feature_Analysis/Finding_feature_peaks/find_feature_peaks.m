@@ -59,6 +59,7 @@ function [peakparameters, etarange, peakvals, op_table2] = find_feature_peaks(di
     peakparameters = zeros(length(etarange), height(op_table2)); % operations in the same order, along columns, as the lines in the'op_file' input
     peakvals = peakparameters;
     %% Start FOR loop
+    fprintf('----------------Beginning Calculations----------------')
     for ind = 1:etalength
         %fprintf('Calculating: %g of %g\n', ind, etalength);
         eta = etarange(ind);
