@@ -59,7 +59,7 @@ function [peakparameters, etarange, peakvals, op_table2] = find_feature_peaks(di
     peakparameters = zeros(length(etarange), height(op_table2)); % operations in the same order, along columns, as the lines in the'op_file' input
     peakvals = peakparameters;
     %% Start FOR loop
-    fprintf('----------------Beginning Calculations----------------')
+    fprintf('----------------Beginning Calculations----------------\n')
     for ind = 1:etalength
         %fprintf('Calculating: %g of %g\n', ind, etalength);
         eta = etarange(ind);
@@ -71,7 +71,7 @@ function [peakparameters, etarange, peakvals, op_table2] = find_feature_peaks(di
         if inparallel
             [~, feature_vals1] = evalc("generate_feature_vals(time_series_data1, op_table2, mop_table, 1);");
         else
-            feature_vals1 = generate_feature_vals(time_series_data1, op_table2, mop_table, 0);
+            feature_vals1 = evalc("generate_feature_vals(time_series_data1, op_table2, mop_table, 0);");
         end
         for x = 1:size(feature_vals1, 2)
             if direction(x) == 1
@@ -87,7 +87,7 @@ function [peakparameters, etarange, peakvals, op_table2] = find_feature_peaks(di
         if inparallel
             [~, feature_vals2] = evalc("generate_feature_vals(time_series_generator('input_struct', p), op_table2, mop_table, 1);");
         else
-            feature_vals2 = generate_feature_vals(time_series_generator('input_struct', p), op_table2, mop_table, 0);
+            feature_vals2 = evalc("generate_feature_vals(time_series_generator('input_struct', p), op_table2, mop_table, 0);");
         end
         for u = 1:size(feature_vals2, 2)
             if direction(u) == 1

@@ -1,11 +1,16 @@
 #!/bin/bash
-# Get the etarange
+# -------------------------------Get Inputs--------------------------------
+# Give the etarange
 Etarange=($(seq 0 0.1 1))
+
 # Give the desired number of jobs (+- 1)
 NumJobs=5
 
 # Give the direction of each operation (will be filled automatically if completely empty)
 Directions="[]"
+
+
+---------------------------------------------------------------------------
 
 # Calculate the step needed
 let Step=(${#Etarange[@]}+$NumJobs-1)/$NumJobs
@@ -22,10 +27,9 @@ then
     sed -i "s/xxSubEtarangexx/[${SubEtarange[*]}]/g" "$Name.sh"
     sed -i "s/xxDirectionsxx/$Directions/g" "$Name.sh"
 
-
     qsub "$Name.sh"
 
     rm "$Name.sh"
-    echo ${SubEtarange[*]}
+
 fi
 done
