@@ -95,6 +95,11 @@ function timeSeriesData = time_series_generator(varargin)
                 for n = 1:numpoints-1
                     r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - (r(:, n).^3)).*dt + W(:, n);
                 end
+                
+           case 'supercritical_hopf_radius_reflecting_(strogatz)'
+                for n = 1:numpoints-1
+                    r(:, n+1) = abs(r(:, n) + (cp_range'.*r(:, n) - (r(:, n).^3)).*dt + W(:, n));
+                end
            
             case 'subcritical_hopf_radius_(strogatz)'
                 for n = 1:numpoints-1
