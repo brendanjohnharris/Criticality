@@ -80,15 +80,16 @@ function timeSeriesData = time_series_generator(varargin)
         r = [zeros(length(cp_range), 1) + initial_conditions, zeros(length(cp_range), numpoints-1)];
         W = eta.*sqrt(dt).*randn(size(r));
         switch system_type
-            case 'hopf'
+            case 'supercritical_hopf'
                 for n = 1:numpoints-1
                     r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt + W(:, n);
                 end
             
-            case 'supercritical_hopf_radius'
+            case 'supercritical_hopf_radius_(real_parameters)'
                 for n = 1:numpoints-1
-                    %r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt + W(:, n);
+                    r(:, n+1) = r(:, n) + ((cp_range'+1i).*r(:, n) - (parameters(1)+parameters(2)*1i).*r(:, n).*(abs(r(:, n))).^2).*dt + W(:, n);
                 end
+                r = abs(r);
             
             case 'supercritical_hopf_radius_(strogatz)'
                 for n = 1:numpoints-1
