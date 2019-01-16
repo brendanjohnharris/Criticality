@@ -1,7 +1,7 @@
 function plot_feature_vals_directly(ops, mops, input_file, cp_range, etarange)
 %   Modification of 'predict_direction' that only plots the feature values
     if isstring(ops) || ischar(ops)
-        ops = SQL_add('ops', op_file, 0, 0);
+        ops = SQL_add('ops', ops, 0, 0);
     end
     if nargin < 2 || isempty(mops)
         mops = SQL_add('mops', 'INP_mops.txt', 0, 0);
