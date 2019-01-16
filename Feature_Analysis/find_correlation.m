@@ -1,13 +1,21 @@
-function find_correlation(plots, datafile, parameterfile)
+function find_correlation(datafile, inputfile, correlation_type, what_range)
+%   'what_range' is a two element vector, defining the range of control
+%   parameters that will be used to calculate correlations
     %% Calculating
-    if nargin < 1 || isempty(plots)
-        plots = false;
-    end
-    if nargin < 2 || isempty(datafile) || ~exist(datafile, 'file')
+%     if nargin < 1 || isempty(plots)
+%         plots = false;
+%     end
+    if nargin < 1 || isempty(datafile) || ~exist(datafile, 'file')
         datafile = 'HCTSA.mat';
     end
-    if nargin < 3 || isempty(parameterfile) || ~exist(parameterfile, 'file')
-        parameterfile = 'parameters.mat';
+    if nargin < 2 || isempty(inputfile) || ~exist(inputfile, 'file')
+        inputfile = 'inputs.mat';
+    end
+    if nargin < 3 || isempty(correlation_type)
+        correlation_type = 'Spearman';
+    end
+    if nargin < 4
+        what_range = [];
     end
     %% Ensure that time series in hctsa file are ordered
     m = matfile(datafile, 'Writable', true);
@@ -18,61 +26,48 @@ function find_correlation(plots, datafile, parameterfile)
     TS_DataMat = m.TS_DataMat;
     TS_DataMat = TS_DataMat(TSidxs, :);
     m.TS_DataMat = TS_DataMat;
+    
+    
     %% Load the other required variables
     Operations = m.Operations;
-    % Assumes the 'cp_range' in the parameters file is in order and
+    % Assumes the 'cp_range' in the input file is in order and
     % repeated consistently over 'etarange'
     
-    load(parameterfile)
+    f = struct2cell(load(inputfile));
+    parameters = f{1}; % Ignore the name of the variable saved in the parameter (input) file
+    
+    what_range_idxs = [find(parameters.cp_range == what_range(1)):find(parameters.cp_range == what_range(2))]; % Since all sections of datamat have the same cp range, can use this for all
     
     %data = struct2cell(TimeSeries);
     
     %mu = str2double(cellfun(@(x) (x), regexp(data(1, :),...
         %'-?\d*\.?\d*','Match')))'; % '[-](\d?[.]\d*|\d*)|(\d?[.]\d*|\d*)'
-    mu = parameters.cp_range';
+    mu = parameters.cp_range(what_range_idxs)'; % Get cp_range in right shape
     correlation_cell = cell(1, length(parameters.etarange));
     for i = 1:length(parameters.etarange)
-        % r is spearmans correlation coefficient
-        r = corr(mu, TS_DataMat(1+length(parameters.cp_range)*(i-1):length(parameters.cp_range)*i, :), 'type', 'Spearman')'; % mu wrong shape!!!???!!
+        subDataMat = TS_DataMat(1+length(parameters.cp_range)*(i-1):length(parameters.cp_range)*i, :);
+        trimmedsubDataMat = subDataMat(what_range_idxs, :);
+        switch correlation_type
+            case 'Spearman'
+                r = corr(mu, trimmedsubDataMat, 'type', 'Spearman')';
+            
+            case 'Pearson'
+                r = corr(mu, trimmedsubDataMat, 'type', 'Pearson')';
+        end
         [~, idxs] = maxk(abs(r), length(r)); % Sort counts NaN's as largest
         IDs = [Operations.ID]; %Assumes operation indices match TS_DataMat columns
         % First colum of entries of correlation_cell is the correlation, the
         % second is the ID of the corresponding operation
         % pearsons = [r(idxs(:, 1), 1), IDs(idxs(:, 1))];
         correlation_cell{i} = [r(idxs(:, 1), 1), IDs(idxs(:, 1))]; 
-        
-        %% Plotting
-        if plots
-            ps = numSubplots(10);
-            a = figure('Name', "Pearson's Correlation");
-            set(a, 'units','normalized','outerposition',[0 0.5 1 0.5]);
-            b = figure('Name', "Spearman's Correlation");
-            set(b, 'units','normalized','outerposition',[0 0 1 0.5]);
-            for n = 1:10
-                figure(a)
-                subplot(ps(1), ps(2), n)
-                plot(mu, TS_DataMat(:, idxs(n, 1)), 'o', 'MarkerSize', 2, 'MarkerFaceColor', 'b')
-                title(sprintf('Feature: %g, Correlation: %.3g', pearsons(n, 2), pearsons(n, 1)))
-                xlabel('Control Parameter')
-                ylabel('Feature Value')
-            end
-            for n = 1:10
-                figure(b)
-                subplot(ps(1), ps(2), n)
-                plot(mu, TS_DataMat(:, idxs(n, 2)), 'o', 'MarkerSize', 2, 'MarkerFaceColor', 'b')
-                title(sprintf('Feature: %g, Correlation: %.3g', spearmans(n, 2), spearmans(n, 1)))
-                xlabel('Control Parameter')
-                ylabel('Feature Value')  
-            end
-            savefig(a, "Pearson's_correlation.fig")
-            savefig(b, "Spearman's_correlation.fig") 
-        end
     end
     %% Saving
     %save('correlations.mat', 'pearsons', 'spearmans')
     correlation = table(num2cell(parameters.etarange)', correlation_cell');
     correlation.Properties.VariableNames = {'Eta','Correlations'};
+    
     %pearson_correlation = pearsons;
     save('correlation.mat', 'correlation')
+    save('correlation_type.mat', 'correlation_type')
     %save('pearson_correlation.mat', 'pearson_correlation')
 end
