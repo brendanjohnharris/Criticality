@@ -2,8 +2,8 @@ function timeSeriesData = time_series_generator(varargin)
 %TIME_SERIES_GENERATOR Generates time series using a variety of parameters
 %   Input arguments can be set or left as defaults (as below); make sure to
 %   review the defaults set in the input parser and adjust as necessary. 
-%   Arguments following '*' have formats that depend on the type of dynamical 
-%   system specified, while others are universal:
+%   Note that the form and accepted types of the 'parameters' variable is
+%   dependant on the specified system
 % 
 %     cp_range:           A vector containing the values of the control parameter for which time series will be generated
 %     system_type:        A character array specifying the dynamical system to be used for integration
@@ -55,7 +55,7 @@ function timeSeriesData = time_series_generator(varargin)
 
 %% Unpack input parser struct, for easier variable access (using an additional function)
     v2struct(p.Results)
-    p = struct('Results', p.Results); % Tuen input parser into a struct so that results can be modified
+    p = struct('Results', p.Results); % Turn input parser into a struct so that results can be modified
     p.Results.input_file = input_file; % Make sure that the input file of these generated time series is the input file originally specified
     
 %% Randomise, or not, and add current rng state to struct
@@ -80,10 +80,25 @@ function timeSeriesData = time_series_generator(varargin)
         r = [zeros(length(cp_range), 1) + initial_conditions, zeros(length(cp_range), numpoints-1)];
         W = eta.*sqrt(dt).*randn(size(r)); % Need complex noise for systems with complex variables?
         switch system_type
-%             case 'supercritical_hopf'
-%                 for n = 1:numpoints-1
-%                     r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt + W(:, n);
-%                 end
+            case 'staircase'
+                for n = 1:numpoints-1
+                    r(:, n+1) = r(:, n) + (sin(parameters(1).*r(:, n))).*dt + (W(:, n)+(0.01*abs(W(:, n)))); % All real
+                end 
+            
+            case 'supercritical_hopf'
+                for n = 1:numpoints-1
+                    r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt;
+                    theta = angle(r(:, n+1));
+                    r(:, n+1) = r(:, n+1) + (cos(theta) + 1i.*sin(theta)).*W(:, n); % Right way to add noise to complex??? Add before or after step???
+                end
+
+            case 'supercritical_hopf-varying_cp'
+                for n = 1:numpoints-1
+                    r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt;
+                    theta = angle(r(:, n+1));
+                    r(:, n+1) = r(:, n+1) + (cos(theta) + 1i.*sin(theta)).*W(:, n); % Right way to add noise to complex??? Add before or after step???
+                    cp_range = cp_range + parameters(2).*dt;
+                end
                 
 %             case 'supercritical_hopf-x'
 %                 for n = 1:numpoints-1
@@ -107,10 +122,11 @@ function timeSeriesData = time_series_generator(varargin)
                     r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - (r(:, n).^3)).*dt + W(:, n);
                 end
                 
-           case 'supercritical_hopf_radius_reflecting_(strogatz)'
+           case 'supercritical_hopf_radius_(strogatz)-reflecting'
                 for n = 1:numpoints-1
-                    r(:, n+1) = abs(r(:, n) + (cp_range'.*r(:, n) - (r(:, n).^3)).*dt + W(:, n));
+                    r(:, n+1) = (r(:, n) + (cp_range'.*r(:, n) - (r(:, n).^3)).*dt + W(:, n));
                 end
+                r = abs(r);
            
             case 'subcritical_hopf_radius_(strogatz)'
                 for n = 1:numpoints-1
