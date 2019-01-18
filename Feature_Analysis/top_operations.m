@@ -63,7 +63,8 @@ function tbl = top_operations(on_what, N, data, peak_shift, weight_by)
             NaN_Weighted_Mean_Correlation = Mean_Absolute_Correlation.*Percent_Not_NaN./100; % In Operation order
             sortScore = NaN_Weighted_Mean_Correlation; % In Operation order
         case 'peak_shift'
-            sortScore = Mean_Absolute_Correlation./Peak_Shift; % In Operation order
+            %sortScore = Mean_Absolute_Correlation./Peak_Shift; % In Operation order
+            sortScore = 1./abs(Peak_Shift);
     end
 
 

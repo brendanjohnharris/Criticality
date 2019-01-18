@@ -1,4 +1,4 @@
-function [avg_direction, directions] = predict_direction(ops, mops, input_file, plots, cp_range, etarange)
+function [avg_direction, directions] = predict_direction(ops, mops, input_file, plots, cp_range, etarange, inparallel)
     % Set a coarse beta and eta range for speed, but a MUST wide range for
     % generality and accuracy (enough to cover the range of peaks as well as extra so that the quadratic fit is accurate. The results will be innacurate at higher noises, so
     % increase the range of beta
@@ -12,6 +12,9 @@ function [avg_direction, directions] = predict_direction(ops, mops, input_file, 
     end
     if nargin < 2 || isempty(mops)
         mops = SQL_add('mops', 'INP_mops.txt', 0, 0);
+    end
+    if nargin < 7 || isempty(inparallel)
+        inparallel = 0;
     end
     [ops, mops] = TS_LinkOperationsWithMasters(ops, mops);
     f = struct2cell(load(input_file));
@@ -29,7 +32,11 @@ function [avg_direction, directions] = predict_direction(ops, mops, input_file, 
             p = parameters;
             p.etarange = etarange(ind);
             time_series_data = time_series_generator('input_struct', p);
-            [~, feature_vals] = evalc("generate_feature_vals(time_series_data, ops, mops, 0);");
+            if inparallel
+                [~, feature_vals] = evalc("generate_feature_vals(time_series_data, ops, mops, 1);");
+            else
+                [~, feature_vals] = evalc("generate_feature_vals(time_series_data, ops, mops, 0);");
+            end
             fit = polyfit(p.cp_range, feature_vals',2);
             directions(ind) = -sign(fit(1));
             dir_vec = {'Down', 'Up'};

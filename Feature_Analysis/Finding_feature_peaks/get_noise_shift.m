@@ -1,4 +1,4 @@
-function yvals = get_noise_shift(data, opind, direction, plots)
+function yvals = get_noise_shift(data, opind, direction, make_plots)
     % 'directions' is either 0 (turning point is a global min.) or 1 
     % (turning point is a global max.). 
     if nargin < 3 || isempty(direction)
@@ -16,8 +16,8 @@ function yvals = get_noise_shift(data, opind, direction, plots)
             direction = 1;
         end
     end
-    if nargin < 4 || isempty(plots)
-        plots = 0;
+    if nargin < 4 || isempty(make_plots)
+        make_plots = 0;
     end
     xvals = cellfun(@(x) x.eta, {data.Inputs});
     yvals = zeros(1, length(xvals));
@@ -29,9 +29,9 @@ function yvals = get_noise_shift(data, opind, direction, plots)
         end
         yvals(i) = data(i).Inputs.cp_range(ind2);
     end
-    if plots
+    if make_plots
         figure
-        plots(xvals, yvals, 'o', 'MarkerSize', 2, 'MarkerFaceColor', 'b')
+        plot(xvals, yvals, 'o', 'MarkerSize', 2, 'MarkerFaceColor', 'b')
         xlabel('Eta')
         ylabel('Control parameter at turning point')
         set(gcf,'color','w');
