@@ -1,4 +1,4 @@
-function combine_feature_peak_results(file_prefix)
+function combine_find_feature_peaks(file_prefix)
     if nargin < 1 || isempty(file_prefix)
         file_prefix = 'res';
     end
