@@ -1,14 +1,16 @@
-function sys = supercritical_strogatz_radius()
+function sys = supercritical_hopf_strogatz()
     % Handles to our SDE functions
     sys.sdeF   = @sdeF;                 % deterministic coefficients
     sys.sdeG   = @sdeG;                 % stochastic coefficints
 
     % Our SDE parameters
-    sys.pardef = [ struct('name','mu',    'value',-0.1);
-                   struct('name','eta', 'value', 0.1) ];
+    sys.pardef = [ struct('name','mu',    'value',-0.1, 'lim', [-1, 1]);
+                   struct('name', 'omega', 'value', pi, 'lim', [0, 2.*pi]);
+                   struct('name','eta', 'value', 0.1, 'lim', [0, 1])];
                
     % Our SDE variables
-    sys.vardef =  struct('name','r', 'value', 1);
+    sys.vardef =  [struct('name','x', 'value', 1, 'lim',[-1 1]);
+                    struct('name','y', 'value', 1, 'lim',[-1 1])];
                     
     % Default time span
     sys.tspan = [0 100];
@@ -26,19 +28,23 @@ function sys = supercritical_strogatz_radius()
     sys.panels.bdTimePortrait = [];
 
     % Include the Solver panel in the GUI
-    sys.panels.bdSolverPanel = [];
+    %sys.panels.bdSolverPanel = [];
     
     % Include the Bifurcation panel in the GUI
     sys.panels.bdBifurcation = [];
     
+    % Include the Phase Portrait palen in the GUI
+    sys.panels.bdPhasePortrait = [];
 end
 
 % The deterministic coefficient function.
-function F = sdeF(~,Y,mu, ~)  
-    F = mu.*Y - Y.^3;
+function F = sdeF(~,Y,mu, omega, ~)  
+    %F = mu.*Y - norm(Y).^2.*Y + omega.*fliplr(Y);
+    F(1, 1) = mu.*Y(1) - norm(Y).^2.*Y(1) - Y(2).*omega;
+    F(2, 1) = mu.*Y(2) - norm(Y).^2.*Y(2) + Y(1).*omega;
 end
 
 % The noise coefficient function.
-function G = sdeG(~,Y,~,n)  
-    G = n;
+function G = sdeG(~,Y,~, ~,n)  
+    G = n.*Y./norm(Y);
 end
