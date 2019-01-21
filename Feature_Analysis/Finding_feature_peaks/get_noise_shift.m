@@ -27,7 +27,11 @@ function yvals = get_noise_shift(data, opind, direction, make_plots)
         elseif direction == -1
             [~, ind2] = min(data(i).TS_DataMat(:, opind));
         end
-        yvals(i) = data(i).Inputs.cp_range(ind2);
+        if isnan(direction)
+            yvals(i) = NaN;
+        else
+            yvals(i) = data(i).Inputs.cp_range(ind2);
+        end
     end
     if make_plots
         figure
