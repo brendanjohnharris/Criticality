@@ -181,7 +181,7 @@ function timeSeriesData = time_series_generator(varargin)
         mkdir(foldername)
         save(fullfile(foldername, 'timeseries.mat'), 'timeSeriesData', 'labels', 'keywords')
         inputs = p.Results;
-        save(fullfile(foldername, 'inputs.mat'), 'inputs')
+        save(fullfile(foldername, 'inputs_out.mat'), 'inputs')
     end
                 
 %% Announce completion

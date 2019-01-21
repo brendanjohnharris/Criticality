@@ -15,7 +15,7 @@ function combine_find_correlation_directly(file_prefix)
         ind = matching_file_nums(i);
         load([file_prefix, num2str(ind), '.mat'])
         c.etarange = [c.etarange, etarange];
-        c.peakparameters = [c.correlations; correlations];
+        c.correlations = [c.correlations; correlations];
         c.peakvals = [c.cp_range; cp_range];
         c.time = c.time + time;
     end

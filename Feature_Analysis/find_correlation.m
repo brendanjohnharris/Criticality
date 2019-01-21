@@ -15,7 +15,7 @@ function find_correlation(datafile, inputfile, correlation_type, what_range)
         correlation_type = 'Spearman';
     end
     if nargin < 4
-        what_range = [];
+        error('Please provide a range over which to calculate the feature value correlations');
     end
     %% Ensure that time series in hctsa file are ordered
     m = matfile(datafile, 'Writable', true);
