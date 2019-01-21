@@ -6,11 +6,11 @@ function  feature_vals = generate_feature_vals(time_series_data, operations, mas
     end
     feature_vals = zeros(size(time_series_data, 1), height(operations));
     if parallel
-        parfor i = 1:length(feature_vals)
+        parfor i = 1:size(feature_vals, 1)
             feature_vals(i, :) = TS_CalculateFeatureVector(time_series_data(i, :)', 0, operations, master_operations, [], 0);
         end
     else
-        for i = 1:length(feature_vals)
+        for i = 1:size(feature_vals, 1)
             feature_vals(i, :) = TS_CalculateFeatureVector(time_series_data(i, :)', 0, operations, master_operations, [], 0);
         end
     end
