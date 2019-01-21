@@ -1,5 +1,6 @@
 function timeSeriesData = time_series_generator(varargin)
-%TIME_SERIES_GENERATOR Generates time series using a variety of parameters
+%TIME_SERIES_GENERATOR Generates time series using a variety of input parameters
+%
 %   Input arguments can be set or left as defaults (as below); make sure to
 %   review the defaults set in the input parser and adjust as necessary. 
 %   Note that the form and accepted types of the 'parameters' variable is
@@ -44,19 +45,41 @@ function timeSeriesData = time_series_generator(varargin)
     addParameter(p, 'input_struct', [])
     parse(p,varargin{:})
     
+%% Check if extra arguments were given
+    extra_vals = [];
+    if ~isempty(p.Results.input_file) || ~isempty(p.Results.input_struct)
+        extra_args = setdiff(p.Parameters, p.UsingDefaults); % Get the arguments that are not using defaults
+        extra_args = extra_args(~strcmp(extra_args, 'input_file'));
+        if ~isempty(extra_args)
+            extra_vals = cell(size(extra_args));
+            for k = 1:length(extra_args)
+                extra_vals{k} = p.Results.(extra_args{k});  % Store extra values so they survive the load from the input file/struct
+            end
+        end
+    end
+    
 %%  Check if an input file was specified or a struct was given
     if ~isempty(p.Results.input_file) && isempty(p.Results.input_struct)
-        f = struct2cell(load(p.Results.input_file)); % Parameters should be the only variable in input_file
+        f = struct2cell(load(p.Results.input_file));
         p = struct('Results', f{1}); % p doesn't include extra input parser fields but is still in the same form
         input_file = p.Results.input_file;
-    elseif ~isempty(p.Results.input_struct)
+    elseif ~isempty(p.Results.input_struct) && isempty(p.Results.input_file)
         p = struct('Results', p.Results.input_struct);
+    end
+    
+%% Change input parser to struct so that 'Results' field can be modified
+    p = struct('Results', p.Results);
+    p.Results.input_file = input_file; % Make sure that the input file of these generated time series is the input file originally specified
+    
+%% If extra arguments were given, replace values
+    if ~isempty(extra_vals)
+        for m = 1:length(extra_args)
+            p.Results.(extra_args{m}) = extra_vals{m};
+        end
     end
 
 %% Unpack input parser struct, for easier variable access (using an additional function)
     v2struct(p.Results)
-    p = struct('Results', p.Results); % Turn input parser into a struct so that results can be modified
-    p.Results.input_file = input_file; % Make sure that the input file of these generated time series is the input file originally specified
     
 %% Randomise, or not, and add current rng state to struct
     if randomise || isempty(rngseed)
