@@ -1,4 +1,4 @@
-function tbl = top_operations(on_what, N, data, peak_shift, weight_by)
+function tbl = top_operations(on_what, N, data, peak_shift, weight_by, directions)
     %find_folder = which('save_data.m');
     %filepath = [find_folder(1:end-length('save_data.m')), filename];
     
@@ -21,6 +21,9 @@ function tbl = top_operations(on_what, N, data, peak_shift, weight_by)
     end
     if nargin < 5 || isempty(weight_by)
         weight_by = 'mean';
+    end
+    if nargin < 6 || isempty(directions)
+        directions = [];
     end
     % Time series must have the same Operations
     data = data(contains({data.Keywords}, on_what));
@@ -49,7 +52,7 @@ function tbl = top_operations(on_what, N, data, peak_shift, weight_by)
         if size(data, 1) == 1
             Peak_Shift = zeros(length(Mean_Absolute_Correlation), 1);  % Maybe change variable name to distinguish from peak_shift
             for x = 1:length(Peak_Shift)
-                Peak_Shift(x) = get_noise_shift(data, data.Operations.ID(x), [], 0);
+                Peak_Shift(x) = get_noise_shift(data, data.Operations.ID(x), directions(x), 0);
             end
         else
             Peak_Shift = NaN(length(Mean_Absolute_Correlation), 1);
