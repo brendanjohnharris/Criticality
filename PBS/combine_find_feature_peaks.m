@@ -8,7 +8,7 @@ function combine_feature_peak_results(file_prefix)
     matching_files = cellfun(@(x) x{1}, matching_files, 'UniformOutput', false);
     matching_file_nums = cellfun(@str2num, cellfun(@(x) x{1}, regexp(matching_files, ...
         ['(?<=', file_prefix, ')\d+(?=[.]mat)'], 'match'), 'UniformOutput', false));
-    [~, idxs] = sort(matching_file_nums);
+    [matching_file_nums, idxs] = sort(matching_file_nums);
     matching_files = matching_files(idxs); % Files now sorted by their number
     c = struct('etarange', [], 'peakparameters', [], 'peakvals', [], 'time', 0, 'op_table', []);
     for i = 1:length(matching_file_nums)
