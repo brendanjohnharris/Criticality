@@ -71,6 +71,9 @@ function save_data(filepath, keywords, source, datafile, inputfile, correlationf
         source = 'Unknown';
     end
     [TS_DataMat, ~, Operations] = TS_LoadData(datafile);
+    [~, opidxs] = sort(Operations.ID); % Sort Operations by ID
+    Operations = Operations(opidxs, :);
+    TS_DataMat = TS_DataMat(:, opidxs); % Sort datamat by moving columns
     p = load(inputfile);
     vars = fieldnames(p);
     inputs = p.(vars{1});
@@ -78,8 +81,9 @@ function save_data(filepath, keywords, source, datafile, inputfile, correlationf
     c = load(correlationfile);
     vars = fieldnames(c);
     correlation = c.(vars{1});  
+    load('correlation_inputs.mat')
     if ~exist(filepath, 'file')
-        time_series_data = struct('TS_DataMat', {}, 'Operations', {}, 'Correlation', {}, 'Source', {}, 'Inputs', {}, 'Date', {}, 'Keywords', {});
+        time_series_data = struct('TS_DataMat', {}, 'Operations', {}, 'Correlation', {}, 'Source', {}, 'Inputs', {}, 'Date', {}, 'Keywords', {}, 'Correlation_Type', {}, 'Correlation_Range', {});
         nrows = 0;
         save(filepath, 'time_series_data', 'nrows', '-v7')
     end
@@ -87,11 +91,13 @@ function save_data(filepath, keywords, source, datafile, inputfile, correlationf
     minflagid = size(m.time_series_data, 1); % !!!!!
     savestruct = repmat(struct('TS_DataMat', [], 'Operations', Operations, ...
             'Correlation', [], 'Source', source, ...
-            'Inputs', [], 'Date', date, 'Keywords', keywords), length(inputs.etarange), 1);
+            'Inputs', [], 'Date', date, 'Keywords', keywords, 'Correlation_Type', correlation_type, 'Correlation_Range', correlation_range), length(inputs.etarange), 1);
     for i = 1:length(inputs.etarange)
         %fprintf('------------------------%g%% complete, %gs elapsed------------------------\n', round(100*(i-1)./length(parameters.etarange)), round(toc))
         savestruct(i, 1).TS_DataMat = TS_DataMat(1+length(inputs.cp_range)*(i-1):length(inputs.cp_range)*i, :);
         savestruct(i, 1).Correlation = correlation.Correlations{[cellfun(@(x) x, correlation.Eta)] == inputs.etarange(i)};
+        [~, coridxs] = sort(savestruct(i, 1).Correlation(:, 2));
+        savestruct(i, 1).Correlation = savestruct(i, :).Correlation(coridxs, :);
         temparameters.eta = inputs.etarange(i);
         savestruct(i, 1).Inputs = temparameters;
     end
