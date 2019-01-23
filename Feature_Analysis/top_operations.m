@@ -1,4 +1,6 @@
 function tbl = top_operations(on_what, N, data, peak_shift, weight_by, directions)
+% top_operations should not be used. See get_feature_stats for an
+% alternative
     %find_folder = which('save_data.m');
     %filepath = [find_folder(1:end-length('save_data.m')), filename];
     
@@ -37,7 +39,7 @@ function tbl = top_operations(on_what, N, data, peak_shift, weight_by, direction
     Operation_Keywords = data(1).Operations.Keywords; % Same order as Operation_ID, currently
     corrs = zeros(numops, length(data));
     for n = 1:length(data)
-        [~, idxcor] = intersect(data(n).Correlation(:, 2), Operation_ID); 
+        [Operation_ID, idxcor] = intersect(data(n).Correlation(:, 2), Operation_ID);  %Operations shoudl be sorted. If they are not, they are now
         tempcorr = data(n).Correlation(:, 1);
         corrs(:, n) = tempcorr(idxcor); % Gets corrs in same order as Operation_ID's
     end
@@ -102,7 +104,12 @@ function tbl = top_operations(on_what, N, data, peak_shift, weight_by, direction
 %             NaN_Weighted_Mean_Correlation = sorted_sortScore;
 %             tbl = table(Operation_ID, Operation_Name, Operation_Keywords, Mean_Absolute_Correlation, Percent_Not_NaN, NaN_Weighted_Mean_Correlation);
 %         else
-    tbl = table(Operation_ID, Operation_Name, Operation_Keywords, Mean_Absolute_Correlation, Percent_Not_NaN, Peak_Shift);
+    if size(data, 1) == 1
+        Absolute_Correlation = Mean_Absolute_Correlation;
+        tbl = table(Operation_ID, Operation_Name, Operation_Keywords, Absolute_Correlation, Percent_Not_NaN, Peak_Shift);
+    else
+        tbl = table(Operation_ID, Operation_Name, Operation_Keywords, Mean_Absolute_Correlation, Percent_Not_NaN, Peak_Shift);
+    end
 %        end
     tbl = tbl(1:N, :);  
     
