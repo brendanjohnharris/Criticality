@@ -29,14 +29,14 @@ function timeSeriesData = time_series_generator(varargin)
     p = inputParser;
     addParameter(p, 'cp_range', [-1:0.1:1])
     addParameter(p, 'system_type', 'supercritical_hopf_radius_(strogatz)')
-    addParameter(p, 'tmax', 600)
+    addParameter(p, 'tmax', 1000)
     addParameter(p, 'initial_conditions', 1)
     addParameter(p, 'parameters', [])
     addParameter(p, 'bifurcation_point', 0)
     addParameter(p, 'etarange', 0.16)
-    addParameter(p, 'numpoints', 600000)
+    addParameter(p, 'numpoints', 1000000)
     addParameter(p, 'savelength', 5000)
-    addParameter(p, 'transient_cutoff', 100000)
+    addParameter(p, 'transient_cutoff', 500000)
     addParameter(p, 'foldername', [])
     addParameter(p, 'rngseed', [])
     addParameter(p, 'randomise', 1)
@@ -65,6 +65,7 @@ function timeSeriesData = time_series_generator(varargin)
         input_file = p.Results.input_file;
     elseif ~isempty(p.Results.input_struct) && isempty(p.Results.input_file)
         p = struct('Results', p.Results.input_struct);
+        input_file = p.Results.input_file;
     end
     
 %% Change input parser to struct so that 'Results' field can be modified
@@ -144,17 +145,18 @@ function timeSeriesData = time_series_generator(varargin)
                 for n = 1:numpoints-1
                     r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - (r(:, n).^3)).*dt + W(:, n);
                 end
+                r = abs(r);
                 
-           case 'supercritical_hopf_radius_(strogatz)-reflecting'
+           case 'supercritical_hopf_radius_(strogatz)-non-reflecting'
                 for n = 1:numpoints-1
                     r(:, n+1) = (r(:, n) + (cp_range'.*r(:, n) - (r(:, n).^3)).*dt + W(:, n));
                 end
-                r = abs(r);
            
             case 'subcritical_hopf_radius_(strogatz)'
                 for n = 1:numpoints-1
                     r(:, n+1) = r(:, n) + (-r(:, n).^5 + (r(:, n).^3) + cp_range'.*r(:, n)).*dt + W(:, n);
                 end
+                r = abs(r);
                 
             otherwise
                 error("No match found for type '%s'", system_type)     
@@ -168,7 +170,7 @@ function timeSeriesData = time_series_generator(varargin)
         labels = [labels;arrayfun(@(x) sprintf('%g|%g', x, n), cp_range, 'UniformOutput', false)'];
     end
 
-%% Generange time series keywords
+%% Generate time series keywords
     keywords(1:sum(cp_range < bifurcation_point)) = {'Pre-bifurcation'};
     keywords(sum(cp_range<bifurcation_point)+1:length(cp_range)) = {'Bifurcated'};
     keywords = repmat(keywords, 1, length(etarange))';
