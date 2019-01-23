@@ -1,0 +1,52 @@
+function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
+% data must be of height 1
+% what_stats is a cell array containing the statistics to be added to
+% the resulting table
+% The order of what_stats determines the order of the table columns
+% Custom statistics are entered as cell arrays with rows of the form {Statistic
+% name, statistic form}
+% Note that second element of the cell array shoudl be a character
+% vector containing a set of operations that references only variables
+% entered in 'what_stats'
+%
+% MAKE SURE DIRECTIONS IS SORTED IN OP ID ORDER!!!
+    
+%% Sort data by operation ID. It should be already, but it can't hurt
+    data = sort_data(data);
+    
+%% Get feature identifiers
+    Operation_ID = data.Operations.ID;
+    Operation_Name = data.Operations.Name;
+    Operation_Keywords = data.Operations.Keywords;
+    tbl = table(Operation_ID, Operation_Name, Operation_Keywords);
+
+%% Add optional statistics
+    for the_stat = what_stats
+        switch the_stat{1}
+            case 'Correlation'
+                the_stat_values = data.Correlation(:, 1);
+            
+            case 'Absolute_Correlation'
+                the_stat_values = abs(data.Correlation(:, 1));
+                
+            case 'Peak_Shift'
+                the_stat_values = zeros(length(Operation_ID), 1);
+                for x = 1:length(the_stat_values)
+                    the_stat_values(x) = get_noise_shift(data, data.Operations.ID(x), directions(x), 0);
+                end
+
+            otherwise
+                warning([the_stat, ' is not a supported statistic, and will be ignored.\n%s'],...
+                    'Either check its name is spelt correctly or enter it as a custom statistic')
+        end
+        tbl = [tbl, table(the_stat_values, 'VariableNames', the_stat)];
+    end
+    
+%% Add custom statistics
+    for ind = 1:size(optional_stats, 1)
+        optional_stat_name = optional_stats{ind, 1};
+        [~, optional_stat_values] = evalc(optional_stats{ind, 2});
+        tbl = [tbl, table(optional_stat_values, 'VariableNames', optional_stat_name)];
+    end
+end
+
