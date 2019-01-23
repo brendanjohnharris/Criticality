@@ -68,6 +68,7 @@ function find_correlation(datafile, inputfile, correlation_type, what_range)
     
     %pearson_correlation = pearsons;
     save('correlation.mat', 'correlation')
-    save('correlation_type.mat', 'correlation_type')
+    correlation_range = what_range;
+    save('correlation_inputs.mat', 'correlation_type', 'correlation_range')
     %save('pearson_correlation.mat', 'pearson_correlation')
 end
