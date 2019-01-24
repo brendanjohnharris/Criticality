@@ -18,9 +18,6 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
                 case 'Peak_Shift_Mean'
                     what_columns = contains(tbl.Properties.VariableNames, 'Peak_Shift');
                     the_stat_values = mean(tbl{:, what_columns}, 2);
-                
-                case 'Feature_Val_Gradient' || 'Feature_Val_Intercept'
-                    %asdasdadadsdas
 
                 otherwise
                     warning([the_stat, ' is not a supported statistic, and will be ignored.\n%s'])
