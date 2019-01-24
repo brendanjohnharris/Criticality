@@ -32,7 +32,7 @@ then
     sed "s/xxNamexx/$Name/g" PBS_run_find_correlation_directly.sh > "$Name.sh"
     sed -i "s/xxSubEtarangexx/[${SubEtarange[*]}]/g" "$Name.sh"
     sed -i "s/xxDirectionsxx/$Directions/g" "$Name.sh"
-    sed -i "s/xxCPRangexx/$CPRange/g" "$Name.sh"
+    sed -i "s/xxCPRangexx/[${CPRange[*]}]/g" "$Name.sh"
     sed -i "s/xxCorrelationTypexx/$CorrelationType/g" "$Name.sh"
 
     qsub "$Name.sh"

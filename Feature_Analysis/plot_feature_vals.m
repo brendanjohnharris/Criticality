@@ -27,7 +27,7 @@ function plot_feature_vals(op_id, data, on_what, combined)
         % 
         %name = (time_series_data(ind).Inputs.cp_range(1));
         %a = figure('Name', sprintf("Spearman's Correlation for eta = %g", name));
-        plot(deltamu, TS_DataMat, '-o', 'MarkerSize', 2, 'MarkerFaceColor', 'b')
+        plot(deltamu, TS_DataMat, '-o', 'MarkerSize', 2)%, 'MarkerFaceColor', 'b')
         if strcmp(on_what, 'noise')
             if ~combined
                 %title(['Noise: ', num2str(data(ind).Inputs.eta), ', ', 'Correlation: ', num2str(correlation(1))])
