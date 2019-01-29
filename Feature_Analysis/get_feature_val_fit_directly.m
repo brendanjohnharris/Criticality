@@ -45,11 +45,11 @@ function [m, b] = get_feature_val_fit_directly(op_file, input_file, inparallel, 
     m = zeros(etalength, height(op_table2));
     b = m;
     for ind = 1:etalength
-        x = etarange;
-        y = feature_vals(ind, :);
+        x = cp_range;
+        y = feature_vals(1+(ind-1)*length(cp_range):ind*length(cp_range), :)';
         n = etalength;
-        m = (n.*sum(x.*y) - sum(x).*sum(y))./(n.*sum(x.^2) - sum(x).^2);
-        b = (sum(y).*(sum(x.^2)) - sum(x).*sum(x.*y))./(n.*(sum(x.^2))-sum(x).^2);
+        m(ind, :) = corr(x', y').*std(y)./std(x);%(n.*sum(x.*y) - sum(x).*sum(y))./(n.*sum(x.^2) - sum(x).^2);
+        b(ind, :) = mean(y) - m(ind, :).*mean(x);%(sum(y).*(sum(x.^2)) - sum(x).*sum(x.*y))./(n.*(sum(x.^2))-sum(x).^2);
     end
         
     fprintf('----------------Complete----------------\n')
@@ -60,5 +60,4 @@ function [m, b] = get_feature_val_fit_directly(op_file, input_file, inparallel, 
     end
 end
 
-end
 

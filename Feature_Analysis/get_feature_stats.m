@@ -48,6 +48,7 @@ function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
                 elseif strcmp(the_stat{1}, 'Feature_Value_Intercept')
                     the_stat_values = b;
                 end
+            
                 
             otherwise
                 warning([the_stat, ' is not a supported statistic, and will be ignored.\n%s'],...
