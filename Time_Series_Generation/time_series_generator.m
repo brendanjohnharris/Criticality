@@ -20,6 +20,9 @@ function timeSeriesData = time_series_generator(varargin)
 %     rngseed:            A number used as the seed of the random number generator; set and disable 'randomise' to duplicate previous results
 %     randomise:          A binary; if true, the 'rngseed' will be ignored and the random number generator shuffled
 %     vocal:              A binary; true limits command line outputs
+%     save_cp_split:      A positive value specifying the (approximate) number of subdirectories 
+%                           into which the results will be saved (split by control
+%                           parameter). Useful for distributed hctsa calculation
 %     input_file:         A character array naming a mat file containing a structure with fields containing all the above inputs (as returned by this function)
 %     input_struct:       A struct containing the above parameters as fields (use either 'input_file', 'input_struct' or neither
 
@@ -41,6 +44,7 @@ function timeSeriesData = time_series_generator(varargin)
     addParameter(p, 'rngseed', [])
     addParameter(p, 'randomise', 1)
     addParameter(p, 'vocal', 1)
+    addParameter(p, 'save_cp_split', 0)
     addParameter(p, 'input_file', [])
     addParameter(p, 'input_struct', [])
     parse(p,varargin{:})
@@ -70,7 +74,7 @@ function timeSeriesData = time_series_generator(varargin)
     
 %% Change input parser to struct so that 'Results' field can be modified
     p = struct('Results', p.Results);
-    p.Results.input_file = input_file; % Make sure that the input file of these generated time series is the input file originally specified
+%    p.Results.input_file = input_file; % Make sure that the input file of these generated time series is the input file originally specified
     
 %% If extra arguments were given, replace values
     if ~isempty(extra_vals)
@@ -161,7 +165,7 @@ function timeSeriesData = time_series_generator(varargin)
             otherwise
                 error("No match found for type '%s'", system_type)     
         end
-        timeSeriesData(1+length(cp_range)*(i-1):length(cp_range)*i, :) = r(:, transient_cutoff:savestep:end-1); % Copy to timeSeriesData, remove transient and downsample
+        timeSeriesData((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = r(:, transient_cutoff:savestep:end-1); % Copy to timeSeriesData, remove transient and downsample
     end
     
 %% Generate time series labels from the control and noise parameters ('cp|eta')
@@ -181,9 +185,32 @@ function timeSeriesData = time_series_generator(varargin)
             foldername = [foldername, 'i'];
         end
         mkdir(foldername)
-        save(fullfile(foldername, 'timeseries.mat'), 'timeSeriesData', 'labels', 'keywords', '-v7.3')
-        inputs = p.Results;
-        save(fullfile(foldername, 'inputs_out.mat'), 'inputs')
+        if  save_cp_split > 1
+        %% Split cp_range
+            num_per_split = floor((length(cp_range))./save_cp_split);
+            cp_split_idxs = [1:num_per_split:length(cp_range)];  
+            if cp_split_idxs(end) ~= length(cp_range)
+                cp_split_idxs(end+1) = length(cp_range)+1;
+            else
+                cp_split_idxs(end) = cp_split_idxs(end)+1;
+            end
+            for x = 1:length(cp_split_idxs)-1
+                p.Results.cp_range = cp_range(cp_split_idxs(x):cp_split_idxs(x+1)-1);
+                subfoldername = ['time_series_data-', num2str(x)];
+                split_ids = startsWith(labels, arrayfun(@(x) [num2str(x), '|'], p.Results.cp_range, 'uniformoutput', 0));
+                S.timeSeriesData = timeSeriesData(split_ids, :);
+                S.labels = labels(split_ids, :);
+                S.keywords = keywords(split_ids, :);
+                mkdir(fullfile(foldername, subfoldername))
+                inputs = p.Results;
+                save(fullfile(foldername, subfoldername, 'timeseries.mat'), '-struct', 'S', '-v7.3')
+                save(fullfile(foldername, subfoldername, 'inputs_out.mat'), 'inputs')
+            end    
+        else
+            inputs = p.Results;
+            save(fullfile(foldername, 'timeseries.mat'), 'timeSeriesData', 'labels', 'keywords', '-v7.3')
+            save(fullfile(foldername, 'inputs_out.mat'), 'inputs')
+        end
     end
                 
 %% Announce completion
