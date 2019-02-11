@@ -26,6 +26,8 @@ function find_correlation(datafile, inputfile, correlation_type, what_range)
     TS_DataMat = m.TS_DataMat;
     TS_DataMat = TS_DataMat(TSidxs, :);
     m.TS_DataMat = TS_DataMat;
+    m.TS_CalcTime = m.TS_CalcTime(TSidxs, :);
+    m.TS_Quality = m.TS_Quality(TSidxs, :);
     
     
     %% Load the other required variables

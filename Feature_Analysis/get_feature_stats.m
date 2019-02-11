@@ -35,7 +35,7 @@ function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
                     the_stat_values(x) = get_noise_shift(data, data.Operations.ID(x), directions(x), 0);
                 end
             
-            case {'Feature_Value_Gradient', 'Feature_Value_Intercept'}
+            case {'Feature_Value_Gradient', 'Feature_Value_Intercept', 'Feature_Value_RMSE', 'Control_Parameter_RMSE'}
                 % Gives the gradient of values up until 0
                 idxs = (data.Inputs.cp_range >= data.Correlation_Range(1) & data.Inputs.cp_range <= data.Correlation_Range(2));
                 x = data.Inputs.cp_range(idxs);
@@ -47,11 +47,14 @@ function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
                     the_stat_values = m;
                 elseif strcmp(the_stat{1}, 'Feature_Value_Intercept')
                     the_stat_values = b;
+                elseif strcmp(the_stat{1}, 'Feature_Value_RMSE')
+                    the_stat_values = sqrt(sum((data.TS_DataMat(idxs, :)' - (b + m.*data.Inputs.cp_range(idxs))).^2, 2)./length(data.Inputs.cp_range(idxs)));
+                elseif strcmp(the_stat{1}, 'Control_Parameter_RMSE')
+                    the_stat_values = sqrt(sum(((data.TS_DataMat(idxs, :)' - b)./m - data.Inputs.cp_range(idxs)).^2, 2)./length(data.Inputs.cp_range(idxs)));
                 end
-            
                 
             otherwise
-                warning([the_stat, ' is not a supported statistic, and will be ignored.\n%s'],...
+                warning([the_stat{1}, ' is not a supported statistic, and will be ignored.\n%s'],...
                     'Either check its name is spelt correctly or enter it as a custom statistic')
         end
         tbl = [tbl, table(the_stat_values, 'VariableNames', the_stat)];
