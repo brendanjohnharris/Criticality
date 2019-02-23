@@ -1,18 +1,18 @@
 function timeSeriesData = time_series_generator(varargin)
 %TIME_SERIES_GENERATOR Generates time series using a variety of input parameters
 %
-%   Input arguments can be set or left as defaults (as below); make sure to
+%   Input arguments can be given or left as defaults (as below); make sure to
 %   review the defaults set in the input parser and adjust as necessary. 
-%   Note that the form and accepted types of the 'parameters' variable is
-%   dependant on the specified system
+%   Note that the form and accepted type of the 'parameters' variable is
+%   dependant on the specified system.
 % 
-%     cp_range:           A vector containing the values of the control parameter for which time series will be generated
+%     cp_range:           A row vector containing the values of the control parameter for which time series will be generated
 %     system_type:        A character array specifying the dynamical system to be used for integration
 %     tmax:               A number giving the time over which values will be generated
 %     initial_conditions: A number containing the initial conditions of the simulation
-%     *parameters:        A vector containing the value of any parameters except for the control and noise parameters
+%     parameters:         A vector containing the value of any parameters except for the control and noise parameters
 %     bifurcation_point:  A number specifying the value of the control parameter at which bifurcation occurs
-%     etarange:           A vector containign the values of the noise parameter eta for which time series will be generated
+%     etarange:           A row vector containing the values of the noise parameter eta for which time series will be generated
 %     numpoints:          The number of points to be generated during integration (before transient removal)
 %     savelength:         The number of points to be saved and returned (following transient removal and downsampling)
 %     transient_cutoff:   The number of points to be removed from the beginning of the time series (before downsampling)
@@ -39,7 +39,7 @@ function timeSeriesData = time_series_generator(varargin)
     addParameter(p, 'etarange', 0.16)
     addParameter(p, 'numpoints', 1000000)
     addParameter(p, 'savelength', 5000)
-    addParameter(p, 'transient_cutoff', 500000)
+    addParameter(p, 'transient_cutoff', NaN)
     addParameter(p, 'foldername', [])
     addParameter(p, 'rngseed', [])
     addParameter(p, 'randomise', 1)
@@ -48,7 +48,8 @@ function timeSeriesData = time_series_generator(varargin)
     addParameter(p, 'input_file', [])
     addParameter(p, 'input_struct', [])
     parse(p,varargin{:})
-    
+   
+        
 %% Check if extra arguments were given
     extra_vals = [];
     if ~isempty(p.Results.input_file) || ~isempty(p.Results.input_struct)
@@ -75,7 +76,12 @@ function timeSeriesData = time_series_generator(varargin)
 %% Change input parser to struct so that 'Results' field can be modified
     p = struct('Results', p.Results);
 %    p.Results.input_file = input_file; % Make sure that the input file of these generated time series is the input file originally specified
-    
+
+%% Make default transient_cutoff half of the numpoints
+    if isnan(p.Results.transient_cutoff)
+        p.Results.transient_cutoff = round(p.Results.numpoints./2);
+    end
+        
 %% If extra arguments were given, replace values
     if ~isempty(extra_vals)
         for m = 1:length(extra_args)
