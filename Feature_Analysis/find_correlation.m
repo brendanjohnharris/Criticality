@@ -1,76 +1,64 @@
-function find_correlation(datafile, inputfile, correlation_type, what_range)
+function find_correlation(datafile, correlation_type, what_range, savefile)
 %   'what_range' is a two element vector, defining the range of control
 %   parameters that will be used to calculate correlations
     %% Calculating
 %     if nargin < 1 || isempty(plots)
 %         plots = false;
 %     end
-    if nargin < 1 || isempty(datafile) || ~exist(datafile, 'file')
-        datafile = 'HCTSA.mat';
+    if nargin < 1 || isempty(datafile)
+        datafile = 'time_series_data';
     end
-    if nargin < 2 || isempty(inputfile) || ~exist(inputfile, 'file')
-        inputfile = 'inputs.mat';
-    end
-    if nargin < 3 || isempty(correlation_type)
+    if nargin < 2 || isempty(correlation_type)
         correlation_type = 'Spearman';
     end
-    if nargin < 4
+    if nargin < 3
         error('Please provide a range over which to calculate the feature value correlations');
     end
-    %% Ensure that time series in hctsa file are ordered
-    m = matfile(datafile, 'Writable', true);
-    TimeSeries = m.TimeSeries;
-    [~, TSidxs] = sort(TimeSeries.ID);
-    TimeSeries = TimeSeries(TSidxs, :);
-    m.TimeSeries = TimeSeries;
-    TS_DataMat = m.TS_DataMat;
-    TS_DataMat = TS_DataMat(TSidxs, :);
-    m.TS_DataMat = TS_DataMat;
-    m.TS_CalcTime = m.TS_CalcTime(TSidxs, :);
-    m.TS_Quality = m.TS_Quality(TSidxs, :);
-    
-    
-    %% Load the other required variables
-    Operations = m.Operations;
-    % Assumes the 'cp_range' in the input file is in order and
+    if nargin < 4 || isempty(savefile)
+        savefile = datafile;
+    end
+    if ~ischar(datafile)
+        time_series_data = datafile;
+    else 
+        load(datafile, 'time_series_data')
+    end
+    % Assume the 'cp_range' in the input file is in order and
     % repeated consistently over 'etarange'
-    
-    f = struct2cell(load(inputfile));
-    parameters = f{1}; % Ignore the name of the variable saved in the parameter (input) file
-    
-    what_range_idxs = [find(parameters.cp_range == what_range(1)):find(parameters.cp_range == what_range(2))]; % Since all sections of datamat have the same cp range, can use this for all
-    
-    %data = struct2cell(TimeSeries);
-    
-    %mu = str2double(cellfun(@(x) (x), regexp(data(1, :),...
-        %'-?\d*\.?\d*','Match')))'; % '[-](\d?[.]\d*|\d*)|(\d?[.]\d*|\d*)'
-    mu = parameters.cp_range(what_range_idxs)'; % Get cp_range in right shape
-    correlation_cell = cell(1, length(parameters.etarange));
-    for i = 1:length(parameters.etarange)
-        subDataMat = TS_DataMat(1+length(parameters.cp_range)*(i-1):length(parameters.cp_range)*i, :);
-        trimmedsubDataMat = subDataMat(what_range_idxs, :);
-        switch correlation_type
-            case 'Spearman'
-                r = corr(mu, trimmedsubDataMat, 'type', 'Spearman')';
-            
-            case 'Pearson'
-                r = corr(mu, trimmedsubDataMat, 'type', 'Pearson')';
+    for i = 1:size(time_series_data, 1)
+        data = time_series_data(i, :);
+        if ~isempty(find(data.Inputs.cp_range == what_range(2), 1))
+            what_range_idxs = [find(data.Inputs.cp_range == what_range(1)):find(data.Inputs.cp_range == what_range(2))]; % Since all sections of datamat have the same cp range, can use this for all
+        else
+            what_range_idxs = [find(data.Inputs.cp_range == what_range(1)):length(data.Inputs.cp_range)]; % Since all sections of datamat have the same cp range, can use this for all
         end
-        [~, idxs] = maxk(abs(r), length(r)); % Sort counts NaN's as largest
-        IDs = [Operations.ID]; %Assumes operation indices match TS_DataMat columns
-        % First colum of entries of correlation_cell is the correlation, the
-        % second is the ID of the corresponding operation
-        % pearsons = [r(idxs(:, 1), 1), IDs(idxs(:, 1))];
-        correlation_cell{i} = [r(idxs(:, 1), 1), IDs(idxs(:, 1))]; 
+
+        %data = struct2cell(TimeSeries);
+
+        %mu = str2double(cellfun(@(x) (x), regexp(data(1, :),...
+            %'-?\d*\.?\d*','Match')))'; % '[-](\d?[.]\d*|\d*)|(\d?[.]\d*|\d*)'
+        mu = data.Inputs.cp_range(what_range_idxs)'; % Get cp_range in right shape
+        %correlation_cell = cell(1, length(time_series_data(i, :).Inputs.etarange));
+        %for i = 1:length(parameters.etarange)
+            trimmedsubDataMat = data.TS_DataMat(what_range_idxs, :);
+            switch correlation_type
+                case 'Spearman'
+                    r = corr(mu, trimmedsubDataMat, 'type', 'Spearman')';
+
+                case 'Pearson'
+                    r = corr(mu, trimmedsubDataMat, 'type', 'Pearson')';
+            end
+            [~, idxs] = maxk(abs(r), length(r)); % Sort counts NaN's as largest
+            IDs = [data.Operations.ID]; %Assumes operation indices match TS_DataMat columns
+            % First colum of entries of correlation_cell is the correlation, the
+            % second is the ID of the corresponding operation
+            % pearsons = [r(idxs(:, 1), 1), IDs(idxs(:, 1))];
+            time_series_data(i, :).Correlation = [r(idxs(:, 1), 1), IDs(idxs(:, 1))]; 
+            time_series_data(i, :).Correlation_Type = correlation_type;
+            time_series_data(i, :).Correlation_Range = what_range;
     end
     %% Saving
-    %save('correlations.mat', 'pearsons', 'spearmans')
-    correlation = table(num2cell(parameters.etarange)', correlation_cell');
-    correlation.Properties.VariableNames = {'Eta','Correlations'};
-    
-    %pearson_correlation = pearsons;
-    save('correlation.mat', 'correlation')
     correlation_range = what_range;
     save('correlation_inputs.mat', 'correlation_type', 'correlation_range')
+    save(savefile, 'time_series_data')
     %save('pearson_correlation.mat', 'pearson_correlation')
 end
