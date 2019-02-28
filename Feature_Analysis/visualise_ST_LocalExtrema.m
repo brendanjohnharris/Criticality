@@ -1,6 +1,7 @@
-function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, standardise, tmax)
+function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, standardise, tmax, overlap)
     % Please provide EITHER multiple cp_vals or noise_vals, not both (i.e
     % one must not be a vector)
+    % Overlap should only be used when two time series are generated
     if nargin < 5 || isempty(system)
         system = 'supercritical_hopf_radius_(strogatz)';
     end
@@ -9,6 +10,9 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
     end
     if nargin < 7 || isempty(tmax)
         tmax = 100;
+    end
+    if nargin < 8 || isempty(overlap)
+        overlap = 0;
     end
     time_series = time_series_generator('cp_range', cp_vals, 'etarange', noise_vals, 'system_type', system, 'savelength', how_long, 'tmax', tmax); 
     if standardise
@@ -23,27 +27,69 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
     figure
     ymax = max(max(time_series)) + 0.1.*abs(max(max(time_series)));
     ymin = min(min(time_series)) - 0.1.*abs(min(min(time_series)));
-    for t = 1:numplots
-        subplot(numplots, 1, t)
+    if overlap
         hold on
-        plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '--k')
-        plot(time_series(t, :))
-        % Find extrema, using the same method as ST_LocalExtrema
-        buffered = buffer(time_series(t, :), l);
+        p1 = plot(time_series(1, :));
+        
+        plot(time_series(2, :));
+        
+        p1.Color(4) = 0.3;
+        
+        buffered1 = buffer(time_series(1, :), l);
+        maxys1 = max(buffered1);
+        minys1 = min(buffered1);
+        maxxs1 = find(buffered1 == maxys1)';
+        maxxs1 = maxxs1(:);
+        minxs1 = find(buffered1 == minys1)';
+        minxs1 = minxs1(:);
+        plot(minxs1, minys1, 'ks', 'markerfacecolor', [0    0.4470    0.7410], 'markersize', 10)
+        plot(maxxs1, maxys1, 'kd', 'markerfacecolor', [0    0.4470    0.7410], 'markersize', 10)
+        
+        buffered = buffer(time_series(2, :), l);
         maxys = max(buffered);
         minys = min(buffered);
         maxxs = find(buffered == maxys)';
         maxxs = maxxs(:);
         minxs = find(buffered == minys)';
         minxs = minxs(:);
-        plot(minxs, minys, 'ks', 'markerfacecolor', 'k', 'markersize', 10)
-        plot(maxxs, maxys, 'kd', 'markerfacecolor', 'k', 'markersize', 10)
-        ylabel('r', 'fontsize', 14, 'interpreter', 'tex')
-        res = ST_LocalExtrema(time_series(t, :), 'l', l);
+        plot(minxs, minys, 'ks', 'markerfacecolor', [0.8500    0.3250    0.0980], 'markersize', 10)
+        plot(maxxs, maxys, 'kd', 'markerfacecolor', [0.8500    0.3250    0.0980], 'markersize', 10)
+        
+        plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '--k')
+        
+        res1 = ST_LocalExtrema(time_series(1, :), 'l', l);
+        res2 = ST_LocalExtrema(time_series(2, :), 'l', l);
         if length(cp_vals) == 1
-            title(['Noise: ', num2str(noise_vals(t)), ' | ', 'Feature Value: ', num2str(round(res.diffmaxabsmin, 2))], 'Fontsize', 12)
-        else
-            title(['Control Parameter: ', num2str(cp_vals(t)), ' | ', 'Feature Value: ', num2str(round(res.diffmaxabsmin, 2))], 'Fontsize', 12)
+                legend({['Noise: ', num2str(noise_vals(1)), ' | ', 'Feature Value: ', num2str(round(res1.diffmaxabsmin, 2))], ...
+                    ['Noise: ', num2str(noise_vals(2)), ' | ', 'Feature Value: ', num2str(round(res2.diffmaxabsmin, 2))]});
+            else
+                legend({['Control Parameter: ', num2str(cp_vals(1)), ' | ', 'Feature Value: ', num2str(round(res1.diffmaxabsmin, 2))],...
+                    ['Control Parameter: ', num2str(cp_vals(2)), ' | ', 'Feature Value: ', num2str(round(res2.diffmaxabsmin, 2))]});
+        end
+        ylabel('r')
+    else        
+        for t = 1:numplots
+            subplot(numplots, 1, t)
+            hold on
+            plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '--k')
+            plot(time_series(t, :))
+            % Find extrema, using the same method as ST_LocalExtrema
+            buffered = buffer(time_series(t, :), l);
+            maxys = max(buffered);
+            minys = min(buffered);
+            maxxs = find(buffered == maxys)';
+            maxxs = maxxs(:);
+            minxs = find(buffered == minys)';
+            minxs = minxs(:);
+            plot(minxs, minys, 'ks', 'markerfacecolor', 'k', 'markersize', 10)
+            plot(maxxs, maxys, 'kd', 'markerfacecolor', 'k', 'markersize', 10)
+            ylabel('r', 'fontsize', 14, 'interpreter', 'tex')
+            res = ST_LocalExtrema(time_series(t, :), 'l', l);
+            if length(cp_vals) == 1
+                title(['Noise: ', num2str(noise_vals(t)), ' | ', 'Feature Value: ', num2str(round(res.diffmaxabsmin, 2))], 'Fontsize', 12)
+            else
+                title(['Control Parameter: ', num2str(cp_vals(t)), ' | ', 'Feature Value: ', num2str(round(res.diffmaxabsmin, 2))], 'Fontsize', 12)
+            end
         end
     end
     ttl = suptitle(strrep('ST_LocalExtrema: diffmaxabsmin', '_', ' '));

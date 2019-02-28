@@ -1,7 +1,7 @@
 function surf_feature_vals(data, op_id)
     figure
     eta = arrayfun(@(x) data(x).Inputs.eta, 1:size(data, 1));
-    eta = cell2mat(arrayfun(@(x) repmat(eta(x), 1, 701), 1:length(eta), 'uniformoutput', 0));
+    eta = cell2mat(arrayfun(@(x) repmat(eta(x), 1, length(data(x).Inputs.cp_range)), 1:length(eta), 'uniformoutput', 0));
     cp = cell2mat(arrayfun(@(x) data(x).Inputs.cp_range, 1:size(data, 1), 'uniformoutput', 0));
     ops = cell2mat(cellfun(@(x) x(:, op_id)', {data.TS_DataMat}, 'uniformoutput', 0));
     
