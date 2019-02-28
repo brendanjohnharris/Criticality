@@ -19,7 +19,6 @@ function savestruct = save_data(filepath, keywords, source, datafile, inputfile,
 %   'source' is a string contianing the function, original location or the
 %   method used to collect the time series
 %
-%
 %   (optional) 'datafile' is a string naming the file containing hctsa data (default:
 %   HCTSA.mat)
 %
@@ -111,7 +110,7 @@ function savestruct = save_data(filepath, keywords, source, datafile, inputfile,
 
         savestruct = repmat(struct('TS_DataMat', [], 'Operations', Operations, ...
                 'Correlation', [], 'Source', source, ...
-                'Inputs', [], 'Date', date, 'Keywords', keywords, 'Correlation_Type', [], 'Correlation_Range', [], 'Feature_Value_Shift', []), length(inputs.etarange), 1);
+                'Inputs', [], 'Date', date, 'Keywords', keywords, 'Correlation_Type', [], 'Correlation_Range', []);%, 'Feature_Value_Shift', []), length(inputs.etarange), 1);
 
         for i = 1:length(inputs.etarange)
             %fprintf('------------------------%g%% complete, %gs elapsed------------------------\n', round(100*(i-1)./length(parameters.etarange)), round(toc))
@@ -123,7 +122,7 @@ function savestruct = save_data(filepath, keywords, source, datafile, inputfile,
     end
     
     if ~isempty(filepath) && ~exist(filepath, 'file')
-        time_series_data = struct('TS_DataMat', {}, 'Operations', {}, 'Correlation', {}, 'Source', {}, 'Inputs', {}, 'Date', {}, 'Keywords', {}, 'Correlation_Type', {}, 'Correlation_Range', {}, 'Feature_Value_Shift', {});
+        time_series_data = struct('TS_DataMat', {}, 'Operations', {}, 'Correlation', {}, 'Source', {}, 'Inputs', {}, 'Date', {}, 'Keywords', {}, 'Correlation_Type', {}, 'Correlation_Range', {});%, 'Feature_Value_Shift', {});
         nrows = 0;
         save(filepath, 'time_series_data', 'nrows', '-v7.3')
     end
