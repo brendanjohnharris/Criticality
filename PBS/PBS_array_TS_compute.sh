@@ -19,6 +19,6 @@
 cd "$PBS_O_WORKDIR"
 cd time_series_data-$PBS_ARRAYID
 hostname
-matlab -nodisplay -singleCompThread -r "home_dir = pwd; cd('~/hctsa'), startup, cd('~/Criticality'), add_all_subfolders, cd(home_dir), TS_init('timeseries.mat', [], [], 0); TS_compute(0, [], [], [], [], 1); find_correlation('HCTSA.mat', 'inputs_out.mat', 'Pearson', [-1, 0]); save_data('./time_series_data.mat', 'noise_dependance', 'time_series_generator', 'HCTSA.mat', 'inputs_out.mat', [], 0, 0); exit"
+matlab -nodisplay -singleCompThread -r "home_dir = pwd; cd('~/hctsa'), startup, cd(home_dir), TS_init('timeseries.mat', [], [], 0); TS_compute(0, [], [], [], [], 1); exit"
 exit
 
