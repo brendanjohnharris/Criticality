@@ -104,13 +104,13 @@ function savestruct = save_data(filepath, keywords, source, datafile, inputfile,
         temparameters = renameStructField(inputs, 'etarange', 'eta');
 
         if exist('m', 'var') && leaveflag
-            flagid = nrows+1:nrows+length(inputs.etarange);
+            flagid = nrows+1:nrows+length(inputs.etarange); % nrows loaded
             save(fullfile(paths{pathind}, 'flag.mat'), 'flagid')
         end
 
         savestruct = repmat(struct('TS_DataMat', [], 'Operations', Operations, ...
                 'Correlation', [], 'Source', source, ...
-                'Inputs', [], 'Date', date, 'Keywords', keywords, 'Correlation_Type', [], 'Correlation_Range', []);%, 'Feature_Value_Shift', []), length(inputs.etarange), 1);
+                'Inputs', [], 'Date', date, 'Keywords', keywords, 'Correlation_Type', [], 'Correlation_Range', []), length(inputs.etarange), 1);
 
         for i = 1:length(inputs.etarange)
             %fprintf('------------------------%g%% complete, %gs elapsed------------------------\n', round(100*(i-1)./length(parameters.etarange)), round(toc))
