@@ -8,7 +8,7 @@ function visualise_feature_fit(data, opids, num_per_feature)
         m = tbl{opids, contains(tbl.Properties.VariableNames, 'Gradient')}';
         f0 = tbl{opids, contains(tbl.Properties.VariableNames, 'Intercept')}';
         %r = 1./r - 1;
-        r = 0.1.*BF_NormalizeMatrix(r, 'maxmin');
+        r = 0.05.*BF_NormalizeMatrix(r, 'maxmin');
         if nargin < 3 || isempty(num_per_feature)
             num_per_feature = size(f0, 1);
         end
@@ -28,10 +28,9 @@ function visualise_feature_fit(data, opids, num_per_feature)
         %h(end+1) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', 'k');
         %legend(h, [feature_names; '|r|'], 'Interpreter', 'None', 'FontSize', 12, 'Location', 'NorthOutside')
         axis equal
-        xlimits = xlim;
-        ylimits = ylim;
-        plot([0 0], ylimits, 'k-', 'linewidth', 1); 
-        plot(xlimits, [0 0], 'k-', 'linewidth', 1); 
+        ax = gca;
+        ax.XAxisLocation = 'origin';
+        ax.YAxisLocation = 'origin';
         legend(h, feature_names, 'Interpreter', 'None')
         xlabel('Feature Value Gradient')
         ylabel('Feature Value Intercept')

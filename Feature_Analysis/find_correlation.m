@@ -59,6 +59,6 @@ function find_correlation(datafile, correlation_type, what_range, savefile)
     %% Saving
     correlation_range = what_range;
     save('correlation_inputs.mat', 'correlation_type', 'correlation_range')
-    save(savefile, 'time_series_data')
+    save(savefile, 'time_series_data', '-v7.3', '-nocompression')
     %save('pearson_correlation.mat', 'pearson_correlation')
 end

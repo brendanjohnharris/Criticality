@@ -53,6 +53,21 @@ function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
                     the_stat_values = sqrt(sum(((data.TS_DataMat(idxs, :)' - b)./m - data.Inputs.cp_range(idxs)).^2, 2)./length(data.Inputs.cp_range(idxs)));
                 end
                 
+                
+%             case {'Normalised_Feature_Value_Gradient', 'Normalised_Feature_Value_Intercept'}
+%                 % Gives the gradient of values up until 0
+%                 idxs = (data.Inputs.cp_range >= data.Correlation_Range(1) & data.Inputs.cp_range <= data.Correlation_Range(2));
+%                 x = data.Inputs.cp_range(idxs);
+%                 y = BF_NormalizeMatrix(cell2mat(arrayfun(@(x) x.TS_DataMat(idxs, :), data, 'uniformoutput', 0)), 'maxmin');
+%                 r = data.Correlation(:, 1); % So the fit is for whatever values where used in correlation finding. Remember correlation is sorted by op id
+%                 m = r.*(std(y)./std(x))';
+%                 b = mean(y, 1)' - m.*mean(x);
+%                 if strcmp(the_stat{1}, 'Normalised_Feature_Value_Gradient')
+%                     the_stat_values = m;
+%                 elseif strcmp(the_stat{1}, 'Normalised_Feature_Value_Intercept')
+%                     the_stat_values = b;
+%                 end
+                
             otherwise
                 warning([the_stat{1}, ' is not a supported statistic, and will be ignored.\n%s'],...
                     'Either check its name is spelt correctly or enter it as a custom statistic')
