@@ -35,6 +35,9 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
         
         p1.Color(4) = 0.3;
         
+        plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '-w', 'LineWidth', 20)
+        plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '-k', 'LineWidth', 3)
+        
         buffered1 = buffer(time_series(1, :), l);
         maxys1 = max(buffered1);
         minys1 = min(buffered1);
@@ -44,6 +47,9 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
         minxs1 = minxs1(:);
         plot(minxs1, minys1, 'ks', 'markerfacecolor', [0    0.4470    0.7410], 'markersize', 10)
         plot(maxxs1, maxys1, 'kd', 'markerfacecolor', [0    0.4470    0.7410], 'markersize', 10)
+        quiver(minxs1', minys1, zeros(1, size(minxs1, 1)), maxys1-minys1, '--k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 1.5)
+        quiver(minxs1', maxys1, maxxs1' - minxs1', zeros(1, size(minxs1, 1)), '--k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 1.5)
+        
         
         buffered = buffer(time_series(2, :), l);
         maxys = max(buffered);
@@ -54,8 +60,9 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
         minxs = minxs(:);
         plot(minxs, minys, 'ks', 'markerfacecolor', [0.8500    0.3250    0.0980], 'markersize', 10)
         plot(maxxs, maxys, 'kd', 'markerfacecolor', [0.8500    0.3250    0.0980], 'markersize', 10)
-        
-        plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '--k')
+        quiver(minxs', minys, zeros(1, size(minxs, 1)), maxys-minys, ':k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 2)
+        quiver(minxs', maxys, maxxs' - minxs', zeros(1, size(minxs, 1)), ':k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 2)
+       
         
         res1 = ST_LocalExtrema(time_series(1, :), 'l', l);
         res2 = ST_LocalExtrema(time_series(2, :), 'l', l);
@@ -66,13 +73,19 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
                 legend({['Control Parameter: ', num2str(cp_vals(1)), ' | ', 'Feature Value: ', num2str(round(res1.diffmaxabsmin, 2))],...
                     ['Control Parameter: ', num2str(cp_vals(2)), ' | ', 'Feature Value: ', num2str(round(res2.diffmaxabsmin, 2))]});
         end
-        ylabel('r')
+        if standardise
+            ylabel('Standardised Radius', 'fontsize', 14, 'interpreter', 'tex')
+        else
+            ylabel('Radius', 'fontsize', 14, 'interpreter', 'tex')
+        end
     else        
         for t = 1:numplots
+            
             subplot(numplots, 1, t)
             hold on
-            plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '--k')
+            plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '-w', 'LineWidth', 20)
             plot(time_series(t, :))
+            
             % Find extrema, using the same method as ST_LocalExtrema
             buffered = buffer(time_series(t, :), l);
             maxys = max(buffered);
@@ -83,7 +96,15 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
             minxs = minxs(:);
             plot(minxs, minys, 'ks', 'markerfacecolor', 'k', 'markersize', 10)
             plot(maxxs, maxys, 'kd', 'markerfacecolor', 'k', 'markersize', 10)
-            ylabel('r', 'fontsize', 14, 'interpreter', 'tex')
+            
+            quiver(minxs', minys, zeros(1, size(minxs, 1)), maxys-minys, '--r', 'ShowArrowHead', 'off', 'Autoscale', 'off')
+            quiver(minxs', maxys, maxxs' - minxs', zeros(1, size(minxs, 1)), '--r', 'ShowArrowHead', 'off', 'Autoscale', 'off')
+            
+            if standardise
+                ylabel('Standardised Radius', 'fontsize', 14, 'interpreter', 'tex')
+            else
+                ylabel('Radius', 'fontsize', 14, 'interpreter', 'tex')
+            end
             res = ST_LocalExtrema(time_series(t, :), 'l', l);
             if length(cp_vals) == 1
                 title(['Noise: ', num2str(noise_vals(t)), ' | ', 'Feature Value: ', num2str(round(res.diffmaxabsmin, 2))], 'Fontsize', 12)

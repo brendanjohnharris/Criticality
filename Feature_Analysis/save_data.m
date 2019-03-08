@@ -90,8 +90,8 @@ function savestruct = save_data(filepath, keywords, source, datafile, inputfile,
         [~, opidxs] = sort(Operations.ID); % Sort Operations by ID
         Operations = Operations(opidxs, :);
         TS_DataMat = TS_DataMat(:, opidxs); % Sort datamat by moving columns
-        [~, TSidxs] = sort(TimeSeries.ID);
-        TS_DataMat = TS_DataMat(TSidxs, :); % Sort datamat by moving rows;
+        %[~, TSidxs] = sort(TimeSeries.ID);
+        %TS_DataMat = TS_DataMat(TSidxs, :); % Sort datamat by moving rows;
         [~, TSidxs] = sort(TimeSeries.ID);
         TS_DataMat = TS_DataMat(TSidxs, :); % Sort datamat by moving rows, in case distributed_hctsa reordered them;
         % TS_DataMat rows should remain in the order common to the cp_range

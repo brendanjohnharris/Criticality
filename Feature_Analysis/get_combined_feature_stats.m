@@ -70,7 +70,11 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
                     end
                                     
                 case 'Aggregated_Absolute_Correlation'
-                    idxs = (data(1).Inputs.cp_range >= data(1).Correlation_Range(1) & data(1).Inputs.cp_range <= data(1).Correlation_Range(2)); % Assumes all rows of data have the same cp_range and Correlation_Range
+                    if ~isempty(data(1).Correlation_Range)
+                        idxs = (data(1).Inputs.cp_range >= data(1).Correlation_Range(1) & data(1).Inputs.cp_range <= data(1).Correlation_Range(2)); % Assumes all rows of data have the same cp_range and Correlation_Range
+                    else
+                        idxs = 1:length(data(1).Inputs.cp_range);
+                    end
                     y = cell2mat(arrayfun(@(x) data(x, :).TS_DataMat(idxs, :), 1:size(data, 1), 'UniformOutput', 0)');
                     x = cell2mat(arrayfun(@(x) data(x, :).Inputs.cp_range(idxs), 1:size(data, 1), 'UniformOutput', 0))';
                     the_stat_values = abs(corr(y, x, 'Type', 'Pearson'));

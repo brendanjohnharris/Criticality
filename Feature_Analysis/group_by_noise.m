@@ -1,4 +1,7 @@
 function group_by_noise(data, newfile)
+% GROUP_BY_NOISE Groups time_series_data rows by their noise parameter
+% value, assuming all other inputs (except for control parameter range) are
+% constant. Should be run BEFORE find_correlation
     if nargin < 2 || isempty(newfile)
         newfile = 'grouped_time_series_data.mat';
     end
@@ -12,6 +15,7 @@ function group_by_noise(data, newfile)
     all_etas = arrayfun(@(x) time_series_data(x).Inputs.eta, 1:size(time_series_data, 1));
     all_etas_unique = unique(all_etas);
     S.time_series_data = time_series_data(1, :); % Remember; assumes all non-eta-dependant fields are constant (Including fields of Inputs)!!!!!
+    
     S.time_series_data.TS_DataMat = [];
     S.time_series_data = repmat(time_series_data(1, :), length(all_etas_unique), 1);
     for i = 1:length(all_etas_unique)
