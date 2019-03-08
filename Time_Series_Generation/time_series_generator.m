@@ -24,6 +24,8 @@ function timeSeriesData = time_series_generator(varargin)
 %
 %
 %   Integration Options----------------------------------------------------
+%       The following options specify the length and integration step of the timeseries.
+%       Give ONLY TWO of the following three options:
 %
 %       tmax:               A number giving the time over which values will be generated
 %
@@ -31,37 +33,38 @@ function timeSeriesData = time_series_generator(varargin)
 %
 %       dt:                 A number specifying the timestep of integration
 %
-%       (Note: Please specify only TWO of the above options; the third is
-%       dependent on the other two, and will be calculated automatically)
-%
-%       rngseed:            A number used as the seed of the random number generator; set and disable 'randomise' to duplicate previous results
-%
-%       randomise:          A binary; if true, the 'rngseed' will be ignored and the random number generator shuffled
-%
 %
 %   Output Timeseries Options----------------------------------------------
+%       The following options specify the length and sampling period of the
+%       output time series. Give ONLY TWO of the following three options:
 %
-%     savelength:         The number of points to be saved and returned (following transient removal and downsampling)
+%       T:                  The length, in seconds, of the output time series
 %
-%     transient_cutoff:   The number of points to be removed from the beginning of the time series (before downsampling)
+%       savelength:         The number of points to be saved and returned (following transient removal and downsampling)
+%
+%       sampling_period:    The time between points of the output time series
 %
 %
 %   Save Options-----------------------------------------------
 %
-%     foldername:         A character array containing the name of the folder into which the results are saved; if empty, no results will be saved
+%       foldername:         A character array containing the name of the folder into which the results are saved; if empty, no results will be saved
 %
-%     save_cp_split:      A positive value specifying the (approximate) number of subdirectories 
+%       save_cp_split:      A positive value specifying the (approximate) number of subdirectories 
 %                           into which the results will be saved (split by control
 %                           parameter). Useful for distributed hctsa calculation
 %
 %
 %   Other Inputs-----------------------------------------------------------
+%
+%       rngseed:            A number used as the seed of the random number generator; set and disable 'randomise' to duplicate previous results
+%
+%       randomise:          A binary; if true, the 'rngseed' will be ignored and the random number generator shuffled
 %   
-%     vocal:              A binary; true limits command line outputs
+%       vocal:              A binary; true limits command line outputs
 %
-%     input_file:         A character array naming a mat file containing a structure with fields containing all the above inputs (as returned by this function)
+%       input_file:         A character array naming a mat file containing a structure with fields containing all the above inputs (as returned by this function)
 %
-%     input_struct:       A struct containing the above parameters as fields (use either 'input_file', 'input_struct' or neither
+%       input_struct:       A struct containing the above parameters as fields (use either 'input_file', 'input_struct' or neither
 
 
 %% Parse Inputs
@@ -77,7 +80,7 @@ function timeSeriesData = time_series_generator(varargin)
     addParameter(p, 'numpoints', 1000000)
     addParameter(p, 'savelength', [])
     addParameter(p, 'dt', [])
-    addParameter(p, 'transient_cutoff', [])
+    addParameter(p, 'T', [])
     addParameter(p, 'foldername', [])
     addParameter(p, 'rngseed', [])
     addParameter(p, 'randomise', 1)
@@ -115,15 +118,16 @@ function timeSeriesData = time_series_generator(varargin)
     p = struct('Results', p.Results);
 %    p.Results.input_file = input_file; % Make sure that the input file of these generated time series is the input file originally specified
 
-%% Make default transient_cutoff half of the numpoints
-    if isempty(p.Results.transient_cutoff)
-        p.Results.transient_cutoff = round(p.Results.numpoints./2);
-    end
-    
-%% Make default savelength one tenth of the numpoints
-    if isempty(p.Results.savelength)
-        p.Results.savelength = round(p.Results.numpoints./10);
-    end
+% %% Make default transient_cutoff half of the numpoints
+%     if isempty(p.Results.transient_cutoff)
+%         p.Results.transient_cutoff = round(p.Results.numpoints./2);
+%     end
+%     
+% %% Make default savelength...
+%     if isempty(p.Results.savelength)
+%         % p.Results.savelength = round(p.Results.numpoints./10); % One tenth of the numpoints
+%         p.Results.savelength = p.Results.numpoints; % Equal to the numpoints
+%     end
         
 %% If extra arguments were given, replace values
     if ~isempty(extra_vals)
@@ -158,6 +162,23 @@ function timeSeriesData = time_series_generator(varargin)
     else
         error('Not enough inputs to determine the time parameters of integration')
     end
+    
+%% Calculate which of T, savelength and sampling_period were not specified
+    if isempty(T) && ~isempty(savelength) && ~isempty(sampling_period)
+        T = savelength.*sampling_period;
+        p.Results.T = T;
+    elseif ~isempty(T) && isempty(savelength) && ~isempty(sampling_period)
+        savelength = round(T./sampling_period);
+        p.Results.savelength = savelength;
+    elseif ~isempty(T) && ~isempty(savelength) && isempty(sampling_period)
+        sampling_period = ceil(tmax./dt); % ceil or round?
+        p.Results.sampling_period = sampling_period;
+    elseif  ~isempty(dt) && ~isempty(tmax) && ~isempty(numpoints)
+        error('All three of T, savelength and sampling_period cannot be specified at once.\nPlease give two only')
+    else
+        error('Not enough inputs to determine the time parameters of with which to save the timeseries')
+    end    
+
         
 %% Calculate additional variables from inputs
     savestep = round((numpoints-transient_cutoff)./savelength);
