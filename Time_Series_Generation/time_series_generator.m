@@ -247,7 +247,11 @@ function timeSeriesData = time_series_generator(varargin)
 %% Save results
     if ~isempty(foldername)
         while exist(foldername, 'dir') % If the folder already exists, change the foldername slightly
-            foldername = [foldername, 'i'];
+            if ~isstrprop(foldername(end), 'digit')
+                foldername = [foldername, '-1'];
+            else 
+                foldername = [foldername, num2str(str2double(foldername(end) + 1))];
+            end
         end
         mkdir(foldername)
         if  save_cp_split > 1
