@@ -202,7 +202,7 @@ function timeSeriesData = time_series_generator(varargin)
         tmax = numpoints.*dt;
         p.Results.tmax = tmax;
     elseif ~isempty(dt) && ~isempty(tmax) && isempty(numpoints)
-        numpoints = ceil(tmax./dt); % ceil or round?
+        numpoints = round(tmax./dt); % ceil or round?
         p.Results.numpoints = numpoints;
     else
         error('Not enough inputs to determine the time parameters of integration')
@@ -229,7 +229,8 @@ function timeSeriesData = time_series_generator(varargin)
     transient_cutoff = numpoints - round(T./dt);
     %savestep = round((numpoints-transient_cutoff)./savelength);
     savestep = round(sampling_period./dt);
-    timeSeriesData = repmat(zeros(length(cp_range), length(transient_cutoff:savestep:numpoints-1)), length(etarange), 1);
+    rep_length = length(transient_cutoff:savestep:numpoints-1);
+    timeSeriesData = zeros(length(cp_range).*length(etarange), rep_length));
     %dt = tmax./numpoints;
     
 %% Calculate time series values
