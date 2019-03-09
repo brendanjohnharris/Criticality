@@ -1,35 +1,48 @@
 function timeSeriesData = time_series_generator(varargin)
-%TIME_SERIES_GENERATOR Generates time series using a variety of input parameters
+%TIME_SERIES_GENERATOR Generates time series of dynamical systems using a variety of input parameters
 %
 %   Input arguments can be given or left as defaults (as below); make sure to
 %   review the defaults set in the input parser and adjust as necessary. 
 %   Note that the form and accepted type of the 'parameters' variable is
 %   dependant on the specified system.
+%
+%   Additionally, any options that can be specified as a scalar can also be
+%   given as a character array that refers to one or more other options. For example,
+%   the input 'savelength' might be given (either as a function argument or
+%   in the appropriate field of an input structure) as '0.5.*numpoints'
 % 
 %   Dynamical System Options-----------------------------------------------
 %
-%       system_type:        A character array specifying the dynamical system to be used for integration
+%       system_type:        A character array specifying the dynamical system 
+%                           to be used for integration
 %
-%       cp_range:           A row vector containing the values of the control parameter for which time series will be generated
+%       cp_range:           A row vector containing the values of the control 
+%                           parameter for which time series will be generated
 %
-%       etarange:           A row vector containing the values of the noise parameter eta for which time series will be generated
+%       etarange:           A row vector containing the values of the noise 
+%                           parameter eta for which time series will be generated
 %
-%       initial_conditions: A number containing the initial conditions of the simulation
+%       initial_conditions: A number containing the initial conditions of 
+%                           the simulation
 %
-%       parameters:         A vector containing the value of any parameters except for the control and noise parameters
+%       parameters:         A vector containing the value of any parameters 
+%                           other than the control and noise parameters
 %
 %       bifurcation_point:  A number specifying the value of the control
-%                           parameter at which bifurcation occurs (Note: This does NOT set the
-%                           bifurcation point, but is used to label the time series)
+%                           parameter at which bifurcation occurs (Note: 
+%                           This does NOT set the bifurcation point, 
+%                           but is used to label the time series)
 %
 %
 %   Integration Options----------------------------------------------------
-%       The following options specify the length and integration step of the timeseries.
-%       Give ONLY TWO of the following three options:
+%       The following options specify the length and integration step of 
+%       the timeseries. Give ONLY TWO of the following three options:
 %
-%       tmax:               A number giving the time over which values will be generated
+%       tmax:               A number giving the time over which values will 
+%                           be generated
 %
-%       numpoints:          The number of points to be generated during integration (before transient removal)
+%       numpoints:          The number of points to be generated during  
+%                           integration (before transient removal)
 %
 %       dt:                 A number specifying the timestep of integration
 %
@@ -38,33 +51,46 @@ function timeSeriesData = time_series_generator(varargin)
 %       The following options specify the length and sampling period of the
 %       output time series. Give ONLY TWO of the following three options:
 %
-%       T:                  The length, in seconds, of the output time series
+%       T:                  A number giving the length, in seconds, of the 
+%                           output time series. This function always
+%                           returns/saves the END of the generated time series
 %
-%       savelength:         The number of points to be saved and returned (following transient removal and downsampling)
+%       savelength:         The number of points to be saved and returned 
+%                           (following transient removal and downsampling)
 %
 %       sampling_period:    The time between points of the output time series
 %
 %
-%   Save Options-----------------------------------------------
+%   Save Options-----------------------------------------------------------
 %
-%       foldername:         A character array containing the name of the folder into which the results are saved; if empty, no results will be saved
+%       foldername:         A character array containing the name of the 
+%                           folder into which the results are saved; if 
+%                           empty, no results will be saved
 %
-%       save_cp_split:      A positive value specifying the (approximate) number of subdirectories 
-%                           into which the results will be saved (split by control
-%                           parameter). Useful for distributed hctsa calculation
+%       save_cp_split:      A positive integer specifying the (approximate) 
+%                           number of subdirectories into which the results 
+%                           will be saved (split by control parameter). 
+%                           Useful for distributed computation.
 %
 %
 %   Other Inputs-----------------------------------------------------------
 %
-%       rngseed:            A number used as the seed of the random number generator; set and disable 'randomise' to duplicate previous results
+%       rngseed:            A number used as the seed of the random number 
+%                           generator; set and disable 'randomise' to 
+%                           duplicate previous results
 %
-%       randomise:          A binary; if true, the 'rngseed' will be ignored and the random number generator shuffled
+%       randomise:          A binary; if true, the 'rngseed' will be ignored 
+%                           and the random number generator shuffled
 %   
 %       vocal:              A binary; true limits command line outputs
 %
-%       input_file:         A character array naming a mat file containing a structure with fields containing all the above inputs (as returned by this function)
+%       input_file:         A character array naming a mat file containing 
+%                           a structure with fields containing all of the  
+%                           above inputs (as returned by this function)
 %
-%       input_struct:       A struct containing the above parameters as fields (use either 'input_file', 'input_struct' or neither
+%       input_struct:       A struct containing the above parameters as 
+%                           fields (use one of 'input_file', 'input_struct' 
+%                           or neither
 
 
 %% Parse Inputs
@@ -78,9 +104,10 @@ function timeSeriesData = time_series_generator(varargin)
     addParameter(p, 'bifurcation_point', 0)
     addParameter(p, 'etarange', 0.16)
     addParameter(p, 'numpoints', 1000000)
-    addParameter(p, 'savelength', [])
+    addParameter(p, 'savelength', 'numpoints./20')
     addParameter(p, 'dt', [])
-    addParameter(p, 'T', [])
+    addParameter(p, 'T', 'tmax./2')
+    addParameter(p, 'sampling_period', [])
     addParameter(p, 'foldername', [])
     addParameter(p, 'rngseed', [])
     addParameter(p, 'randomise', 1)
@@ -136,6 +163,24 @@ function timeSeriesData = time_series_generator(varargin)
         end
     end
 
+%% Evaluate any options given as character arrays
+    fields = fieldnames(p.Results);
+    allowed_fields = {'input_file', 'foldername', 'system_type'}; % Exclude any fields that are supposed to be character arrays
+    for fld1 = 1:length(fields)
+        ref = p.Results.(fields{fld1});
+        if ischar(ref) && all(~strcmp(fields{fld1}, allowed_fields))
+            for fld2 = 1:length(fields)
+                if isscalar(p.Results.(fields{fld2}))
+                    ref = strrep(ref, fields{fld2}, num2str(p.Results.(fields{fld2})));
+                end
+            end
+            if any(isletter(ref))
+                error('The character array references an unknown field, or is incorrectly formatted')
+            end
+            p.Results.(fields{fld1}) = eval(ref);
+        end
+    end
+
 %% Unpack input parser struct, for easier variable access (using an additional function)
     v2struct(p.Results)
     
@@ -148,7 +193,9 @@ function timeSeriesData = time_series_generator(varargin)
     end
 
 %% Calculate which of numsteps, tmax and dt were not specified
-    if isempty(dt) && ~isempty(tmax) && ~isempty(numpoints)
+    if ~isempty(dt) && ~isempty(tmax) && ~isempty(numpoints) % Which one to calculate is ambiguous, and they might disagree. Perhaps add a check to see if they agree.
+        error('All three of dt, tmax and numpoints cannot be specified at once. Please give two only')
+    elseif isempty(dt) && ~isempty(tmax) && ~isempty(numpoints)
         dt = tmax./numpoints;
         p.Results.dt = dt;
     elseif ~isempty(dt) && isempty(tmax) && ~isempty(numpoints)
@@ -157,31 +204,31 @@ function timeSeriesData = time_series_generator(varargin)
     elseif ~isempty(dt) && ~isempty(tmax) && isempty(numpoints)
         numpoints = ceil(tmax./dt); % ceil or round?
         p.Results.numpoints = numpoints;
-    elseif  ~isempty(dt) && ~isempty(tmax) && ~isempty(numpoints)
-        error('All three of dt, tmax and numpoints cannot be specified at once.\nPlease give two only')
     else
         error('Not enough inputs to determine the time parameters of integration')
     end
     
 %% Calculate which of T, savelength and sampling_period were not specified
-    if isempty(T) && ~isempty(savelength) && ~isempty(sampling_period)
+    if  ~isempty(T) && ~isempty(savelength) && ~isempty(sampling_period)
+        error('All three of T, savelength and sampling_period cannot be specified at once. Please give two only')
+    elseif isempty(T) && ~isempty(savelength) && ~isempty(sampling_period)
         T = savelength.*sampling_period;
         p.Results.T = T;
     elseif ~isempty(T) && isempty(savelength) && ~isempty(sampling_period)
         savelength = round(T./sampling_period);
         p.Results.savelength = savelength;
     elseif ~isempty(T) && ~isempty(savelength) && isempty(sampling_period)
-        sampling_period = ceil(tmax./dt); % ceil or round?
+        sampling_period = T./savelength;
         p.Results.sampling_period = sampling_period;
-    elseif  ~isempty(dt) && ~isempty(tmax) && ~isempty(numpoints)
-        error('All three of T, savelength and sampling_period cannot be specified at once.\nPlease give two only')
     else
-        error('Not enough inputs to determine the time parameters of with which to save the timeseries')
+        error('Not enough inputs to determine the time parameters with which to save the timeseries')
     end    
 
         
 %% Calculate additional variables from inputs
-    savestep = round((numpoints-transient_cutoff)./savelength);
+    transient_cutoff = numpoints - round(T./dt);
+    %savestep = round((numpoints-transient_cutoff)./savelength);
+    savestep = round(sampling_period./dt);
     timeSeriesData = repmat(zeros(length(cp_range), length(transient_cutoff:savestep:numpoints-1)), length(etarange), 1);
     %dt = tmax./numpoints;
     
@@ -308,4 +355,3 @@ function timeSeriesData = time_series_generator(varargin)
         fprintf('------------------------100%% complete, %gs elapsed------------------------\n', round(toc(start)))
     end
 end
-
