@@ -230,7 +230,7 @@ function timeSeriesData = time_series_generator(varargin)
     %savestep = round((numpoints-transient_cutoff)./savelength);
     savestep = round(sampling_period./dt);
     rep_length = length(transient_cutoff:savestep:numpoints-1);
-    timeSeriesData = zeros(length(cp_range).*length(etarange), rep_length));
+    timeSeriesData = zeros(length(cp_range).*length(etarange), rep_length);
     %dt = tmax./numpoints;
     
 %% Calculate time series values
