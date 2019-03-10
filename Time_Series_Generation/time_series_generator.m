@@ -319,7 +319,7 @@ function timeSeriesData = time_series_generator(varargin)
             if ~isstrprop(foldername(end), 'digit')
                 foldername = [foldername, '-1'];
             else 
-                foldername = [foldername(1:find(foldername == '-')), num2str(str2double(foldername(end)) + 1)];
+                foldername = [foldername(1:find(foldername == '-')), num2str(str2double(foldername(find(foldername == '-')+1:end)) + 1)];
             end
         end
         mkdir(foldername)
