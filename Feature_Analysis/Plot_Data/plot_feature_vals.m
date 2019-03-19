@@ -15,10 +15,10 @@ function plot_feature_vals(op_id, data, on_what, combined)
         deltamu = data(ind).Inputs.cp_range;
         operations = [data(ind).Operations.ID];
         TS_DataMat = data(ind).TS_DataMat(:, op_id); % Only works for un-normalised data, and where operations is in order and 'continuous'
-        [~, idxcor] = intersect(data(ind).Correlation(:, 2), operations);
-        sortedcor = data(ind).Correlation(idxcor, :);
-        %correlation = data(ind).Correlation(op_id, :);
-        correlation = sortedcor(op_id, :);
+        %[~, idxcor] = intersect(data(ind).Correlation(:, 2), operations);
+        %sortedcor = data(ind).Correlation(idxcor, :);
+        %%correlation = data(ind).Correlation(op_id, :);
+        %correlation = sortedcor(op_id, :);
         if ~combined
             subplot(ps(1), ps(2), ind)
         else

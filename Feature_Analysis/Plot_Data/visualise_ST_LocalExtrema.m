@@ -14,7 +14,7 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
     if nargin < 8 || isempty(overlap)
         overlap = 0;
     end
-    time_series = time_series_generator('cp_range', cp_vals, 'etarange', noise_vals, 'system_type', system, 'savelength', how_long, 'tmax', tmax); 
+    time_series = time_series_generator('cp_range', cp_vals, 'etarange', noise_vals, 'system_type', system, 'savelength', how_long, 'tmax', tmax, 'numpoints', how_long.*2); 
     if standardise
         time_series = zscore(time_series, 0, 2);
     end
@@ -46,8 +46,10 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
         minxs1 = find(buffered1 == minys1)';
         minxs1 = minxs1(:);
         plot(minxs1, minys1, 'ks', 'markerfacecolor', [0    0.4470    0.7410], 'markersize', 10)
+        pa = plot(minxs1, abs(minys1), 'ks', 'markersize', 10);
+        pa.Color(4) = 0.75;
         plot(maxxs1, maxys1, 'kd', 'markerfacecolor', [0    0.4470    0.7410], 'markersize', 10)
-        quiver(minxs1', minys1, zeros(1, size(minxs1, 1)), maxys1-minys1, '--k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 1.5)
+        quiver(minxs1', abs(minys1), zeros(1, size(minxs1, 1)), maxys1-abs(minys1), '--k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 1.5)
         quiver(minxs1', maxys1, maxxs1' - minxs1', zeros(1, size(minxs1, 1)), '--k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 1.5)
         
         
@@ -59,8 +61,10 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
         minxs = find(buffered == minys)';
         minxs = minxs(:);
         plot(minxs, minys, 'ks', 'markerfacecolor', [0.8500    0.3250    0.0980], 'markersize', 10)
+        pb = plot(minxs, abs(minys), 'ks', 'markersize', 10);
+        pb.Color(4) = 0.75;
         plot(maxxs, maxys, 'kd', 'markerfacecolor', [0.8500    0.3250    0.0980], 'markersize', 10)
-        quiver(minxs', minys, zeros(1, size(minxs, 1)), maxys-minys, ':k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 2)
+        quiver(minxs', abs(minys), zeros(1, size(minxs, 1)), maxys-abs(minys), ':k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 2)
         quiver(minxs', maxys, maxxs' - minxs', zeros(1, size(minxs, 1)), ':k', 'ShowArrowHead', 'off', 'Autoscale', 'off', 'LineWidth', 2)
        
         
@@ -83,9 +87,8 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
             
             subplot(numplots, 1, t)
             hold on
-            plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '-w', 'LineWidth', 20)
             plot(time_series(t, :))
-            
+            plot([partition_points(1:end-1)', partition_points(1:end-1)'], [ymin, ymax], '--k')
             % Find extrema, using the same method as ST_LocalExtrema
             buffered = buffer(time_series(t, :), l);
             maxys = max(buffered);
@@ -95,9 +98,11 @@ function visualise_ST_LocalExtrema(cp_vals, noise_vals, l, how_long, system, sta
             minxs = find(buffered == minys)';
             minxs = minxs(:);
             plot(minxs, minys, 'ks', 'markerfacecolor', 'k', 'markersize', 10)
+            pc = plot(minxs, abs(minys), 'ks', 'markersize', 10);
+            pc.Color(4) = 0.3;
             plot(maxxs, maxys, 'kd', 'markerfacecolor', 'k', 'markersize', 10)
             
-            quiver(minxs', minys, zeros(1, size(minxs, 1)), maxys-minys, '--r', 'ShowArrowHead', 'off', 'Autoscale', 'off')
+            quiver(minxs', abs(minys), zeros(1, size(minxs, 1)), maxys-abs(minys), '--r', 'ShowArrowHead', 'off', 'Autoscale', 'off')
             quiver(minxs', maxys, maxxs' - minxs', zeros(1, size(minxs, 1)), '--r', 'ShowArrowHead', 'off', 'Autoscale', 'off')
             
             if standardise

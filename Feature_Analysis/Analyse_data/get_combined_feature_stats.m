@@ -78,6 +78,20 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
                     y = cell2mat(arrayfun(@(x) data(x, :).TS_DataMat(idxs, :), 1:size(data, 1), 'UniformOutput', 0)');
                     x = cell2mat(arrayfun(@(x) data(x, :).Inputs.cp_range(idxs), 1:size(data, 1), 'UniformOutput', 0))';
                     the_stat_values = abs(corr(y, x, 'Type', 'Pearson'));
+                    
+                case 'Aggregated_cp_RMSE'
+                    if ~isempty(data(1).Correlation_Range)
+                        idxs = (data(1).Inputs.cp_range >= data(1).Correlation_Range(1) & data(1).Inputs.cp_range <= data(1).Correlation_Range(2)); % Assumes all rows of data have the same cp_range and Correlation_Range
+                    else
+                        idxs = 1:length(data(1).Inputs.cp_range);
+                    end
+                    y = cell2mat(arrayfun(@(x) data(x, :).TS_DataMat(idxs, :), 1:size(data, 1), 'UniformOutput', 0)');
+                    x = cell2mat(arrayfun(@(x) data(x, :).Inputs.cp_range(idxs), 1:size(data, 1), 'UniformOutput', 0))';
+                    for opnum = 1:size(y, 2)
+                        [p, ~, mu] = polyfit(y(:, opnum), x, 1);
+                        xfit = polyval(p, y(:, opnum), [], mu);
+                        the_stat_values(opnum) = std(x - xfit);
+                    end
                                     
                 case 'Feature_Value_Gradient_Absolute_Correlation'
                     what_columns = regexp(original_tbl.Properties.VariableNames, '.*\d+_Feature_Value_Gradient', 'match');
