@@ -4,11 +4,11 @@ function points = cartesian_product(varargin)
 %   containing all possible ordered pairs with one element from each
 %   corresponding set. 
 %   This function extends this notion to N vectors, such that (a x b x c) is
-%   the cartesian product of (a x b) x c, with grouping parentheses
+%   the cartesian product (a x b) x c, with grouping parentheses
 %   removed.
 %
 %   Inputs-
-%       varargin: Any number of vectors (specifiec individually or as a cell array), or a single matrix (where each column
+%       varargin: Any number of vectors (specified individually or as a cell array), or a single matrix (where each column
 %       represents a vector)
 
 %% Ensure all inputs are column vectors
