@@ -1,4 +1,37 @@
 function tbl = get_combined_feature_stats(data, single_stats, combined_stats, directions, new_table)
+% GET_COMBINED_FEATURE_STATS Generate a table of feature value summary statistics using multiple datasets
+%     Similarly to 'get_feature'stats', this function accepts some data in the 
+%     form of a struct and returns a table of queried ssummary statistics. 
+%     Unlike that function, however, this can be performed using data with 
+%     multiple rows and can be used evaluate individual statistics on each row,
+%     or statistics that require reference to other rows.
+%     
+%     Inputs-
+%         
+%         data:           A structure in the standard form, as produced by 'save_data'
+%         
+%         single_stats:   A cell array containing character vectors naming
+%                         statistics to be applied to each row of data 
+%                         individually; see 'get_feature_stats'. Can be left empty, 
+%                         but some combined_stats require certain single_stats; see error lines in body
+%                         
+%         combined_stats: A cell array of the same form as single_stats, but 
+%                         naming statistics relating to the data as a
+%                         whole. See cases in body.
+%         
+%         directions:     A vector of feature directions (concavities); 
+%                         -1 for downward pointing, +1 for upward pointing. 
+%                         Only required for some statistics; see body.
+%         
+%         new_table:      A logical, specifying whether to return a table that
+%                         does not include any single_stats (1); useful for removing single_stats 
+%                         that are required by a combined_stat, but which are undesired.
+%                   
+%                         
+%     Outputs-
+%     
+%         tbl:            A table of operation information and summary statistics
+    
     table_container = cell(1, size(data, 1));
     for i = 1:length(table_container)
         table_container{i} = get_feature_stats(data(i, :), single_stats, directions, []);

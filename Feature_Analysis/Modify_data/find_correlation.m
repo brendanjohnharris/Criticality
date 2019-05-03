@@ -1,6 +1,7 @@
 function find_correlation(datafile, correlation_type, what_range, savefile)
 %   'what_range' is a two element vector, defining the range of control
 %   parameters that will be used to calculate correlations
+%   Should be run AFTER group_by_noise, if that function is neccessary
     %% Calculating
 %     if nargin < 1 || isempty(plots)
 %         plots = false;

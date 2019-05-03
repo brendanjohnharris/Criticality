@@ -1,0 +1,25 @@
+SY_SpreadRandomLocal(y,50,100,'default')	SY_SpreadRandomLocal_50_100
+SY_SpreadRandomLocal(y,100,100,'default')	SY_SpreadRandomLocal_100_100
+CO_Embed2_Basic(y,1)	CO_Embed2_Basic_1
+DN_RemovePoints(y,'absfar',0.1)	DN_RemovePoints_absfar_01
+DN_RemovePoints(y,'max',0.1)	DN_RemovePoints_max_01
+PH_Walker(y,'biasprop',[0.5,0.1])	PH_Walker_biasprop_05_01
+ST_LocalExtrema(y,'l',50)	ST_LocalExtrema_l50
+ST_LocalExtrema(y,'l',100)	ST_LocalExtrema_l100
+ST_LocalExtrema(y,'n',25)	ST_LocalExtrema_n25
+ST_LocalExtrema(y,'n',50)	ST_LocalExtrema_n50
+ST_LocalExtrema(y,'n',100)	ST_LocalExtrema_n100
+EX_MovingThreshold(y,0.1,0.02)	EX_MovingThreshold_01_002
+EX_MovingThreshold(y,1,0.1)	EX_MovingThreshold_1_01
+EX_MovingThreshold(y,1,0.02)	EX_MovingThreshold_1_002
+SB_MotifTwo(y,'mean')	SB_MotifTwo_mean
+SD_TSTL_surrogates(y,1,100,2,'tc3','default')	SD_TSTL_surrogates_1_100_2_tc3
+PP_Compare(x,'medianf4')		PP_Compare_medianf4
+PP_Compare(x,'rav2')			PP_Compare_rav2
+PP_Compare(x,'rav3')			PP_Compare_rav3
+PP_Compare(x,'rav4')			PP_Compare_rav4
+PP_Compare(x,'resample_1_2')	PP_Compare_resample_1_2
+SY_KPSStest(y,1)	SY_KPSStest_1
+ST_MomentCorr(y,0.02,0.2,'mean','std','abs')	ST_MomentCorr_002_02_mean_std_abs
+PartitionValues(x, 'buffer', 2)   PartitionValues_buff2
+PartitionValues(x, 'values', 2)

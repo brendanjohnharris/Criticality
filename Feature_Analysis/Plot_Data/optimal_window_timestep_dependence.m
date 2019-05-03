@@ -1,4 +1,4 @@
-function [sampling_periods, window_lengths, aggregated_correlations, optimal_window_lengths] = optimal_window_timestep_dependence(data, makeplot)
+function [sampling_periods, window_lengths, aggregated_correlations, optimal_window_lengths] = optimal_window_timestep_dependence(data, makeplot, logx, cutoff)
     % Only time series data in a specific format will work; !!!!!!!!!!only varying in
     % T, cp and eta !!!!!!!!!!!!
     % Currently only valid for ST_LocalExtreman_n[p]_diffmaxabsmin
@@ -10,7 +10,13 @@ function [sampling_periods, window_lengths, aggregated_correlations, optimal_win
     if nargin < 2 || isempty(makeplot)
         makeplot = 0;
     end
-    
+    if nargin < 3 || isempty(logx)
+        logx = 1;
+    end
+    if nargin < 4
+        cutoff = [];
+    end
+    f = figure;
     sampling_periods = unique(arrayfun(@(x) x.Inputs.sampling_period, data));
     
     Ts = arrayfun(@(x) x.Inputs.T, data);
@@ -33,40 +39,48 @@ function [sampling_periods, window_lengths, aggregated_correlations, optimal_win
     [~, optimal_windows] = max(aggregated_correlations, [], 1);
     optimal_window_lengths = window_lengths(optimal_windows);
 
+    %if ~isempty(cutoff)
+    %    aggregated_correlations(aggregated_correlations < cutoff) = cutoff;
+    %end
+    if logx
+        X = log10(sampling_periods);
+    else
+        X = sampling_periods;
+    end
     if makeplot == 1
-        p = pcolor(log10(sampling_periods), window_lengths, aggregated_correlations);
+        p = pcolor(X, window_lengths, aggregated_correlations);
         p.EdgeColor = 'none';
         shading interp
         cmp = inferno(1000);
         colormap(cmp)
         ylim([0, 250])
         ylabel('Window Length (s)', 'fontsize', 14)
-        xlabel('$log_{10}(\Delta t)$', 'Interpreter', 'LaTeX', 'fontsize', 14)
-        title('ST_LocalExtrema_diffmaxabsmin Aggregated Correlation', 'Interpreter', 'none', 'fontsize', 14)
-        colorbar
-        c = colorbar;
-        c.Label.Position = [3, 0.5, 0];
-        c.Label.String = '|\rho|';
-        c.Label.Rotation = 0;
-        c.Label.FontSize = 23;
-        caxis([0, 1])
-        set(gcf,'color','w');
+        
     elseif makeplot == 2
         cmp = inferno(1000);
         colormap(cmp)
         col = arrayfun(@(x) max(aggregated_correlations(:, x)), 1:length(sampling_periods))'; 
-        scatter(log10(sampling_periods), optimal_window_lengths, 50, col, 'filled')
+        scatter(X, optimal_window_lengths, 50, col, 'filled')
         ylabel('Optimal Window Length (s)', 'fontsize', 14)
+    end
+    if logx
         xlabel('$\log_{10}(\Delta t)$', 'Interpreter', 'LaTeX', 'fontsize', 14)
-        title('ST_LocalExtrema_diffmaxabsmin Aggregated Correlation', 'Interpreter', 'none', 'fontsize', 14)
-        colorbar
-        c = colorbar;
-        c.Label.Position = [3, 0.5, 0];
-        c.Label.String = '|\rho|';
-        c.Label.Rotation = 0;
-        c.Label.FontSize = 23;
-        caxis([0, 1])
-        set(gcf,'color','w');
+    else
+        xlabel('$\Delta t$', 'Interpreter', 'LaTeX', 'fontsize', 14)
+    end
+    title('ST_LocalExtrema_diffmaxabsmin Aggregated Correlation', 'Interpreter', 'none', 'fontsize', 14)
+    colorbar
+    c = colorbar;
+    c.Label.Position = [3, 0.5, 0];
+    c.Label.String = '|\rho|';
+    c.Label.Rotation = 0;
+    c.Label.FontSize = 23;
+    caxis([0, 1])
+    set(gcf,'color','w');   
+    if ~isempty(cutoff)
+        caxis([cutoff, 1])
+        c.TickLabels{1} = ['<', num2str(cutoff)];
+        c.Label.Position(2) = mean([cutoff, 1]);
     end
 end
     
