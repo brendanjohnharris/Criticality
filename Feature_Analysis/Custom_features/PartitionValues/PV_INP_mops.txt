@@ -13,7 +13,6 @@ EX_MovingThreshold(y,0.1,0.02)	EX_MovingThreshold_01_002
 EX_MovingThreshold(y,1,0.1)	EX_MovingThreshold_1_01
 EX_MovingThreshold(y,1,0.02)	EX_MovingThreshold_1_002
 SB_MotifTwo(y,'mean')	SB_MotifTwo_mean
-SD_TSTL_surrogates(y,1,100,2,'tc3','default')	SD_TSTL_surrogates_1_100_2_tc3
 PP_Compare(x,'medianf4')		PP_Compare_medianf4
 PP_Compare(x,'rav2')			PP_Compare_rav2
 PP_Compare(x,'rav3')			PP_Compare_rav3
@@ -22,4 +21,4 @@ PP_Compare(x,'resample_1_2')	PP_Compare_resample_1_2
 SY_KPSStest(y,1)	SY_KPSStest_1
 ST_MomentCorr(y,0.02,0.2,'mean','std','abs')	ST_MomentCorr_002_02_mean_std_abs
 PartitionValues(x, 'buffer', 2)   PartitionValues_buff2
-PartitionValues(x, 'values', 2)
+PartitionValues(x, 'values', 2)   PartitionValues_vals2
