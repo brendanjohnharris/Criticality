@@ -300,81 +300,94 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
                 round(100*(i-1)./length(etarange)), round(toc(start)))
         end
         eta = etarange(i);
-        r = [zeros(length(cp_range), 1) + initial_conditions, zeros(length(cp_range), numpoints-1)];
-        W = eta.*sqrt(dt).*randn(size(r)); % Need complex noise for systems with complex variables?
+        r = zeros(length(cp_range), 1) + initial_conditions;
+        rout = zeros(length(cp_range), floor((numpoints - 1 - transient_cutoff)./savestep));
+        Wl = size(r, 1); % Length of noise vector
+        
         %% Systems
         switch system_type
             case 'staircase'
                 for n = 1:numpoints-1
-                    r(:, n+1) = r(:, n) + (sin(parameters(1).*r(:, n))).*dt + (W(:, n)+(0.01*abs(W(:, n)))); % All real
+                    r = r + (sin(parameters(1).*r)).*dt + (eta.*sqrt(dt).*randn(Wl, 1)+(0.01*abs(eta.*sqrt(dt).*randn(Wl, 1))));
+                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
+                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
+                    end
                 end
-
+                
             case 'saddle_node'
                 for n = 1:numpoints-1
-                    r(:, n+1) = r(:, n) + (cp_range' + (r(:, n).^2)).*dt + W(:, n);
-                end
+                    r = r + (cp_range' + (r.^2)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
+                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
+                    end
+                end                
 
             case 'supercritical_hopf'
                 for n = 1:numpoints-1
-                    r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt;
-                    theta = angle(r(:, n+1));
-                    r(:, n+1) = r(:, n+1) + (cos(theta) + 1i.*sin(theta)).*W(:, n); % Right way to add noise to complex??? Add before or after step???
+                    r = r + (cp_range'.*r - parameters(1).*r.*(abs(r)).^2).*dt;
+                    theta = angle(r);
+                    r = r + (cos(theta) + 1i.*sin(theta)).*eta.*sqrt(dt).*randn(Wl, 1);
+                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
+                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
+                    end
                 end
-
+                
             case 'supercritical_hopf-varying_cp'
                 for n = 1:numpoints-1
-                    r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt;
-                    theta = angle(r(:, n+1));
-                    r(:, n+1) = r(:, n+1) + (cos(theta) + 1i.*sin(theta)).*W(:, n); % Right way to add noise to complex??? Add before or after step???
+                    r = r + (cp_range'.*r - parameters(1).*r.*(abs(r)).^2).*dt;
+                    theta = angle(r);
+                    r = r + (cos(theta) + 1i.*sin(theta)).*eta.*sqrt(dt).*randn(Wl, 1);
                     cp_range = cp_range + parameters(2).*dt;
+                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
+                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
+                    end
                 end
-
-%             case 'supercritical_hopf-x'
-%                 for n = 1:numpoints-1
-%                     r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt + W(:, n);
-%                 end
-%                 r = real(r);
-
-%             case 'supercritical_hopf_(real_parameters)-radius'
-%                 for n = 1:numpoints-1
-%                     r(:, n+1) = r(:, n) + ((cp_range'+1i).*r(:, n) - (parameters(1)+parameters(2)*1i).*r(:, n).*(abs(r(:, n))).^2).*dt + W(:, n);
-%                 end
-%                 r = abs(r);
-
+                
             case 'simple_supercritical_beta_hopf'
                 for n = 1:numpoints-1
-                    r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - parameters(1).*r(:, n).*(abs(r(:, n))).^2).*dt + W(:, n); % All real
-                end
+                    r = r + (cp_range'.*r - parameters(1).*r.*(abs(r)).^2).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
+                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
+                    end
+                end                
 
             case 'supercritical_hopf_radius_(strogatz)'
                 for n = 1:numpoints-1
-                    r(:, n+1) = r(:, n) + (cp_range'.*r(:, n) - (r(:, n).^3)).*dt + W(:, n);
+                    r = r + (cp_range'.*r - (r.^3)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
+                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
+                    end
                 end
-                r = abs(r);
+                rout = abs(rout);
 
            case 'supercritical_hopf_radius_(strogatz)-non-reflecting'
                 for n = 1:numpoints-1
-                    r(:, n+1) = (r(:, n) + (cp_range'.*r(:, n) - (r(:, n).^3)).*dt + W(:, n));
+                    r = r + (cp_range'.*r - (r.^3)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
+                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
+                    end
                 end
-
+                
             case 'subcritical_hopf_radius_(strogatz)'
                 for n = 1:numpoints-1
-                    r(:, n+1) = r(:, n) + (-r(:, n).^5 + (r(:, n).^3) + cp_range'.*r(:, n)).*dt + W(:, n);
+                    r = r + (-r.^5 + (r.^3) + cp_range'.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
+                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
+                    end
                 end
-                r = abs(r);
+                rout = abs(rout);
 
             otherwise
                 error("No match found for type '%s'", system_type)
         end
         %% If not using integrated_hctsa
         if no_hctsa
-            timeSeriesData((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = ....
-                r(:, transient_cutoff+1:savestep:end); % Copy to timeSeriesData, remove transient and downsample
+            timeSeriesData((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = rout; % Copy to timeSeriesData
     %% Calculate feature values, create savestruct and fill static fields
         elseif i == 1
             % Calculate feature values
             datastruct = light_TS_compute(0, [], [], [], [], 0, light_TS_init(...
-                struct('timeSeriesData', r(:, transient_cutoff:savestep:end-1),...
+                struct('timeSeriesData', rout,...
                 'labels', {cellstr(string(1:size(r, 1)))},...
                 'keywords', {cellstr(string(1:size(r, 1)))}),... % Won't need time series labels or keywords, so make dummy ones
                 integrated_hctsa.INP_mops, integrated_hctsa.INP_ops, 0)); % Could separate, and assign individual variables, but not necessary.
@@ -399,7 +412,7 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
         elseif i > 1
             % Calculate feature values
             datastruct = light_TS_compute(0, [], [], [], [], 0, light_TS_init(...
-                struct('timeSeriesData', r(:, transient_cutoff:savestep:end-1), ...
+                struct('timeSeriesData', rout, ...
                 'labels', {cellstr(string(1:size(r, 1)))}, ...
                 'keywords', {cellstr(string(1:size(r, 1)))}),... % Won't need time series labels or keywords, so make dummy ones
                 integrated_hctsa.INP_mops, integrated_hctsa.INP_ops, 0)); % Could separate, and assign individual variables, but not necessary.
