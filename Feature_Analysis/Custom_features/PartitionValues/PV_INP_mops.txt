@@ -20,5 +20,5 @@ PP_Compare(x,'rav4')			PP_Compare_rav4
 PP_Compare(x,'resample_1_2')	PP_Compare_resample_1_2
 SY_KPSStest(y,1)	SY_KPSStest_1
 ST_MomentCorr(y,0.02,0.2,'mean','std','abs')	ST_MomentCorr_002_02_mean_std_abs
-PartitionValues(x, 'buffer', 2)   PartitionValues_buff2
-PartitionValues(x, 'values', 2)   PartitionValues_vals2
+PartitionValues(x,'values',2)   PartitionValues_vals2
+PartitionValues(x,'buffer',2)   PartitionValues_buff2
