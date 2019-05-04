@@ -369,7 +369,7 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
         %% If not using integrated_hctsa
         if no_hctsa
             timeSeriesData((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = ....
-                r(:, transient_cutoff:savestep:end-1); % Copy to timeSeriesData, remove transient and downsample
+                r(:, transient_cutoff+1:savestep:end); % Copy to timeSeriesData, remove transient and downsample
     %% Calculate feature values, create savestruct and fill static fields
         elseif i == 1
             % Calculate feature values
