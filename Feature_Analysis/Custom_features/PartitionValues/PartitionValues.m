@@ -16,11 +16,11 @@ function [res, pmat, extrares] = PartitionValues(x, partitionType, partitionNum,
         makePlot = 0;
     end
 
-    minLength = 5;
+    minLength = 10;
 
     if size(x, 1) > 1
         if size(x, 2) > 1
-            erorr('The first input, x, must be a vector')
+            error('The first input, x, must be a vector')
         end
         x = x';
     end
@@ -67,7 +67,7 @@ function [res, pmat, extrares] = PartitionValues(x, partitionType, partitionNum,
     end
     
     if any(cellfun(@(d) isempty(d), avgACmat))
-        error('One or more of the partitions does not have at least 5 consecutive values')
+        error('One or more of the partitions does not have at least %g consecutive values', minLength)
     end
         
 %% Feature Values: Averages

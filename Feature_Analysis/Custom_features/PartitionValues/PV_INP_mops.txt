@@ -22,3 +22,7 @@ SY_KPSStest(y,1)	SY_KPSStest_1
 ST_MomentCorr(y,0.02,0.2,'mean','std','abs')	ST_MomentCorr_002_02_mean_std_abs
 PartitionValues(x,'values',2)   PartitionValues_vals2
 PartitionValues(x,'buffer',2)   PartitionValues_buff2
+PartitionValues(x,'values',3)   PartitionValues_vals3
+PartitionValues(x,'buffer',3)   PartitionValues_buff3
+PartitionValues(x,'values',4)   PartitionValues_vals4
+PartitionValues(x,'buffer',4)   PartitionValues_buff4
