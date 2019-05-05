@@ -102,46 +102,13 @@ function [res, pmat, extrares] = PartitionValues(x, partitionType, partitionNum,
     res.minpartSDAC3 = statsOfCellVecs(avgACmat(1, :), 4, 'SD'); 
     res.minpartSDAC4 = statsOfCellVecs(avgACmat(1, :), 5, 'SD'); 
 
-    res.diffSDAC1 = res.maxpartSDAC1 - res.minpartSDAC1; % Difference between SD of AC1 in upper and lower partitions
+    res.diffSDAC1 = res.maxpartSDAC1 - res.minpartSDAC1; % Difference between SD AC1 in upper and lower partitions
     res.diffSDAC2 = res.maxpartSDAC2 - res.minpartSDAC2; 
     res.diffSDAC3 = res.maxpartSDAC3 - res.minpartSDAC3;
     res.diffSDAC4 = res.maxpartSDAC4 - res.minpartSDAC4;   
     
     
     % Skewness of AC distribution
-    res.maxpartskewAC1 = statsOfCellVecs(avgACmat(end, :), 2, 'skew'); % Autocorrelation of upper partition
-    res.maxpartskewAC2 = statsOfCellVecs(avgACmat(end, :), 3, 'skew'); 
-    res.maxpartskewAC3 = statsOfCellVecs(avgACmat(end, :), 4, 'skew'); 
-    res.maxpartskewAC4 = statsOfCellVecs(avgACmat(end, :), 5, 'skew'); 
-
-    res.minpartskewAC1 = statsOfCellVecs(avgACmat(1, :), 2, 'skew'); % Autocorrelation of upper partition
-    res.minpartskewAC2 = statsOfCellVecs(avgACmat(1, :), 3, 'skew'); 
-    res.minpartskewAC3 = statsOfCellVecs(avgACmat(1, :), 4, 'skew'); 
-    res.minpartskewAC4 = statsOfCellVecs(avgACmat(1, :), 5, 'skew'); 
-
-    res.diffskewAC1 = res.maxpartskewAC1 - res.minpartskewAC1; % Difference between skewness of AC1 in upper and lower partitions
-    res.diffskewAC2 = res.maxpartskewAC2 - res.minpartskewAC2; 
-    res.diffskewAC3 = res.maxpartskewAC3 - res.minpartskewAC3;
-    res.diffskewAC4 = res.maxpartskewAC4 - res.minpartskewAC4;    
-    
-    
-    % Kurtosis of AC distribution
-    res.maxpartkurtAC1 = statsOfCellVecs(avgACmat(end, :), 2, 'kurt'); % Autocorrelation of upper partition
-    res.maxpartkurtAC2 = statsOfCellVecs(avgACmat(end, :), 3, 'kurt'); 
-    res.maxpartkurtAC3 = statsOfCellVecs(avgACmat(end, :), 4, 'kurt'); 
-    res.maxpartkurtAC4 = statsOfCellVecs(avgACmat(end, :), 5, 'kurt'); 
-
-    res.minpartkurtAC1 = statsOfCellVecs(avgACmat(1, :), 2, 'kurt'); % Autocorrelation of upper partition
-    res.minpartkurtAC2 = statsOfCellVecs(avgACmat(1, :), 3, 'kurt'); 
-    res.minpartkurtAC3 = statsOfCellVecs(avgACmat(1, :), 4, 'kurt'); 
-    res.minpartkurtAC4 = statsOfCellVecs(avgACmat(1, :), 5, 'kurt'); 
-
-    res.diffkurtAC1 = res.maxpartkurtAC1 - res.minpartkurtAC1; % Difference between kurtosis of AC1 in upper and lower partitions
-    res.diffkurtAC2 = res.maxpartkurtAC2 - res.minpartkurtAC2; 
-    res.diffkurtAC3 = res.maxpartkurtAC3 - res.minpartkurtAC3;
-    res.diffkurtAC4 = res.maxpartkurtAC4 - res.minpartkurtAC4;
-    
-    
     
     
 %% Feature Values: Concatenated
