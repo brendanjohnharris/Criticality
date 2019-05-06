@@ -175,7 +175,7 @@ function [res, pmat, extrares] = PartitionValues(x, partitionType, partitionNum,
     end
 
     function thestat = statsOfCellVecs(slra, pos, whatstat)
-        val = cellfun(@(c) c{1}(pos), slra);
+        val = cellfun(@(c) c(pos), slra{1});
         switch whatstat
             case 'mean'
                 thestat = mean(val);
