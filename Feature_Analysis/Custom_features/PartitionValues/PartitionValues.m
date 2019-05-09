@@ -5,8 +5,10 @@ function [res, pmat, extrares] = PartitionValues(x, partitionType, partitionNum,
 %   INPUTS--
 %       x:              A single time series
 %
-%       partitionType:  Either 'buffer' (partition using time series length) or 
+%       partitionType:  Either 'buffer' (partition using time series length),
 %                       'values' (partition by time series value extremes)
+%                       or 'percentile' (partitionNum is the percentile at
+%                       which to split the data, in this case)
 %
 %       partitionNum:   A 0 < number < length(x), giving the number of partitions
 %
@@ -26,34 +28,41 @@ function [res, pmat, extrares] = PartitionValues(x, partitionType, partitionNum,
     end
     
 %% Partition the timeseries  
-    pmat = repmat(x, partitionNum, 1);
-    maxidxs = pmat == max(x);
    
     switch partitionType
         case 'buffer'
+            pmat = repmat(x, partitionNum, 1);
             [~, idxs] = sort(x, 'ascend');
             idxs = buffer(idxs, floor(length(x)./partitionNum))';
             if ~idxs(end, end)
-                idxs = idxs(1:end-1, :); % Remove top portion of values. Fine if number of windows is large?
+                %idxs = idxs(1:end-1, :); % Remove top portion of values. Fine if number of windows is large?
+                idxs(1:end-1, idxs(1:end-1, :) == 0) = NaN; % What if there are legitimate zero values in the top portion of the    time series?
             end
             for i = 1:size(idxs, 1)
                 pmat(i, setdiff(1:size(pmat, 2), idxs(i, :))) = NaN;
             end
                  
         case 'values'
+            pmat = repmat(x, partitionNum, 1);
+            maxidxs = pmat == max(x);
             df = (max(x) - min(x))/partitionNum;
             windowlims = min(x):df:max(x);
             for i = 1:partitionNum
                 pmat(i, pmat(i, :) < windowlims(i) | pmat(i, :) >= windowlims(i+1)) = NaN;
             end
             pmat(maxidxs) = max(x); % Add back in the maximum values
+            
+        case 'percentile'
+            pmat = repmat(x, 2, 1); % Only able to set cutoff for two parititions
+            if partitionNum > 1 || partitionNum < 0
+                error("If using partition type 'percentile' the third argument must be a percentage (between 0 and 1)")
+            end
+            p = prctile(x, partitionNum.*100);
+            pmat(1, pmat(1, :) >= p) = NaN;
+            pmat(2, pmat(2, :) < p) = NaN;
         
         otherwise
             error('Input 2 is not a supported partition type')
-    end
-    
-    if makePlot
-        plot(repmat(1:size(pmat, 2), size(pmat, 1), 1)', pmat', '-')
     end
     
 %% Calculate something for each partition    
@@ -73,6 +82,23 @@ function [res, pmat, extrares] = PartitionValues(x, partitionType, partitionNum,
         error('One or more of the partitions does not have at least %g consecutive values', minLength)
     end
         
+    if makePlot
+        figure
+        plot(repmat(1:size(pmat, 2), size(pmat, 1), 1)', pmat', '-')
+        set(gcf,'color','w');
+        xlabel('t')
+        ylabel('r')
+        figure
+        u = avgACmat(1, :);
+        v = avgACmat(end, :);
+        histogram(cellfun(@(c) c(2), u{1}), 50);
+        hold on
+        histogram(cellfun(@(c) c(2), v{1}), 50);
+        xlabel('Autocorrelation: Lag 1')
+        ylabel('Frequency')
+        set(gcf,'color','w');
+    end
+    
 %% Feature Values: Averages
     % Mean of AC distribution
     res.maxpartmeanAC1 = statsOfCellVecs(avgACmat(end, :), 2, 'mean'); % Autocorrelation of upper partition
@@ -178,10 +204,10 @@ function [res, pmat, extrares] = PartitionValues(x, partitionType, partitionNum,
         val = cellfun(@(c) c(pos), slra{1});
         switch whatstat
             case 'mean'
-                thestat = mean(val);
+                thestat = nanmean(val);
              
             case 'SD'
-                thestat = std(val);
+                thestat = std(val, 'omitnan');
              
             case 'skew'
                 thestat = skewness(val);

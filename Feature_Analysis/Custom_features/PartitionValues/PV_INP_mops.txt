@@ -26,3 +26,7 @@ PartitionValues(x,'values',3)   PartitionValues_vals3
 PartitionValues(x,'buffer',3)   PartitionValues_buff3
 PartitionValues(x,'values',4)   PartitionValues_vals4
 PartitionValues(x,'buffer',4)   PartitionValues_buff4
+PartitionValues(x,'percentile',0.75)   PartitionValues_ptile75
+PartitionValues(x,'percentile',0.9)   PartitionValues_ptile90
+PartitionValues(x,'percentile',0.95)   PartitionValues_ptile95
+PartitionValues(x,'percentile',0.25)   PartitionValues_ptile25
