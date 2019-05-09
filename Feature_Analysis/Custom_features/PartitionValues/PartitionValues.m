@@ -35,8 +35,8 @@ function [res, pmat, extrares] = PartitionValues(x, partitionType, partitionNum,
             [~, idxs] = sort(x, 'ascend');
             idxs = buffer(idxs, floor(length(x)./partitionNum))';
             if ~idxs(end, end)
-                %idxs = idxs(1:end-1, :); % Remove top portion of values. Fine if number of windows is large?
-                idxs(1:end-1, idxs(1:end-1, :) == 0) = NaN; % What if there are legitimate zero values in the top portion of the    time series?
+                idxs = idxs(1:end-1, :); % Remove top portion of values. Fine if number of windows is large?
+                %idxs(1:end-1, idxs(1:end-1, :) == 0) = NaN; % What if there are legitimate zero values in the top portion of the    time series?
             end
             for i = 1:size(idxs, 1)
                 pmat(i, setdiff(1:size(pmat, 2), idxs(i, :))) = NaN;
