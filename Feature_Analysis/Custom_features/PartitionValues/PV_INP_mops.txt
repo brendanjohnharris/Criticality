@@ -30,3 +30,7 @@ PartitionValues(x,'percentile',0.75)   PartitionValues_ptile75
 PartitionValues(x,'percentile',0.9)   PartitionValues_ptile90
 PartitionValues(x,'percentile',0.95)   PartitionValues_ptile95
 PartitionValues(x,'percentile',0.25)   PartitionValues_ptile25
+PartitionValues(x,'cumulativepercentile',0.25)   PartitionValues_cmptile25
+PartitionValues(x,'cumulativepercentile',0.5)   PartitionValues_cmptile50
+PartitionValues(x,'cumulativepercentile',0.75)   PartitionValues_cmptile75
+PartitionValues(x,'cumulativepercentile',0.9)   PartitionValues_cmptile90
