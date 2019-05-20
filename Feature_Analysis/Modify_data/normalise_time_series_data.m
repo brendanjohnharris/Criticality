@@ -4,7 +4,7 @@ function data = normalise_time_series_data(data, what_range)
     if nargin < 2
         what_range = [];
     end
-    % Get the unstackign indices
+    % Get the unstacking indices
     unstack_inds = {};
     therange = {};
     for i = 1:size(data, 1)

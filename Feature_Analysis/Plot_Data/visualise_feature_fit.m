@@ -1,12 +1,14 @@
 function visualise_feature_fit(data, opids, num_per_feature)
     % Require three matrices; one for the feature value gradients, one for
     % the intercepts and one for their correlation
+    % Please use normalise_time_series_data on data before this function.
     tbl = get_combined_feature_stats(data, {'Absolute_Correlation', 'Feature_Value_Gradient', 'Feature_Value_Intercept'}, {}, [], 0);
     redo = 1;
     f = figure;
     while redo 
         delete(f)
         r = tbl{opids, contains(tbl.Properties.VariableNames, 'Correlation')}';
+        ri = r;
         m = tbl{opids, contains(tbl.Properties.VariableNames, 'Gradient')}';
         f0 = tbl{opids, contains(tbl.Properties.VariableNames, 'Intercept')}';
         etarange = arrayfun(@(x) x.Inputs.eta, data);
@@ -23,7 +25,7 @@ function visualise_feature_fit(data, opids, num_per_feature)
         m = m(1:d:end, :);
         r = 0.05.*rescale(r(1:d:end, :));
         f0 = f0(1:d:end, :);
-        cmp = parula(size(m, 1));
+        cmp = inferno(size(m, 1));
         feature_names = data(1).Operations.Name(opids);
 
         f = figure;
@@ -65,9 +67,9 @@ function visualise_feature_fit(data, opids, num_per_feature)
         plot(m(:, op), f0(:, op), '-k')%, 'MarkerFaceColor', 'k')
     end
     h = plot(NaN, NaN, 'ok');    
-    legend(h, '$|r|$', 'Interpreter', 'LaTex', 'Fontsize', 18)
-    colormap(cmp)
+    legend(h, sprintf('$|r|: %g - %g$', min(min(ri)), max(max(ri))), 'Interpreter', 'LaTex', 'Fontsize', 18)
     c = colorbar;
+    colormap(cmp)
     c.Label.String = '\eta';
     c.Label.Rotation = 0;
     axis equal

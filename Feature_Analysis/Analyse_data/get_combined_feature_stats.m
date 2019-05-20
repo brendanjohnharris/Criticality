@@ -83,6 +83,7 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
                     what_columns = contains(original_tbl.Properties.VariableNames, 'Feature_Value_RMSE');
                     mean_RMSE = mean(original_tbl{:, what_columns}, 2);
                     the_stat_values = the_stat_values./mean_RMSE;
+                    
                 case 'Relative_Feature_Value_Intercept_SD'
                     what_columns = contains(original_tbl.Properties.VariableNames, 'Feature_Value_Intercept');
                     the_stat_values = std(original_tbl{:, what_columns},[], 2);

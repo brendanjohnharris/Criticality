@@ -27,10 +27,12 @@ function find_correlation(datafile, correlation_type, what_range, savefile)
     % repeated consistently over 'etarange'
     for i = 1:size(time_series_data, 1)
         data = time_series_data(i, :);
-        if ~isempty(find(data.Inputs.cp_range == what_range(2), 1))
-            what_range_idxs = [find(data.Inputs.cp_range == what_range(1)):find(data.Inputs.cp_range == what_range(2))]; % Since all sections of datamat have the same cp range, can use this for all
+        [~, lowidx] = min(abs(data.Inputs.cp_range - what_range(1)));
+        [~, highidx] = min(abs(data.Inputs.cp_range - what_range(2)));
+        if ~isempty(highidx)
+            what_range_idxs = [lowidx:highidx]; % Since all sections of datamat have the same cp range, can use this for all
         else
-            what_range_idxs = [find(data.Inputs.cp_range == what_range(1)):length(data.Inputs.cp_range)]; % Since all sections of datamat have the same cp range, can use this for all
+            what_range_idxs = [lowidx:length(data.Inputs.cp_range)]; % Since all sections of datamat have the same cp range, can use this for all
         end
 
         %data = struct2cell(TimeSeries);

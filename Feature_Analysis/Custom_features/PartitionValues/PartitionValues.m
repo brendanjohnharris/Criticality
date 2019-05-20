@@ -1,14 +1,6 @@
-function [res, extrares] = PartitionValues(x, partitionType, partitionNum, makePlot, minLength, ignorelength)
+function [res, extrares] = PartitionValues(x, partitionType, partitionNum, makePlot, minLength)
 %PARTITIONVALUES Partition the time series by value (not index/time) and
 %   compute some statistics.
-%   
-%   INPUTS--
-%       x:              A single time series
-%
-%       partitionType:  See body
-%
-%       partitionNum:   A 0 < number < length(x) (in cases, a proportion) giving
-%                       the number (or height) of partitions
     
     if nargin < 4 || isempty(makePlot)
         makePlot = 0;
@@ -18,8 +10,16 @@ function [res, extrares] = PartitionValues(x, partitionType, partitionNum, makeP
         minLength = 25;
     end
     
-    if nargin < 6 || isempty(ignorelength)
+    if isnan(minLength)
+        ignorelength = 1;
+        minLength = 5;
+    else 
         ignorelength = 0;
+    end
+        
+    
+    if minLength < 5
+        error('The minimum length (arg. 5) must be greater than 4, or NaN')
     end
 
     if size(x, 1) > 1
@@ -35,11 +35,11 @@ function [res, extrares] = PartitionValues(x, partitionType, partitionNum, makeP
         case 'buffer'
             pmat = repmat(x, partitionNum, 1);
             [~, idxs] = sort(x, 'ascend');
-            idxs = buffer(idxs, floor(length(x)./partitionNum))';
-            if ~idxs(end, end)
-                idxs = idxs(1:end-1, :); % Remove top portion of values. Fine if number of windows is large? 
-                %idxs(1:end-1, idxs(1:end-1, :) == 0) = NaN; % What if there are legitimate zero values in the top portion of the time series?
-            end
+            idxs = buffer(idxs, ceil(length(x)./partitionNum))';%floor(length(x)./partitionNum))';
+%             if ~idxs(end, end)
+%                 idxs = idxs(1:end-1, :); % Remove top portion of values. Fine if number of windows is large? 
+%                 %idxs(1:end-1, idxs(1:end-1, :) == 0) = NaN; % What if there are legitimate zero values in the top portion of the time series?
+%             end
             for i = 1:size(idxs, 1)
                 pmat(i, setdiff(1:size(pmat, 2), idxs(i, :))) = NaN;
             end
