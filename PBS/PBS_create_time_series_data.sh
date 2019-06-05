@@ -13,11 +13,11 @@
 #PBS -m ea
 #PBS -M bhar9988@uni.sydney.edu.au
 #PBS -V
-#PBS -t 151-301
+#PBS -t 1-100
 
 # your commands/programs start here, for example:
 cd "$PBS_O_WORKDIR"
 cd time_series_data-$PBS_ARRAYID
 hostname
-matlab -nodisplay -singleCompThread -r "home_dir = pwd; cd('~/hctsa'), startup, cd(home_dir), TS_init('timeseries.mat', '../select_INP_mops.txt', '../select_INP_ops.txt', 0); TS_compute(0, [], [], [], [], 1); exit"
+matlab -nodisplay -singleCompThread -r "home_dir = pwd; cd('~/hctsa'), startup, cd('~/Criticality'), add_all_subfolders, cd(home_dir), TS_init('timeseries.mat', 'INP_mops.txt', 'INP_ops.txt', 0); TS_compute(0, [], [], [], [], 1); exit"
 exit

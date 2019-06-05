@@ -31,7 +31,7 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 %       labels-         A cell array labelling each row of timeSeriesData
 %                       by control and noise parameter ('cp|eta')
 %
-%       keywords-       A cell array indicating whether each tiem series was generated
+%       keywords-       A cell array indicating whether each time series was generated
 %                       before or after bifurcation
 %
 %

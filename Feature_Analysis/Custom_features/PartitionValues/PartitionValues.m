@@ -43,6 +43,7 @@ function [res, extrares] = PartitionValues(x, partitionType, partitionNum, makeP
             for i = 1:size(idxs, 1)
                 pmat(i, setdiff(1:size(pmat, 2), idxs(i, :))) = NaN;
             end
+            %............... Remove pairs that cross break...............
                  
         case 'values'
             pmat = repmat(x, partitionNum, 1);
