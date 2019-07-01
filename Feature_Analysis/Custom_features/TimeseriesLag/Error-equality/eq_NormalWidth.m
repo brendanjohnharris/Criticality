@@ -1,4 +1,4 @@
-function wid = NormalWidth(x, y, nrm)
+function wid = eq_NormalWidth(x, y, nrm)
     if size(x, 1) > 2
         x = x';
     end
@@ -22,8 +22,18 @@ function wid = NormalWidth(x, y, nrm)
 
     %wid = std(sign(x - themeans).*sqrt((x - themeans).^2 + (y - themeans).^2))./nrm; % In this case nrm is the std of all residuals
     %wid = sum(abs((x - mean(x)).*(y - mean(y))));
-    wid = sum(abs((y - themeans)))./(length(y).*std(y));%corr(x', y');%%
-
+    
+    %sum(abs((y - themeans)))./(length(y).*std(y));%corr(x', y');%%
+    %wid = sqrt(1 - nrm.*(std(y - themeans)./(std(y))).^2);
+    
+    %%------------- Use this for r_bar and r_t - r_{t-1} (evernote:         )----------------------
+    %wid = nrm.*std(y)./std(x);
+    wid = std(y); 
+    %wid = kurtosis(y);
+    %%---------------------------------------------------------------------------------------------
+    
+    
+%
    % p = fitdist((sign(x - themeans).*sqrt((x - themeans).^2 + (y - themeans).^2))', 'Normal');
     %wid = pdf(p, 0);
 end

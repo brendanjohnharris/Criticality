@@ -148,15 +148,15 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
     p = inputParser;
     addParameter(p, 'cp_range', (-1:0.1:1))
     addParameter(p, 'system_type', 'supercritical_hopf_radius_(strogatz)')
-    addParameter(p, 'tmax', 1000)
+    addParameter(p, 'tmax', 'max(1000, T.*2)')
     addParameter(p, 'initial_conditions', 1)
     addParameter(p, 'parameters', [])
     addParameter(p, 'bifurcation_point', 0)
-    addParameter(p, 'etarange', 0.16)
-    addParameter(p, 'numpoints', 1000000)
-    addParameter(p, 'savelength', 'numpoints./20')
+    addParameter(p, 'etarange', 0.1)
+    addParameter(p, 'numpoints', 'max(1000000, savelength.*20)')
+    addParameter(p, 'savelength', 5000)
     addParameter(p, 'dt', [])
-    addParameter(p, 'T', 'tmax./2')
+    addParameter(p, 'T', 500)
     addParameter(p, 'sampling_period', [])
     addParameter(p, 'foldername', [])
     addParameter(p, 'rngseed', [])
@@ -215,10 +215,11 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
                     ref = strrep(ref, fields{fld2}, num2str(p.Results.(fields{fld2})));
                 end
             end
-            if any(isletter(ref))
+            try
+                p.Results.(fields{fld1}) = eval(ref);
+            catch
                 error('The character array references an unknown field, or is incorrectly formatted')
             end
-            p.Results.(fields{fld1}) = eval(ref);
         end
     end
 
