@@ -44,7 +44,7 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
             switch the_stat{1}
                 case 'Correlation_Mean'
                     what_columns = contains(original_tbl.Properties.VariableNames, 'Correlation')&~contains(original_tbl.Properties.VariableNames, 'Absolute_Correlation');
-                    the_stat_values = mean(original_tbl(:, what_columns));
+                    the_stat_values = mean(original_tbl{:, what_columns});
                     if sum(what_columns) == 0
                         error("'%s' requires the single_stat 'Correlation'", the_stat{1})
                     end
