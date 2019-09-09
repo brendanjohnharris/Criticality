@@ -1,7 +1,13 @@
-function plot_feature_vals(op_id, data, on_what, combined)
+function plot_feature_vals(op_id, data, on_what, combined, reduced)
+        % A real shamble
+        
+        
         a = figure;
         if nargin < 4 || isempty(combined)
             combined = false;
+        end
+        if nargin < 5 || isempty(reduced)
+            reduced = 0;
         end
         if ~combined
             ps = numSubplots(length(data));
@@ -11,7 +17,7 @@ function plot_feature_vals(op_id, data, on_what, combined)
             set(a, 'units','normalized','outerposition',[0.25 0.2 0.4 0.5]);
         end
         figure(a)
-        if size(data, 1) >7
+        if size(data, 1) > 7
             if strcmp(on_what, 'noise')
                 param = sort(arrayfun(@(x) x.Inputs.eta, data));
             elseif strcmp(on_what, 'distance')
@@ -26,7 +32,20 @@ function plot_feature_vals(op_id, data, on_what, combined)
                 error('Cannot colour lines by noise when there are duplicate values')
             end
         end
-    for ind = 1:length(data)
+    if reduced
+        plotStep = round(length(data)./4)-1;
+    else
+        plotStep = 1;
+    end
+    if reduced
+        cmap = inferno(length(1:plotStep:length(data))+1);%BF_getcmap('dark2', length(1:plotStep:length(data)));
+        cmap = cmap(1:end-1, :);
+        cbarcmap = [];
+    elseif size(data, 1) <= 7
+        cmap = inferno(length(data)+1);%BF_getcmap('dark2', length(data));
+        cmap = cmap(1:end-1, :);
+    end
+    for ind = 1:plotStep:length(data)
         deltamu = data(ind).Inputs.cp_range;
         operations = [data(ind).Operations.ID];
         TS_DataMat = data(ind).TS_DataMat(:, op_id); % Only works for un-normalised data, and where operations is in order and 'continuous'
@@ -42,15 +61,19 @@ function plot_feature_vals(op_id, data, on_what, combined)
         % 
         %name = (time_series_data(ind).Inputs.cp_range(1));
         %a = figure('Name', sprintf("Spearman's Correlation for eta = %g", name));
-        if size(data, 1) <= 7 || ~combined
-            plot(deltamu, TS_DataMat, '-o', 'MarkerSize', 2)%, 'MarkerFaceColor', 'b')
+        if size(data, 1) <= 7 || ~combined || reduced
+            plot(deltamu, TS_DataMat, '.-', 'MarkerSize', 12.5, 'Color', cmap(1, :), 'LineWidth', 2.5)
+            cbarcmap(end+1, :) = cmap(1, :);
+            %p = fit(deltamu', TS_DataMat, 'smoothingspline', 'SmoothingParam', 0.999);
+            %plot([min(deltamu):0.01:max(deltamu)] , p([min(deltamu):0.01:max(deltamu)]), '-', 'Color', cmap(1, :), 'HandleVisibility', 'off', 'LineWidth', 3)
+            cmap = cmap(2:end, :);
             if strcmp(on_what, 'noise')
                 if ~combined
                     %title(['Noise: ', num2str(data(ind).Inputs.eta), ', ', 'Correlation: ', num2str(correlation(1))])
                     title(['Noise: ', num2str(data(ind).Inputs.eta)])
-                else
-                    legendcell{ind} = ['Noise: ', num2str(data(ind).Inputs.eta)];%, ', ', 'Correlation: ', num2str(correlation(1))];
-                end       
+                end
+                    %legendcell{ind} = ['Noise: ', num2str(data(ind).Inputs.eta)];%, ', ', 'Correlation: ', num2str(correlation(1))];
+                %end       
             elseif strcmp(on_what, 'distance')
                 if ~combined
                     title(['Distance: ', num2str(data(ind).Inputs.cp_range(1))])
@@ -65,10 +88,12 @@ function plot_feature_vals(op_id, data, on_what, combined)
             c.Label.Rotation = 0;
             c.Label.FontSize = 14;
             if strcmp(on_what, 'noise')
-                plot(deltamu, TS_DataMat, '-', 'MarkerSize', 2, 'Color', cmp(param == data(ind).Inputs.eta, :))%, 'MarkerFaceColor', 'b')   
+                plot(deltamu, TS_DataMat, '.', 'MarkerSize', 10, 'Color', cmp(param == data(ind).Inputs.eta, :))%, 'MarkerFaceColor', 'b')   
+                %scaleScatter(deltamu, TS_DataMat, 0.01, cmp(param == data(ind).Inputs.eta, :));
                 c.Label.String = '\eta';
             elseif strcmp(on_what, 'distance')
-                plot(deltamu, TS_DataMat, '-', 'MarkerSize', 2, 'Color', cmp(param == data(in).Inputs.cp_range(1), :))%, 'MarkerFaceColor', 'b')
+                plot(deltamu, TS_DataMat, '.', 'MarkerSize', 10, 'Color', cmp(param == data(ind).Inputs.cp_range(1), :))%, 'MarkerFaceColor', 'b')
+                %scaleScatter(deltamu, TS_DataMat, 0.01, cmp(param == data(ind).Inputs.cp_range(1), :));
                 c.Label.String = '\Delta \mu';
             end
         end
@@ -79,12 +104,25 @@ function plot_feature_vals(op_id, data, on_what, combined)
         ylabel('Feature Value')
         %savefig(a, sprintf("Spearman's_Correlation_for_eta_=_%g.fig", name))
     end
-    if combined && all(cellfun(@(x) ~isempty(x), legendcell)) && size(data, 1) <= 7
+    if reduced
+        %legendcell = legendcell(1:plotStep:length(data));
+            %plot(NaN, NaN)
+            colormap(cbarcmap)
+            c = colorbar;
+            c.Label.Rotation = 0;
+            c.Label.FontSize = 14;
+            if strcmp(on_what, 'noise')
+                c.Label.String = '\eta';
+            elseif strcmp(on_what, 'distance')
+                c.Label.String = '\Delta \mu';
+            end
+    end
+    if combined && all(cellfun(@(x) ~isempty(x), legendcell)) && (size(data, 1) <= 7 || reduced)
        legend(legendcell)
     end  
     ops = data.Operations;
     opname = ops.Name{op_id};
-    suptitle(strrep(opname, '_', ' '))
+    suptitle(strrep(opname, '_', '\_'))
     set(a,'color','w');
 end
 

@@ -149,7 +149,7 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
     addParameter(p, 'cp_range', (-1:0.1:1))
     addParameter(p, 'system_type', 'supercritical_hopf_radius_(strogatz)')
     addParameter(p, 'tmax', 'max(1000, T.*2)')
-    addParameter(p, 'initial_conditions', 1)
+    addParameter(p, 'initial_conditions', 0)
     addParameter(p, 'parameters', [])
     addParameter(p, 'bifurcation_point', 0)
     addParameter(p, 'etarange', 0.1)
@@ -239,10 +239,14 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 
 %% Calculate which of numsteps, tmax and dt were not specified
     lDt = isempty(dt); lTm = isempty(tmax); lN = isempty(numpoints);
-    if ~lDt && ~lTm && ~lN % Which one to calculate is ambiguous, and they might disagree.
-                                                             % Perhaps add a check to see if they agree.
-        error('All three of dt, tmax and numpoints cannot be specified at once. Please give two only')
-    elseif lDt && ~lTm && ~lN
+    if ~lDt && ~lTm && ~lN
+        if (tmax == dt.*numpoints)
+            dt = tmax./numpoints;
+            p.Results.dt = dt;
+        else
+            error('This combination of dt, tmax and numpoints is not consistent')
+        end
+    elseif lDt && ~lTm && ~lN || (tmax ~= dt.*numpoints)
         dt = tmax./numpoints;
         p.Results.dt = dt;
     elseif ~lDt && lTm && ~lN
@@ -258,7 +262,12 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 %% Calculate which of T, savelength and sampling_period were not specified
     lT = isempty(T); lS = isempty(savelength); lSp = isempty(sampling_period);
     if ~lT && ~lS && ~lSp
-        error('All three of T, savelength and sampling_period cannot be specified at once. Please give two only')
+        if (T == savelength.*sampling_period)
+            T = savelength.*sampling_period;
+            p.Results.T = T;
+        else
+            error('This combination of T, savelength and sampling_period is not consistent')
+        end
     elseif lT && ~lS && ~lSp
         T = savelength.*sampling_period;
         p.Results.T = T;
@@ -302,6 +311,9 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
         end
         eta = etarange(i);
         r = zeros(length(cp_range), 1) + initial_conditions;
+        if isinf((numpoints - 1 - transient_cutoff)./savestep)
+            error('Requested simulation has too many timesteps to be performed')
+        end
         rout = zeros(length(cp_range), floor((numpoints - 1 - transient_cutoff)./savestep));
         Wl = size(r, 1); % Length of noise vector
         
@@ -377,6 +389,15 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
                     end
                 end
                 rout = abs(rout);
+                
+            case 'quadratic_potential'
+                for n = 1:numpoints-1
+                    r = r + (cp_range'.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
+                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
+                    end
+                end
+                rout = abs(rout);  
 
             otherwise
                 error("No match found for type '%s'", system_type)

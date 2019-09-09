@@ -44,7 +44,7 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
             switch the_stat{1}
                 case 'Correlation_Mean'
                     what_columns = contains(original_tbl.Properties.VariableNames, 'Correlation')&~contains(original_tbl.Properties.VariableNames, 'Absolute_Correlation');
-                    the_stat_values = mean(original_tbl{:, what_columns});
+                    the_stat_values = nanmean(original_tbl{:, what_columns}, 2);
                     if sum(what_columns) == 0
                         error("'%s' requires the single_stat 'Correlation'", the_stat{1})
                     end
@@ -112,6 +112,16 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
                     y = cell2mat(arrayfun(@(x) data(x, :).TS_DataMat(idxs, :), 1:size(data, 1), 'UniformOutput', 0)');
                     x = cell2mat(arrayfun(@(x) data(x, :).Inputs.cp_range(idxs), 1:size(data, 1), 'UniformOutput', 0))';
                     the_stat_values = abs(corr(y, x, 'Type', 'Pearson'));
+                    
+                case 'Aggregated_Correlation'
+                    if ~isempty(data(1).Correlation_Range)
+                        idxs = (data(1).Inputs.cp_range >= data(1).Correlation_Range(1) & data(1).Inputs.cp_range <= data(1).Correlation_Range(2)); % Assumes all rows of data have the same cp_range and Correlation_Range
+                    else
+                        idxs = 1:length(data(1).Inputs.cp_range);
+                    end
+                    y = cell2mat(arrayfun(@(x) data(x, :).TS_DataMat(idxs, :), 1:size(data, 1), 'UniformOutput', 0)');
+                    x = cell2mat(arrayfun(@(x) data(x, :).Inputs.cp_range(idxs), 1:size(data, 1), 'UniformOutput', 0))';
+                    the_stat_values = (corr(y, x, 'Type', 'Pearson'));
                     
                 case 'Aggregated_cp_RMSE'
                     if ~isempty(data(1).Correlation_Range)
@@ -244,7 +254,47 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
                 case 'Multiple_Linear_Regression_RMSE_Zero_Noise_Partial'
                     [~, the_stat_values] = get_linear_model(data, [], 0);
                     
-                    otherwisedit
+                case 'Mean_Eta_Correlation'
+                    % Assume identical eta, cp and correlation ranges as
+                    % well as operations
+                    if ~isempty(data(1).Correlation_Range)
+                        idxs = (data(1).Inputs.cp_range >= data(1).Correlation_Range(1) & data(1).Inputs.cp_range <= data(1).Correlation_Range(2)); % Assumes all rows of data have the same cp_range and Correlation_Range
+                    else
+                        idxs = 1:length(data(1).Inputs.cp_range);
+                    end
+                    cpvals = data(1).Inputs.cp_range(idxs);
+                    etavals = arrayfun(@(x) x.Inputs.eta, data);
+                    fvals = nan(length(cpvals), size(data(1).TS_DataMat, 2), length(etavals));
+                    for n = 1:length(etavals)
+                        fvals(:, :, n) = data(n, :).TS_DataMat(idxs, :);
+                    end
+                    corrvals = nan(length(cpvals), size(data(1).TS_DataMat, 2));
+                    for u = 1:length(cpvals)
+                        corrvals(u, :) = corr(etavals, squeeze(fvals(u, :, :))', 'Type', 'Spearman');
+                    end
+                    the_stat_values = mean((corrvals), 1)';
+                    
+                case 'Mean_Abs_Eta_Correlation'
+                    % Assume identical eta, cp and correlation ranges as
+                    % well as operations
+                    if ~isempty(data(1).Correlation_Range)
+                        idxs = (data(1).Inputs.cp_range >= data(1).Correlation_Range(1) & data(1).Inputs.cp_range <= data(1).Correlation_Range(2)); % Assumes all rows of data have the same cp_range and Correlation_Range
+                    else
+                        idxs = 1:length(data(1).Inputs.cp_range);
+                    end
+                    cpvals = data(1).Inputs.cp_range(idxs);
+                    etavals = arrayfun(@(x) x.Inputs.eta, data);
+                    fvals = nan(length(cpvals), size(data(1).TS_DataMat, 2), length(etavals));
+                    for n = 1:length(etavals)
+                        fvals(:, :, n) = data(n, :).TS_DataMat(idxs, :);
+                    end
+                    corrvals = nan(length(cpvals), size(data(1).TS_DataMat, 2));
+                    for u = 1:length(cpvals)
+                        corrvals(u, :) = corr(etavals, squeeze(fvals(u, :, :))', 'Type', 'Spearman');
+                    end
+                    the_stat_values = mean(abs(corrvals), 1)';
+                    
+                otherwise
                     error([the_stat{1}, ' is not a supported statistic'])
             end
         catch ME

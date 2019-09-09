@@ -7,8 +7,8 @@ function lag_series_density(x, V)
     x = x(1:end-1);
     x1(isnan(x)) = NaN;
     x(isnan(x1)) = NaN;
-    xscerr = x1 - x;
-    r = mean([x; x1], 1);
+    xscerr = (x1 - x)./sqrt(2);
+    r = mean([x; x1], 1)./sqrt(2);
     med = median(r);
     if ~isempty(V)
         Vr = eval(V);
@@ -19,9 +19,9 @@ function lag_series_density(x, V)
     %[N, C] = hist3([x', x1'], [100, 100]);
     %contourf(C{1}, C{2}, N, 1000, 'linestyle', 'none')
     %figure
-    %histogram2(x, x1, 100, 'facecolor', 'flat', 'DisplayStyle', 'tile')
+    %histogram2(x, x1, 50, 'facecolor', 'flat', 'DisplayStyle', 'tile'), a = gca; a.GridLineStyle = 'none'; set(gcf, 'Color', 'w')
     %figure
-    histogram2(std(xscerr).*r, xscerr, 50, 'facecolor', 'flat', 'DisplayStyle', 'tile')
+    histogram2(r, xscerr, 50, 'facecolor', 'flat', 'DisplayStyle', 'tile')
     a = gca;
 %     xli = a.XLim;
 %     yli = a.YLim;
@@ -32,5 +32,6 @@ function lag_series_density(x, V)
     a.GridLineStyle = 'none';
     set(gcf, 'Color', 'w')
     %caxis([25, inf])
+    hold off
 end
 

@@ -1,11 +1,17 @@
-function out = twoBin(x, mu, color)
+function out = twoBin(x, mu, color, p)
     if nargin < 2
         mu = [];
     end
     if nargin < 3 || isempty(color)
         color = [ 0 0 0 ];
     end
-
+    if nargin < 4 || isempty(p)
+        p = 1;
+    end
+    
+    %x = x./std((x(2:end) - x(1:end-1)));%zscore(x);
+    
+    
     res = [x(1:end - 1); x(2:end)];%[mean([x(1:end-1);  x(2:end)], 1); x(2:end) - x(1:end-1)];
     [~, idxs] = sort(res(1, :));
     res = res(:, idxs);
@@ -82,6 +88,39 @@ function out = twoBin(x, mu, color)
     
     out.densitygrad = std(res_eq(2, :)).*(-log(25000./uv) - -log(25000./lv))./(mean(upperes_eq(1, :)) - mean(loweres_eq(1, :)));
     
+    %----------------------------------------------------------------------  
+    fx = @(x, y) var(((x) + (y))./sqrt(2));
+    fy = @(x, y) var(((y) - (x))./sqrt(2));
+    out.modCorr = fx(upperes(1, :), upperes(2, :)) - fx(loweres(1, :), loweres(2, :));
+    %----------------------------------------------------------------------  
+    c = @(x, y) (fx(x, y) - fy(x, y))./(fx(x, y) + fy(x, y));
+    out.modCorr2 = c(upperes(1, :), upperes(2, :)) - c(loweres(1, :), loweres(2, :));
+    %----------------------------------------------------------------------
+    c = @(x, y) (fx(x, y));%-fy(x, y));%(fx(x, y));%-fy(x, y));
+    out.modCorr3 = c(upperes(1, :), upperes(2, :)) - c(loweres(1, :), loweres(2, :));
+    %----------------------------------------------------------------------
+    c = @(x, y) (fx(x, y) + fy(x, y));
+    out.modCorr4 = c(upperes(1, :), upperes(2, :)) - c(loweres(1, :), loweres(2, :));
+    %----------------------------------------------------------------------  
+    out.covdiff = propcov(upperes(1, :)', upperes(2, :)') - propcov(loweres(1, :)', loweres(2, :)');
+    %----------------------------------------------------------------------   
+    %----------------------------------------------------------------------    
+    
+    out.covEigs =  covEigs(upperes(1, :)', upperes(2, :)') - covEigs(loweres(1, :)', loweres(2, :)');
+    %----------------------------------------------------------------------
+    
+    %----------------------------------------------------------------------
+    c = @(x, y) (fy(x, y));%-fy(x, y));%(fx(x, y));%-fy(x, y));
+    out.modCorr6 = c(upperes(1, :), upperes(2, :)) - c(loweres(1, :), loweres(2, :));
+    %----------------------------------------------------------------------
+    %----------------------------------------------------------------------
+    c = @(x, y) fy(x, y)./fx(x, y);%-fy(x, y));%(fx(x, y));%-fy(x, y));
+    out.modCorr7 = c(upperes(1, :), upperes(2, :)) - c(loweres(1, :), loweres(2, :));
+    %----------------------------------------------------------------------
+    
+    out.med = median(x);
+    
+    out.dkurt = kurtosis([-x, x]);
     
 % ----Plot the difference over the potential function----------------------
     if ~isempty(mu)
@@ -96,6 +135,26 @@ function out = twoBin(x, mu, color)
         ofst = l - P([mean(upperes_eq(1, :)), mean(loweres_eq(1, :))], mu);
         scatter([mean(upperes_eq(1, :)), mean(loweres_eq(1, :))], [u, l]-ofst, 50, color, 'filled');%, 'markersize', 4, 'markerfacecolor', color, 'color', color)
     end
-% -------------------------------------------------------------------------    
+% -------------------------------------------------------------------------  
+% ------------------------------------------------------------------------- 
+    thresh = mean(res(1, :))+p*std(res_eq(2, :));
+    out.upperpropsigma = sum(res(1, :) >=thresh)./(sum(res(1, :) <= thresh)+sum(res(1, :) >= thresh));
+    thresh = mean(res(1, :))+p*std(x);
+    out.upperprop = sum(res(1, :) >=thresh)./(sum(res(1, :) <= thresh)+sum(res(1, :) >= thresh));
+    thresh = p*std(res_eq(2, :));
+    out.upperpropnomeansigma = sum(res(1, :) >=thresh)./(sum(res(1, :) <= thresh)+sum(res(1, :) >= thresh));
+% ------------------------------------------------------------------------- 
+% ------------------------------------------------------------------------- 
+    out.meanscaled = mean(res(1, :))+std(res_eq(2, :));
+    
+    function res = propcov(x, y)
+        res = cov(x, y);
+        res = res(2);
+    end
+    function res = covEigs(x, y)
+        res = cov(x, y);
+        res = eig(res);
+        res = res(end);
+    end
 end
 

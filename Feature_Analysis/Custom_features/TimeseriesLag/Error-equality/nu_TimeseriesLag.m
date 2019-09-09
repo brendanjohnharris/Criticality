@@ -62,6 +62,20 @@ function [fval, corrvec, diststd, samplepoints, ppoints] = nu_TimeseriesLag(x, n
     thefit = fit(samplepoints', V(f), ft);
     [~, mu_conc] = differentiate(thefit, 0);
     fval.mu_conc = mu_conc;
+  
+    V = @(f) -std(res(2, :)).^2.*log(f);
+    ft = fittype('-a*x^2 + b', 'independent', {'x'}, 'coefficients', {'a', 'b'});
+    thefit = fit(samplepoints', V(f), ft);
+    [~, mu_conc] = differentiate(thefit, samplepoints);
+    fval.quadratic_mu_conc = mean(mu_conc);
+    
+    
+    fval.pdf_kurt = kurtosis(f);
+    fval.vals_kurt = kurtosis(x);
+    
+    fval.reflectedSD = iqr([x, -x]./std(x(2:end) - x(1:end-1)));
+    
+    
     
     
     if ~isempty(mu) && dtmarker
