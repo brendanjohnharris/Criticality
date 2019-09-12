@@ -1,13 +1,26 @@
-function plot_feature_vals(op_id, data, on_what, combined, reduced)
+function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
         % A real shamble
         
         
         a = figure;
         if nargin < 4 || isempty(combined)
-            combined = false;
+            combined = 1;
         end
         if nargin < 5 || isempty(reduced)
             reduced = 0;
+            indvec = [];
+        elseif length(reduced) > 1
+            indvec = reduced;
+            reduced = 1;
+        end
+        if nargin < 6 || isempty(correlated)
+            correlated = 0;
+            tbl = [];
+        elseif istable(correlated)
+            tbl = correlated;
+            correlated = 1;
+        else
+            tbl = [];
         end
         if ~combined
             ps = numSubplots(length(data));
@@ -34,18 +47,25 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced)
         end
     if reduced
         plotStep = round(length(data)./4)-1;
+        cbareta = [];
     else
         plotStep = 1;
     end
     if reduced
-        cmap = inferno(length(1:plotStep:length(data))+1);%BF_getcmap('dark2', length(1:plotStep:length(data)));
-        cmap = cmap(1:end-1, :);
+        cmap = inferno(length(1:plotStep:length(data)));%BF_getcmap('dark2', length(1:plotStep:length(data)));
+        cmap = cmap(1:end, :);
         cbarcmap = [];
+        if isempty(indvec)
+            indvec = 1:plotStep:length(data);
+        end
     elseif size(data, 1) <= 7
         cmap = inferno(length(data)+1);%BF_getcmap('dark2', length(data));
         cmap = cmap(1:end-1, :);
     end
-    for ind = 1:plotStep:length(data)
+    if ~reduced
+        indvec = 1:length(data);
+    end
+    for ind = indvec
         deltamu = data(ind).Inputs.cp_range;
         operations = [data(ind).Operations.ID];
         TS_DataMat = data(ind).TS_DataMat(:, op_id); % Only works for un-normalised data, and where operations is in order and 'continuous'
@@ -64,6 +84,9 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced)
         if size(data, 1) <= 7 || ~combined || reduced
             plot(deltamu, TS_DataMat, '.-', 'MarkerSize', 12.5, 'Color', cmap(1, :), 'LineWidth', 2.5)
             cbarcmap(end+1, :) = cmap(1, :);
+            cbareta(end+1) = data(ind).Inputs.eta;
+           
+            
             %p = fit(deltamu', TS_DataMat, 'smoothingspline', 'SmoothingParam', 0.999);
             %plot([min(deltamu):0.01:max(deltamu)] , p([min(deltamu):0.01:max(deltamu)]), '-', 'Color', cmap(1, :), 'HandleVisibility', 'off', 'LineWidth', 3)
             cmap = cmap(2:end, :);
@@ -108,6 +131,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced)
         %legendcell = legendcell(1:plotStep:length(data));
             %plot(NaN, NaN)
             colormap(cbarcmap)
+            caxis([min(param), max(param)])
             c = colorbar;
             c.Label.Rotation = 0;
             c.Label.FontSize = 14;
@@ -116,6 +140,9 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced)
             elseif strcmp(on_what, 'distance')
                 c.Label.String = '\Delta \mu';
             end
+            offset = max(param)/10;
+            c.TickLabels = param(indvec);
+            c.Ticks = linspace(offset, max(param)-offset, 5);
     end
     if combined && all(cellfun(@(x) ~isempty(x), legendcell)) && (size(data, 1) <= 7 || reduced)
        legend(legendcell)
@@ -124,5 +151,15 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced)
     opname = ops.Name{op_id};
     suptitle(strrep(opname, '_', '\_'))
     set(a,'color','w');
+    ax = gca;
+    ax.Box = 'on';
+    if combined && correlated
+        if isempty(tbl)
+            title('<Finding correlation, please wait>')
+            tbl = get_combined_feature_stats(data, {}, {'Aggregated_Correlation'}, [], 1);
+        end
+        thecorr = tbl.Aggregated_Correlation(tbl.Operation_ID == op_id);
+        title(sprintf('$$\\rho_p = %.2g$$', thecorr), 'interpreter', 'latex', 'fontsize', 16)
+    end
 end
 
