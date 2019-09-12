@@ -142,380 +142,337 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 %
 %                               Refer to hctsa functions TS_init and
 %                               TS_compute for detail on these options' purposes.
+%
+%          criteria:            A string containing the criteria for
+%                               accepting timeseries, referring to the timeseries
+%                               'rout' (make sure it is a vectorised expression;
+%                               time series are contained in matrices, with
+%                               time increasing horizontally). If a generated
+%                               timeseries fails to pass this criteria,
+%                               it will be regenerated (up to a limit, 'maxAttempts').
+%                               E.g. 'mean(r, 2) > 0'
+%
+%         maxAttempts:          A number, specifying how many times to try to
+%                               simulate a timeseries until it passes the criteria.
+%                               Any that do not pass by this maximum number of attemtps will be NaN
 
 %% Parse Inputs
-    start = tic; % Start timer
-    p = inputParser;
-    addParameter(p, 'cp_range', (-1:0.1:1))
-    addParameter(p, 'system_type', 'supercritical_hopf_radius_(strogatz)')
-    addParameter(p, 'tmax', 'max(1000, T.*2)')
-    addParameter(p, 'initial_conditions', 0)
-    addParameter(p, 'parameters', [])
-    addParameter(p, 'bifurcation_point', 0)
-    addParameter(p, 'etarange', 0.1)
-    addParameter(p, 'numpoints', 'max(1000000, savelength.*20)')
-    addParameter(p, 'savelength', 5000)
-    addParameter(p, 'dt', [])
-    addParameter(p, 'T', 500)
-    addParameter(p, 'sampling_period', [])
-    addParameter(p, 'foldername', [])
-    addParameter(p, 'rngseed', [])
-    addParameter(p, 'randomise', 1)
-    addParameter(p, 'vocal', 1)
-    addParameter(p, 'save_cp_split', 0)
-    addParameter(p, 'input_file', [])
-    addParameter(p, 'input_struct', [])
-    addParameter(p, 'integrated_hctsa', struct('beVocal', [], 'INP_ops', [],...
-                        'INP_mops', [], 'customFile', [], 'doParallel', []))
-    parse(p,varargin{:})
+start = tic; % Start timer
+p = inputParser;
+addParameter(p, 'cp_range', (-1:0.1:1))
+addParameter(p, 'system_type', 'supercritical_hopf_radius_(strogatz)')
+addParameter(p, 'tmax', 'T')
+addParameter(p, 'initial_conditions', 0)
+addParameter(p, 'parameters', [])
+addParameter(p, 'bifurcation_point', 0)
+addParameter(p, 'etarange', 0.1)
+addParameter(p, 'numpoints', 'max(1000000, savelength.*20)')
+addParameter(p, 'savelength', 5000)
+addParameter(p, 'dt', [])
+addParameter(p, 'T', 1000)
+addParameter(p, 'sampling_period', [])
+addParameter(p, 'foldername', [])
+addParameter(p, 'rngseed', [])
+addParameter(p, 'randomise', 1)
+addParameter(p, 'vocal', 1)
+addParameter(p, 'save_cp_split', 0)
+addParameter(p, 'input_file', [])
+addParameter(p, 'input_struct', [])
+addParameter(p, 'integrated_hctsa', struct('beVocal', [], 'INP_ops', [],...
+                    'INP_mops', [], 'customFile', [], 'doParallel', []))
+addParameter(p, 'criteria', 1) % Every timeseries will pass
+addParameter(p, 'maxAttempts', 100)
+parse(p,varargin{:})
 
 
 %% Check if extra arguments were given
-    extra_vals = [];
-    if ~isempty(p.Results.input_file) || ~isempty(p.Results.input_struct)
-        extra_args = setdiff(p.Parameters, p.UsingDefaults); % Get the arguments that are not using defaults
-        extra_args = extra_args(~strcmp(extra_args, 'input_file'));
-        if ~isempty(extra_args)
-            extra_vals = cell(size(extra_args));
-            for k = 1:length(extra_args)
-                extra_vals{k} = p.Results.(extra_args{k});  % Store extra values so they survive the load from the input file/struct
-            end
+extra_vals = [];
+if ~isempty(p.Results.input_file) || ~isempty(p.Results.input_struct)
+    extra_args = setdiff(p.Parameters, p.UsingDefaults); % Get the arguments that are not using defaults
+    extra_args = extra_args(~strcmp(extra_args, 'input_file'));
+    if ~isempty(extra_args)
+        extra_vals = cell(size(extra_args));
+        for k = 1:length(extra_args)
+            extra_vals{k} = p.Results.(extra_args{k});  % Store extra values so they survive the load from the input file/struct
         end
     end
+end
 
 %% Check if an input file was specified or a struct was given
-    if ~isempty(p.Results.input_file) && isempty(p.Results.input_struct)
-        f = struct2cell(load(p.Results.input_file));
-        p = struct('Results', f{1}); % p doesn't include extra input parser fields but is still in the same form
-        input_file = p.Results.input_file;
-    elseif ~isempty(p.Results.input_struct) && isempty(p.Results.input_file)
-        p = struct('Results', p.Results.input_struct);
-        input_file = p.Results.input_file;
-    end
+if ~isempty(p.Results.input_file) && isempty(p.Results.input_struct)
+    f = struct2cell(load(p.Results.input_file));
+    p = struct('Results', f{1}); % p doesn't include extra input parser fields but is still in the same form
+    input_file = p.Results.input_file;
+elseif ~isempty(p.Results.input_struct) && isempty(p.Results.input_file)
+    p = struct('Results', p.Results.input_struct);
+    input_file = p.Results.input_file;
+end
 
 %% Change input parser to struct so that 'Results' field can be modified
-    p = struct('Results', p.Results);
+p = struct('Results', p.Results);
 %    p.Results.input_file = input_file; % Make sure that the input file of these generated time series is the input file originally specified
 
 %% If extra arguments were given, replace values
-    if ~isempty(extra_vals)
-        for m = 1:length(extra_args)
-            p.Results.(extra_args{m}) = extra_vals{m};
-        end
+if ~isempty(extra_vals)
+    for m = 1:length(extra_args)
+        p.Results.(extra_args{m}) = extra_vals{m};
     end
+end
 
 %% Evaluate any options given as character arrays
-    fields = fieldnames(p.Results);
-    allowed_fields = {'input_file', 'foldername', 'system_type'}; % Exclude any fields that are supposed to be character arrays
-    for fld1 = 1:length(fields)
-        ref = p.Results.(fields{fld1});
-        if ischar(ref) && all(~strcmp(fields{fld1}, allowed_fields))
-            for fld2 = 1:length(fields)
-                if isscalar(p.Results.(fields{fld2})) && ~isstruct(p.Results.(fields{fld2}))
-                    ref = strrep(ref, fields{fld2}, num2str(p.Results.(fields{fld2})));
-                end
-            end
-            try
-                p.Results.(fields{fld1}) = eval(ref);
-            catch
-                error('The character array references an unknown field, or is incorrectly formatted')
+% Obviously you can't use too many of these, but it will work for a couple
+% of independent arguments
+fields = fieldnames(p.Results);
+allowed_fields = {'input_file', 'foldername', 'system_type', 'criteria'}; % Exclude any fields that are supposed to be character arrays
+for fld1 = 1:length(fields)
+    ref = p.Results.(fields{fld1});
+    if ischar(ref) && all(~strcmp(fields{fld1}, allowed_fields))
+        for fld2 = 1:length(fields)
+            if isempty(p.Results.(fields{fld2}))
+                ref = strrep(ref, fields{fld2}, '[]');
+            elseif isscalar(p.Results.(fields{fld2})) && ~isstruct(p.Results.(fields{fld2}))
+                % This should work for numeric and character vectors and scalars
+                ref = strrep(ref, fields{fld2}, num2str(p.Results.(fields{fld2})));
             end
         end
+        try
+            p.Results.(fields{fld1}) = eval(ref);
+        catch
+            error('The character array references an unknown field, or is incorrectly formatted')
+        end
     end
+end
 
-%% Unpack input parser struct, for easier variable access (using an additional function)
-    v2struct(p.Results)
+%% Make sure that cp_range and eta are row vectors
+p.Results.cp_range = p.Results.cp_range(:)';
+p.Results.etarange = p.Results.etarange(:)';
+
+%% Unpack input parser struct, for easier access to variables (using an additional function)
+v2struct(p.Results)
 
 %% Randomise, or not, and add current rng state to struct
-    if isempty(randomise)
-        error('Randomise or not; make a decision (0 or 1)')
-    end
-    if randomise || isempty(rngseed)
-        rng('shuffle')
-        p.Results.rngseed = rng; % Update rngseed
-    else
-        rng(rngseed)
-    end
+if isempty(randomise)
+    error('Randomise or not; make a decision (0 or 1)')
+end
+if randomise || isempty(rngseed)
+    rng('shuffle')
+    p.Results.rngseed = rng; % Update rngseed
+else
+    rng(rngseed)
+end
 
 %% Calculate which of numsteps, tmax and dt were not specified
-    lDt = isempty(dt); lTm = isempty(tmax); lN = isempty(numpoints);
-    if ~lDt && ~lTm && ~lN
-        if (tmax == dt.*numpoints)
-            dt = tmax./numpoints;
-            p.Results.dt = dt;
-        else
-            error('This combination of dt, tmax and numpoints is not consistent')
-        end
-    elseif lDt && ~lTm && ~lN || (tmax ~= dt.*numpoints)
+lDt = isempty(dt); lTm = isempty(tmax); lN = isempty(numpoints);
+if ~lDt && ~lTm && ~lN
+    if (tmax == dt.*numpoints)
         dt = tmax./numpoints;
         p.Results.dt = dt;
-    elseif ~lDt && lTm && ~lN
-        tmax = numpoints.*dt;
-        p.Results.tmax = tmax;
-    elseif ~lDt && ~lTm && lN
-        numpoints = round(tmax./dt); % ceil or round?
-        p.Results.numpoints = numpoints;
     else
-        error('Not enough inputs to determine the time parameters of integration')
+        error('This combination of dt, tmax and numpoints is not consistent')
     end
+elseif lDt && ~lTm && ~lN || (tmax ~= dt.*numpoints)
+    dt = tmax./numpoints;
+    p.Results.dt = dt;
+elseif ~lDt && lTm && ~lN
+    tmax = numpoints.*dt;
+    p.Results.tmax = tmax;
+elseif ~lDt && ~lTm && lN
+    numpoints = round(tmax./dt); % ceil or round?
+    p.Results.numpoints = numpoints;
+else
+    error('Not enough inputs to determine the time parameters of integration')
+end
 
 %% Calculate which of T, savelength and sampling_period were not specified
-    lT = isempty(T); lS = isempty(savelength); lSp = isempty(sampling_period);
-    if ~lT && ~lS && ~lSp
-        if (T == savelength.*sampling_period)
-            T = savelength.*sampling_period;
-            p.Results.T = T;
-        else
-            error('This combination of T, savelength and sampling_period is not consistent')
-        end
-    elseif lT && ~lS && ~lSp
+lT = isempty(T); lS = isempty(savelength); lSp = isempty(sampling_period);
+if ~lT && ~lS && ~lSp
+    if (T == savelength.*sampling_period)
         T = savelength.*sampling_period;
         p.Results.T = T;
-    elseif ~lT && lS && ~lSp
-        savelength = round(T./sampling_period);
-        p.Results.savelength = savelength;
-    elseif ~lT && ~lS && lSp
-        sampling_period = T./savelength;
-        p.Results.sampling_period = sampling_period;
     else
-        error('Not enough inputs to determine the time parameters with which to save the timeseries')
+        error('This combination of T, savelength and sampling_period is not consistent')
     end
+elseif lT && ~lS && ~lSp
+    T = savelength.*sampling_period;
+    p.Results.T = T;
+elseif ~lT && lS && ~lSp
+    savelength = round(T./sampling_period);
+    p.Results.savelength = savelength;
+elseif ~lT && ~lS && lSp
+    sampling_period = T./savelength;
+    p.Results.sampling_period = sampling_period;
+else
+    error('Not enough inputs to determine the time parameters with which to save the timeseries')
+end
 
 
 %% Calculate additional variables from inputs and initialise
-    transient_cutoff = numpoints - round(T./dt);
-    %savestep = round((numpoints-transient_cutoff)./savelength);
-    savestep = round(sampling_period./dt);
-    rep_length = length(transient_cutoff:savestep:numpoints-1);
-    if ~isstruct(integrated_hctsa) && ~isempty(integrated_hctsa)
-        error('The option ''integrated_hctsa'' must be a struct')
-    end
+transient_cutoff = numpoints - round(T./dt);
+%savestep = round((numpoints-transient_cutoff)./savelength);
+savestep = round(sampling_period./dt);
+rep_length = length(transient_cutoff:savestep:numpoints-1);
+if ~isstruct(integrated_hctsa) && ~isempty(integrated_hctsa)
+    error('The option ''integrated_hctsa'' must be a struct')
+end
 
-    if isstruct(integrated_hctsa)
-        no_hctsa = ~any(structfun(@(x) ~isempty(x), integrated_hctsa));
-    else
-        no_hctsa = isempty(integrated_hctsa);
-    end
+if isstruct(integrated_hctsa)
+    no_hctsa = ~any(structfun(@(x) ~isempty(x), integrated_hctsa));
+else
+    no_hctsa = isempty(integrated_hctsa);
+end
 
-    if no_hctsa
-        timeSeriesData = zeros(length(cp_range).*length(etarange), rep_length);
-    end
-    savestruct = struct();
-    %dt = tmax./numpoints;
+if no_hctsa
+    timeSeriesData = zeros(length(cp_range).*length(etarange), rep_length);
+end
+savestruct = struct();
+%dt = tmax./numpoints;
 
 %% Calculate time series values
-    for i = 1:length(etarange)
-        if vocal
-            fprintf('------------------------%g%% complete, %gs elapsed------------------------\n',...
-                round(100*(i-1)./length(etarange)), round(toc(start)))
-        end
-        eta = etarange(i);
-        r = zeros(length(cp_range), 1) + initial_conditions;
-        if isinf((numpoints - 1 - transient_cutoff)./savestep)
-            error('Requested simulation has too many timesteps to be performed')
-        end
-        rout = zeros(length(cp_range), floor((numpoints - 1 - transient_cutoff)./savestep));
+for i = 1:length(etarange)
+    if vocal
+        fprintf('------------------------%g%% complete, %gs elapsed------------------------\n',...
+            round(100*(i-1)./length(etarange)), round(toc(start)))
+    end
+    eta = etarange(i);
+    if isinf((numpoints - 1 - transient_cutoff)./savestep)
+        error('Requested simulation has too many timesteps to be performed')
+    end
+    fails = true(length(cp_range), 1);
+    rout = [fails.*initial_conditions,  nan(length(cp_range), floor(((numpoints - 1 - transient_cutoff)./savestep) - 1))];
+    
+    for attempt = 1:maxAttempts
+        r = zeros(sum(fails), 1) + initial_conditions;
         Wl = size(r, 1); % Length of noise vector
+        mu = cp_range(fails);
+
+        %% Run a script containing the systems
+        TSG_systems
         
-        %% Systems
-        switch system_type
-            case 'staircase'
-                for n = 1:numpoints-1
-                    r = r + (sin(parameters(1).*r)).*dt + (eta.*sqrt(dt).*randn(Wl, 1)+(0.01*abs(eta.*sqrt(dt).*randn(Wl, 1))));
-                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
-                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
-                    end
-                end
-                
-            case 'saddle_node'
-                for n = 1:numpoints-1
-                    r = r + (cp_range' + (r.^2)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
-                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
-                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
-                    end
-                end                
-
-            case 'supercritical_hopf'
-                for n = 1:numpoints-1
-                    r = r + (cp_range'.*r - parameters(1).*r.*(abs(r)).^2).*dt;
-                    theta = angle(r);
-                    r = r + (cos(theta) + 1i.*sin(theta)).*eta.*sqrt(dt).*randn(Wl, 1);
-                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
-                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
-                    end
-                end
-                
-            case 'supercritical_hopf-varying_cp'
-                for n = 1:numpoints-1
-                    r = r + (cp_range'.*r - parameters(1).*r.*(abs(r)).^2).*dt;
-                    theta = angle(r);
-                    r = r + (cos(theta) + 1i.*sin(theta)).*eta.*sqrt(dt).*randn(Wl, 1);
-                    cp_range = cp_range + parameters(2).*dt;
-                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
-                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
-                    end
-                end
-                
-            case 'simple_supercritical_beta_hopf'
-                for n = 1:numpoints-1
-                    r = r + (cp_range'.*r - parameters(1).*r.*(abs(r)).^2).*dt + eta.*sqrt(dt).*randn(Wl, 1);
-                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
-                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
-                    end
-                end                
-
-            case 'supercritical_hopf_radius_(strogatz)'
-                for n = 1:numpoints-1
-                    r = r + (cp_range'.*r - (r.^3)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
-                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
-                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
-                    end
-                end
-                rout = abs(rout);
-
-           case 'supercritical_hopf_radius_(strogatz)-non-reflecting'
-                for n = 1:numpoints-1
-                    r = r + (cp_range'.*r - (r.^3)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
-                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
-                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
-                    end
-                end
-                
-            case 'subcritical_hopf_radius_(strogatz)'
-                for n = 1:numpoints-1
-                    r = r + (-r.^5 + (r.^3) + cp_range'.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
-                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
-                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
-                    end
-                end
-                rout = abs(rout);
-                
-            case 'quadratic_potential'
-                for n = 1:numpoints-1
-                    r = r + (cp_range'.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
-                    if n >= transient_cutoff && ~mod(n - transient_cutoff, savestep)
-                        rout(:, 1 + (n - transient_cutoff)./savestep) = r;
-                    end
-                end
-                rout = abs(rout);  
-
-            otherwise
-                error("No match found for type '%s'", system_type)
+        if isscalar(criteria)
+            fails = false(length(cp_range), 1); % Let everything through
+        else
+            fails = ~eval(criteria);
         end
-        %% If not using integrated_hctsa
-        if no_hctsa
-            timeSeriesData((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = rout; % Copy to timeSeriesData
-    %% Calculate feature values, create savestruct and fill static fields
-        elseif i == 1
-            % Calculate feature values
-            datastruct = light_TS_compute(0, [], [], [], [], 0, light_TS_init(...
-                struct('timeSeriesData', rout,...
-                'labels', {cellstr(string(1:size(r, 1)))},...
-                'keywords', {cellstr(string(1:size(r, 1)))}),... % Won't need time series labels or keywords, so make dummy ones
-                integrated_hctsa.INP_mops, integrated_hctsa.INP_ops, 0)); % Could separate, and assign individual variables, but not necessary.
-
-            % Initialise structure
-            savestruct = struct('TS_DataMat', {zeros(length(cp_range).*length(etarange), height(datastruct.Operations))},...
-                'TS_CalcTime', {zeros(length(cp_range).*length(etarange), height(datastruct.Operations))},...
-                'TS_Quality', {zeros(length(cp_range).*length(etarange), height(datastruct.Operations))}, ...
-                'Operations', datastruct.Operations, ...
-                'MasterOperations', datastruct.MasterOperations, ...
-                'fromDatabase', datastruct.fromDatabase,...
-                'gitInfo', datastruct.gitInfo);
-                %'timeSeries', r(:, transient_cutoff:savestep:end-1), ... % For debugging
-
-            % All fields except for TS_DataMat, TS_CalcTime, TS_Quality are static (same for each iteration)
-
-            % Append the dynamic savestruct fields
-            savestruct.TS_DataMat((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_DataMat;
-            savestruct.TS_CalcTime((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_CalcTime;
-            savestruct.TS_Quality((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_Quality;
-    %% Calculate the feature values for this portion of time series, add to savestruct and clear the time series
-        elseif i > 1
-            % Calculate feature values
-            datastruct = light_TS_compute(0, [], [], [], [], 0, light_TS_init(...
-                struct('timeSeriesData', rout, ...
-                'labels', {cellstr(string(1:size(r, 1)))}, ...
-                'keywords', {cellstr(string(1:size(r, 1)))}),... % Won't need time series labels or keywords, so make dummy ones
-                integrated_hctsa.INP_mops, integrated_hctsa.INP_ops, 0)); % Could separate, and assign individual variables, but not necessary.
-
-            % Append the dynamic savestruct fields
-            savestruct.TS_DataMat((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_DataMat;
-            savestruct.TS_CalcTime((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_CalcTime;
-            savestruct.TS_Quality((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_Quality;
-            %savestruct.timeSeries = [savestruct.timeSeries; r(:, transient_cutoff:savestep:end-1)]; % For debugging
+        rout(fails, :) = nan;
+        if sum(fails) == 0
+            break
         end
     end
 
+    %% If not using integrated_hctsa
     if no_hctsa
+        timeSeriesData((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = rout; % Copy to timeSeriesData
+%% Calculate feature values, create savestruct and fill static fields
+    elseif i == 1
+        % Calculate feature values
+        datastruct = light_TS_compute(0, [], [], [], [], 0, light_TS_init(...
+            struct('timeSeriesData', rout,...
+            'labels', {cellstr(string(1:size(r, 1)))},...
+            'keywords', {cellstr(string(1:size(r, 1)))}),... % Won't need time series labels or keywords, so make dummy ones
+            integrated_hctsa.INP_mops, integrated_hctsa.INP_ops, 0)); % Could separate, and assign individual variables, but not necessary.
+
+        % Initialise structure
+        savestruct = struct('TS_DataMat', {zeros(length(cp_range).*length(etarange), height(datastruct.Operations))},...
+            'TS_CalcTime', {zeros(length(cp_range).*length(etarange), height(datastruct.Operations))},...
+            'TS_Quality', {zeros(length(cp_range).*length(etarange), height(datastruct.Operations))}, ...
+            'Operations', datastruct.Operations, ...
+            'MasterOperations', datastruct.MasterOperations, ...
+            'fromDatabase', datastruct.fromDatabase,...
+            'gitInfo', datastruct.gitInfo);
+            %'timeSeries', r(:, transient_cutoff:savestep:end-1), ... % For debugging
+
+        % All fields except for TS_DataMat, TS_CalcTime, TS_Quality are static (same for each iteration)
+
+        % Append the dynamic savestruct fields
+        savestruct.TS_DataMat((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_DataMat;
+        savestruct.TS_CalcTime((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_CalcTime;
+        savestruct.TS_Quality((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_Quality;
+%% Calculate the feature values for this portion of time series, add to savestruct and clear the time series
+    elseif i > 1
+        % Calculate feature values
+        datastruct = light_TS_compute(0, [], [], [], [], 0, light_TS_init(...
+            struct('timeSeriesData', rout, ...
+            'labels', {cellstr(string(1:size(r, 1)))}, ...
+            'keywords', {cellstr(string(1:size(r, 1)))}),... % Won't need time series labels or keywords, so make dummy ones
+            integrated_hctsa.INP_mops, integrated_hctsa.INP_ops, 0)); % Could separate, and assign individual variables, but not necessary.
+
+        % Append the dynamic savestruct fields
+        savestruct.TS_DataMat((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_DataMat;
+        savestruct.TS_CalcTime((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_CalcTime;
+        savestruct.TS_Quality((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = datastruct.TS_Quality;
+        %savestruct.timeSeries = [savestruct.timeSeries; r(:, transient_cutoff:savestep:end-1)]; % For debugging
+    end
+end
+
+if no_hctsa
 %% Generate time series labels from the control and noise parameters ('cp|eta')
-        labels = {};
-        for n = etarange
-            labels = [labels;arrayfun(@(x) sprintf('%g|%g', x, n), cp_range, 'UniformOutput', false)'];
-        end
+    labels = {};
+    for n = etarange
+        labels = [labels;arrayfun(@(x) sprintf('%g|%g', x, n), cp_range, 'UniformOutput', false)'];
+    end
 
 %% Generate time series keywords
-        keywords(1:sum(cp_range < bifurcation_point)) = {'Pre-bifurcation'};
-        keywords(sum(cp_range<bifurcation_point)+1:length(cp_range)) = {'Bifurcated'};
-        keywords = repmat(keywords, 1, length(etarange))';
+    keywords(1:sum(cp_range < bifurcation_point)) = {'Pre-bifurcation'};
+    keywords(sum(cp_range<bifurcation_point)+1:length(cp_range)) = {'Bifurcated'};
+    keywords = repmat(keywords, 1, length(etarange))';
 
 %% Save results
-        if ~isempty(foldername)
-            while exist(foldername, 'dir') % If the folder already exists, change the foldername slightly
-                if ~isstrprop(foldername(end), 'digit')
-                    foldername = [foldername, '-1'];
-                else
-                    foldername = [foldername(1:find(foldername == '-')), num2str(str2double(foldername(find(foldername == '-')+1:end)) + 1)];
-                end
-            end
-            mkdir(foldername)
-            if  save_cp_split > 1
-                %% Split cp_range
-                num_per_split = floor((length(cp_range))./save_cp_split);
-                cp_split_idxs = [1:num_per_split:length(cp_range)];
-                if cp_split_idxs(end) ~= length(cp_range)
-                    cp_split_idxs(end+1) = length(cp_range)+1;
-                else
-                    cp_split_idxs(end) = cp_split_idxs(end)+1;
-                end
-                for x = 1:length(cp_split_idxs)-1
-                    p.Results.cp_range = cp_range(cp_split_idxs(x):cp_split_idxs(x+1)-1);
-                    subfoldername = ['time_series_data-', num2str(x)];
-                    split_ids = startsWith(labels, arrayfun(@(x) [num2str(x), '|'], p.Results.cp_range, 'uniformoutput', 0));
-                    S.timeSeriesData = timeSeriesData(split_ids, :);
-                    S.labels = labels(split_ids, :);
-                    S.keywords = keywords(split_ids, :);
-                    mkdir(fullfile(foldername, subfoldername))
-                    inputs = p.Results;
-                    save(fullfile(foldername, subfoldername, 'timeseries.mat'), '-struct', 'S', '-v7.3')
-                    save(fullfile(foldername, subfoldername, 'inputs_out.mat'), 'inputs')
-                end
+    if ~isempty(foldername)
+        while exist(foldername, 'dir') % If the folder already exists, change the foldername slightly
+            if ~isstrprop(foldername(end), 'digit')
+                foldername = [foldername, '-1'];
             else
-                inputs = p.Results;
-                save(fullfile(foldername, 'timeseries.mat'), 'timeSeriesData', 'labels', 'keywords', '-v7.3')
-                save(fullfile(foldername, 'inputs_out.mat'), 'inputs')
+                foldername = [foldername(1:find(foldername == '-')), num2str(str2double(foldername(find(foldername == '-')+1:end)) + 1)];
             end
         end
-        inputs = p.Results;
-%% If integrated_hctsa, save feature values and inputs
-    else
-        if ~isempty(foldername)
-            while exist(foldername, 'dir') % If the folder already exists, change the foldername slightly
-                if ~isstrprop(foldername(end), 'digit')
-                    foldername = [foldername, '-1'];
-                else
-                    foldername = [foldername(1:find(foldername == '-')), num2str(str2double(foldername(find(foldername == '-')+1:end)) + 1)];
-                end
+        mkdir(foldername)
+        if  save_cp_split > 1
+            %% Split cp_range
+            num_per_split = floor((length(cp_range))./save_cp_split);
+            cp_split_idxs = [1:num_per_split:length(cp_range)];
+            if cp_split_idxs(end) ~= length(cp_range)
+                cp_split_idxs(end+1) = length(cp_range)+1;
+            else
+                cp_split_idxs(end) = cp_split_idxs(end)+1;
             end
-            mkdir(foldername)
-
+            for x = 1:length(cp_split_idxs)-1
+                p.Results.cp_range = cp_range(cp_split_idxs(x):cp_split_idxs(x+1)-1);
+                subfoldername = ['time_series_data-', num2str(x)];
+                split_ids = startsWith(labels, arrayfun(@(x) [num2str(x), '|'], p.Results.cp_range, 'uniformoutput', 0));
+                S.timeSeriesData = timeSeriesData(split_ids, :);
+                S.labels = labels(split_ids, :);
+                S.keywords = keywords(split_ids, :);
+                mkdir(fullfile(foldername, subfoldername))
+                inputs = p.Results;
+                save(fullfile(foldername, subfoldername, 'timeseries.mat'), '-struct', 'S', '-v7.3')
+                save(fullfile(foldername, subfoldername, 'inputs_out.mat'), 'inputs')
+            end
+        else
             inputs = p.Results;
-            save(fullfile(foldername, 'HCTSA.mat'), '-struct', 'savestruct', '-v7.3')
+            save(fullfile(foldername, 'timeseries.mat'), 'timeSeriesData', 'labels', 'keywords', '-v7.3')
             save(fullfile(foldername, 'inputs_out.mat'), 'inputs')
         end
     end
-%% Announce completion
-    if vocal
-        fprintf('------------------------100%% complete, %gs elapsed------------------------\n', round(toc(start)))
+    inputs = p.Results;
+%% If integrated_hctsa, save feature values and inputs
+else
+    if ~isempty(foldername)
+        while exist(foldername, 'dir') % If the folder already exists, change the foldername slightly
+            if ~isstrprop(foldername(end), 'digit')
+                foldername = [foldername, '-1'];
+            else
+                foldername = [foldername(1:find(foldername == '-')), num2str(str2double(foldername(find(foldername == '-')+1:end)) + 1)];
+            end
+        end
+        mkdir(foldername)
+
+        inputs = p.Results;
+        save(fullfile(foldername, 'HCTSA.mat'), '-struct', 'savestruct', '-v7.3')
+        save(fullfile(foldername, 'inputs_out.mat'), 'inputs')
     end
+end
+%% Announce completion
+if vocal
+    fprintf('------------------------100%% complete, %gs elapsed------------------------\n', round(toc(start)))
+end
 end
