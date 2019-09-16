@@ -49,7 +49,8 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 %                               parameter eta for which time series will be generated
 %
 %           initial_conditions: A number containing the initial conditions of
-%                               the simulation
+%                               the simulation, or a vector of the same
+%                               length as cp_range
 %
 %           parameters:         A vector containing the value of any parameters
 %                               other than the control and noise
@@ -220,28 +221,9 @@ if ~isempty(extra_vals)
 end
 
 %% Evaluate any options given as character arrays
-% Obviously you can't use too many of these, but it will work for a couple
-% of independent arguments
-fields = fieldnames(p.Results);
-allowed_fields = {'input_file', 'foldername', 'system_type', 'criteria'}; % Exclude any fields that are supposed to be character arrays
-for fld1 = 1:length(fields)
-    ref = p.Results.(fields{fld1});
-    if ischar(ref) && all(~strcmp(fields{fld1}, allowed_fields))
-        for fld2 = 1:length(fields)
-            if isempty(p.Results.(fields{fld2}))
-                ref = strrep(ref, fields{fld2}, '[]');
-            elseif isscalar(p.Results.(fields{fld2})) && ~isstruct(p.Results.(fields{fld2}))
-                % This should work for numeric and character vectors and scalars
-                ref = strrep(ref, fields{fld2}, num2str(p.Results.(fields{fld2})));
-            end
-        end
-        try
-            p.Results.(fields{fld1}) = eval(ref);
-        catch
-            error('The character array references an unknown field, or is incorrectly formatted')
-        end
-    end
-end
+% Obviously you can't use too many of these, but it should work if none of
+% the references are chained
+p.Results = TranslateInputs(p.Results);
 
 %% Make sure that cp_range and eta are row vectors
 p.Results.cp_range = p.Results.cp_range(:)';
@@ -327,6 +309,9 @@ end
 savestruct = struct();
 %dt = tmax./numpoints;
 
+initial_conditions = initial_conditions(:);
+initial_conditions = zeros(length(cp_range), 1) + initial_conditions;
+
 %% Calculate time series values
 for i = 1:length(etarange)
     if vocal
@@ -348,7 +333,7 @@ for i = 1:length(etarange)
         if isscalar(criteria)
             fails = false(length(cp_range), 1); % Let everything through
         else
-            mu = cp_range'; %In case TSG_systems changed its size
+            mu = cp_range'; %In case TSG_systems changed its size and the criteria references mu
             fails = ~eval(criteria);
             fprintf(repmat('\b', 1, numbytes))
             numbytes = fprintf('>>>>>> Attempt %i/%i: %i/%i timeseries passed criteria for eta = %g <<<<<<\n', attempt, maxAttempts, sum(~fails), length(fails), etarange(i));
