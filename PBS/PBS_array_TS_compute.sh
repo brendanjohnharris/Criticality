@@ -21,4 +21,3 @@ cd time_series_data-$PBS_ARRAYID
 hostname
 matlab -nodisplay -singleCompThread -r "home_dir = pwd; cd('~/hctsa'), startup, cd(home_dir), TS_init('timeseries.mat', [], [], 0); TS_compute(0, [], [], [], [], 1); exit"
 exit
-

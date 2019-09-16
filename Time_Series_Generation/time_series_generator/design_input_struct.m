@@ -23,7 +23,7 @@ function varargout = design_input_struct(varargin)
 
 % Edit the above text to modify the response to help design_input_struct
 
-% Last Modified by GUIDE v2.5 19-Mar-2019 10:44:58
+% Last Modified by GUIDE v2.5 12-Sep-2019 15:45:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,7 +59,8 @@ handles.output = struct('cp_range', [], 'system_type', [], 'tmax', [], 'initial_
     'dt', [], 'T', [], 'sampling_period', [], 'foldername', [], 'rngseed', [],...
     'randomise', [], 'vocal', [], 'save_cp_split', [], 'input_file', [], 'input_struct', [],...
     'integrated_hctsa', struct('beVocal', [], 'INP_ops', [],...
-                        'INP_mops', [], 'customFile', [], 'doParallel', []));
+                        'INP_mops', [], 'customFile', [], 'doParallel', []), ...
+    'criteria', [], 'maxAttempts', []);
 %handles.output = hObject;
 
 % Update handles structure
@@ -80,18 +81,18 @@ javaMethodEDT('setInitialDelay',tm,0);
 set(handles.text2, 'Tooltip', 'A character array specifying the dynamical system to be used for integration')
 set(handles.controlparameters, 'Tooltip', ['A row vector containing the values of the control ', ...
                                    'parameter for which time series will be generated'])
-set(handles.text4, 'Tooltip', ['A row vector containing the values of the noise ', ... 
-                                'parameter for which time series will be generated'])  
+set(handles.text4, 'Tooltip', ['A row vector containing the values of the noise ', ...
+                                'parameter for which time series will be generated'])
 set(handles.text5, 'Tooltip', ['A number containing the initial conditions of ', ...
                                'the simulation'])
 set(handles.text7, 'Tooltip', ['A number specifying the value of the control ', ...
-                              'parameter at which bifurcation occurs (Note: ', ... 
+                              'parameter at which bifurcation occurs (Note: ', ...
                               'This does NOT set the bifurcation point, ', ...
                               'but is used to label the time series)'])
 set(handles.text6, 'Tooltip', ['A vector containing the value of any parameters ', ...
                                'other than the control and noise parameters'])
 set(handles.text15, 'Tooltip', ['A number giving the time over which values will be generated'])
-set(handles.text17, 'Tooltip', ['The number of points to be generated during ', ... 
+set(handles.text17, 'Tooltip', ['The number of points to be generated during ', ...
                                'integration (before transient removal)'])
 set(handles.text18, 'Tooltip', ['A number specifying the timestep of integration'])
 set(handles.text19, 'Tooltip', ['A number giving the length, in seconds, of the ', ...
@@ -120,8 +121,12 @@ set(handles.text28, 'Tooltip', ['A structure containing options for ', ...
                               'generation. If all fields are empty, time series ', ...
                               'will be generated as normal. If not, a hctsa ', ...
                               'file will be saved in place of a timeseries file.'])
-                           
-%set(handles.dynamical_system, 'Value', 1);
+set(handles.text30, 'Tooltip', sprintf(['A string containing the criteria for ',...
+                               'accepting timeseries, referring to the timeseries', ...
+                               '''rout'' (make sure it is a vectorised expression).\n', ...
+                               'E.g. ''mean(rout, 2) > 0''])']))
+set(handles.text31, 'Tooltip', 'A number specifying how many times to try simulating each timeseries.')
+set(handles.dynamical_system, 'Value', 1);
 
 
 % UIWAIT makes design_input_struct wait for user response (see UIRESUME)
@@ -130,7 +135,7 @@ uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = design_input_struct_OutputFcn(hObject, eventdata, handles) 
+function varargout = design_input_struct_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -383,7 +388,7 @@ function check_time_options(handles)
         set(handles.text18, 'ForegroundColor', 'k')
     end
 
-    
+
 
 
 
@@ -578,3 +583,68 @@ function radiobutton2_Callback(hObject, eventdata, handles)
         set(handles.text27, 'ForegroundColor', [1.0000    0.2549    0.2118])
     end
     guidata(hObject, handles)
+
+
+% --- Executes on button press in pushbutton3.
+function pushbutton3_Callback(hObject, eventdata, handles)
+    hctsa_ops = critetia_option;
+    handles.output.criteria = criteria;
+    guidata(hObject, handles)
+
+
+
+function edit24_Callback(hObject, eventdata, handles)
+    strng = get(hObject, 'String');
+    try
+        criteria = strng;
+        if strcmp(criteria, '[]')
+            criteria = 1;
+        end
+        handles.output.criteria = criteria;
+        set(handles.text30, 'ForegroundColor', 'k')
+    catch
+        set(handles.text30, 'ForegroundColor', [1.0000    0.2549    0.2118])
+    end
+    guidata(hObject, handles)
+
+
+% --- Executes during object creation, after setting all properties.
+function edit24_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit24 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit25_Callback(hObject, eventdata, handles)
+    strng = get(hObject, 'String');
+    try
+        maxAttempts = str2double(strng);
+        if isnan(maxAttempts)
+            maxAttempts = 100;
+        end
+        handles.output.maxAttempts = maxAttempts;
+        set(handles.text31, 'ForegroundColor', 'k')
+    catch
+        set(handles.text31, 'ForegroundColor', [1.0000    0.2549    0.2118])
+    end
+    guidata(hObject, handles)
+
+
+% --- Executes during object creation, after setting all properties.
+function edit25_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit25 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

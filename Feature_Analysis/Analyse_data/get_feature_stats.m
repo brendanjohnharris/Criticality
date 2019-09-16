@@ -53,6 +53,23 @@ function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
                     the_stat_values = sqrt(sum(((data.TS_DataMat(idxs, :)' - b)./m - data.Inputs.cp_range(idxs)).^2, 2)./length(data.Inputs.cp_range(idxs)));
                 end
                 
+            case 'Welch_t_test'
+                if ~isfield(data, 'Group_ID')
+                    error([the_stat{1}, ' requires the data to have a ''Group_ID'' field, added by ''addGroups()'''])
+                end
+                the_stat_values = nan(size(data.TS_DataMat, 2), 1);
+                for s = 1:length(the_stat_values)
+                    the_stat_values(s) = compareClassification(data, data.Operations.ID(s), 'Welch', [], 0);
+                end
+                
+            case 'u_test'
+                if ~isfield(data, 'Group_ID')
+                    error([the_stat{1}, ' requires the data to have a ''Group_ID'' field, added by ''addGroups()'''])
+                end
+                the_stat_values = nan(size(data.TS_DataMat, 2), 1);
+                for s = 1:length(the_stat_values)
+                    the_stat_values(s) = compareClassification(data, data.Operations.ID(s), 'u_test', [], 0);
+                end
                 
 %             case {'Normalised_Feature_Value_Gradient', 'Normalised_Feature_Value_Intercept'}
 %                 % Gives the gradient of values up until 0
@@ -67,6 +84,7 @@ function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
 %                 elseif strcmp(the_stat{1}, 'Normalised_Feature_Value_Intercept')
 %                     the_stat_values = b;
 %                 end
+
                 
             otherwise
                 warning([the_stat{1}, ' is not a supported statistic, and will be ignored.\n%s'],...

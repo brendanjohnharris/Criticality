@@ -3,7 +3,7 @@ function input_struct = make_input_struct(interactive, varargin)
 % A structure with fields required by time_series_generator will be
 % returned. If no input arguments are given then a GUI will open, to interactively create the structure. 
 % For an empty structure, use 'make_input_struct(0)'. To fill in fields 
-% from the command widnow or a function, use the name-value pairs (see time_series_generator) after the first argument.
+% from the command window or a function, use the name-value pairs (see time_series_generator) after the first argument.
     if nargin < 1
         interactive = 1;
     end
@@ -30,14 +30,20 @@ function input_struct = make_input_struct(interactive, varargin)
     addParameter(p, 'input_struct', [])
     addParameter(p, 'integrated_hctsa', struct('beVocal', [], 'INP_ops', [],...
                         'INP_mops', [], 'customFile', [], 'doParallel', []))
+    addParameter(p, 'criteria', []) % Every timeseries will pass
+    addParameter(p, 'maxAttempts', [])
     parse(p,varargin{:})
 
     if interactive
-        system_type_options = {'staircase', 'saddle_node', 'supercritical_hopf',...
-            'supercritical_hopf-varying_cp', 'simple_supercritical_beta_hopf', ...
-            'supercritical_hopf_radius_(strogatz)', ...
-            'supercritical_hopf_radius_(strogatz)-non-reflecting', ...
-            'subcritical_hopf_radius_(strogatz)'};
+%         system_type_options = {'staircase', 'saddle_node', 'supercritical_hopf',...
+%             'supercritical_hopf-varying_cp', 'simple_supercritical_beta_hopf', ...
+%             'supercritical_hopf_radius_(strogatz)', ...
+%             'supercritical_hopf_radius_(strogatz)-non-reflecting', ...
+%             'subcritical_hopf_radius_(strogatz)'};
+        system_type_options = cellsqueeze(regexp(readfile('TSG_systems.m'), '(?<![%])\scase.*', 'match'));
+        system_type_options = cellsqueeze(regexp(system_type_options, '(?<=case\s*'').*(?=\s*'')', 'match'))';
+        
+        
         
         input_struct = design_input_struct(system_type_options);
     else
@@ -58,7 +64,7 @@ function input_struct = make_input_struct(interactive, varargin)
             end
         end
         fields = fieldnames(p.Results);
-        allowed_fields = {'input_file', 'foldername', 'system_type'}; % Exclude any fields that are supposed to be character arrays
+        allowed_fields = {'input_file', 'foldername', 'system_type', 'criteria'}; % Exclude any fields that are supposed to be character arrays
         for fld1 = 1:length(fields)
             ref = p.Results.(fields{fld1});
             if ischar(ref) && all(~strcmp(fields{fld1}, allowed_fields))

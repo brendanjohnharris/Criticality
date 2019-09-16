@@ -5,7 +5,7 @@ function test_a_feature_parameter(featurestr, subfeaturestr, inputs, parameter)
     for i = 1:length(parameter)
         p = parameter(i);
         [~, out] = evalc("test_a_feature(featurestr, subfeaturestr, inputs, p, 0)");
-        mean_eta_corr(i) = nanmean(corr(out.columns_etavals', out.featurevals', 'type', 'spearman'));
+        mean_eta_corr(i) = nanmean(abs(corr(out.columns_etavals', out.featurevals', 'type', 'spearman')));
         cpvals = repmat(out.rows_cpvals(:), length(out.columns_etavals), 1);
         fvals = out.featurevals(:);
         agg_corr(i) = corr(cpvals, fvals, 'type', 'pearson');
@@ -17,8 +17,9 @@ function test_a_feature_parameter(featurestr, subfeaturestr, inputs, parameter)
     plot(parameter, mean_eta_corr, '.-')
     hold off
     set(gcf, 'color', 'w')
-    legend({'Aggregated Correlation (Pearson)', 'Mean Eta Correlation (Spearman)'})
+    lgd = legend({'Aggregated Correlation (Pearson)', 'Mean Absolute Eta Correlation (Spearman)'});
     ylabel('Correlation')
     xlabel('Parameter')
+    lgd.Location = 'southwest';
 end
 

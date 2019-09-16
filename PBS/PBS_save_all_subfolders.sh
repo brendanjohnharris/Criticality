@@ -17,5 +17,5 @@
 # your commands/programs start here, for example:
 cd "$PBS_O_WORKDIR"
 hostname
-matlab -nodisplay -singleCompThread -r "home_dir = pwd; cd('~/hctsa'), startup, cd('~/Criticality'), add_all_subfolders, cd(home_dir), save_data('./time_series_data.mat', 'supercritical,r_vs_window_length_vs_dt,noise_dependence,hopf', 'time_series_generator', 'HCTSA.mat', 'inputs_out.mat', 0, 0, 1); exit"
+matlab -nodisplay -singleCompThread -r "home_dir = pwd; cd('~/hctsa'), startup, cd('~/Criticality'), add_all_subfolders, cd(home_dir), save_data('./time_series_data.mat', '', 'time_series_generator', 'HCTSA.mat', 'inputs_out.mat', 0, 0, 1); exit"
 exit

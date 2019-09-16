@@ -118,11 +118,41 @@ function savestruct = save_data(filepath, keywords, source, datafile, inputfile,
         if no_hctsa
             %[~, TSidxs] = sort(TimeSeries.ID);
             %TS_DataMat = TS_DataMat(TSidxs, :); % Sort datamat by moving rows;
-            [~, TSidxs] = sort(TimeSeries.ID);
+            [TSids, TSidxs] = sort(TimeSeries.ID);
             TS_DataMat = TS_DataMat(TSidxs, :); % Sort datamat by moving rows, in case distributed_hctsa reordered them;
             % TS_DataMat rows should remain in the order common to the cp_range
             % (Which should be in increasing cp_range order for each set of
             % timeseries)
+            % Check to see if hctsa removed some nan timeseries, and add these back in
+            cpetas = TimeSeries.Name(TSidxs); % Sort to match datamat
+            cpetas = [str2double(regexprep(cpetas, '|.*', '')), str2double(regexprep(cpetas, '.*|', ''))];
+            expectedCpetas = cartesian_product(temparameters.cp_range, temparameters.eta);
+            if length(cpetas) ~= size(expectedCpetas, 1)
+                warning('It looks like some of the timeseries contained special values, which hctsa removed. Now adding them back into the data matrix')
+                
+                % Check if this combination of expected cp and eta is present
+                badIDs = sum(~ismember(expectedCpetas, cpetas, 'rows'));
+                % Found some, now where do they belong?
+                % Can work out how many timeseries were supplied to
+                % hctsa using the cp and eta range of inputs. Then,
+                % assuming the timeseries IDs would be ordered:
+                if badIDs
+                    properTSids = (1:size(expectedCpetas, 1))';
+                    while length(properTSids) ~= length(TSids)
+                        badInd = find(~ismember(properTSids, TSids), 1); % Get one bad index
+                        % The TSids shoudl have originally been
+                        % 1:numtimeseries, so this badInd shoudl equal its
+                        % properTSid
+                        TSids = [TSids(1:badInd-1); badInd; TSids(badInd:end)];
+                        TS_DataMat = [TS_DataMat(1:badInd-1, :); nan(1, size(TS_DataMat, 2)); TS_DataMat(badInd:end, :)]; % Insert a ana row, representing this nan timeseries, into the datamat
+                        % This will continue until TSids matches properTSids
+                    end
+                    if any(properTSids ~= TSids)
+                        error('Something went wrong; the timeseries indices are not correct')
+                    end
+                end
+            end
+            % Find the indices of any
         else
             warning('No time series are availiable. Trusting that you have not reordered the data matrix...')
         end

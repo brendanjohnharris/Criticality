@@ -150,7 +150,7 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 %                               time increasing horizontally). If a generated
 %                               timeseries fails to pass this criteria,
 %                               it will be regenerated (up to a limit, 'maxAttempts').
-%                               E.g. 'mean(r, 2) > 0'
+%                               E.g. 'mean(rout, 2) > 0'
 %
 %         maxAttempts:          A number, specifying how many times to try to
 %                               simulate a timeseries until it passes the criteria.
@@ -330,7 +330,7 @@ savestruct = struct();
 %% Calculate time series values
 for i = 1:length(etarange)
     if vocal
-        fprintf('------------------------%g%% complete, %gs elapsed------------------------\n',...
+        fprintf('------------------------ %g%% complete, %gs elapsed ------------------------\n',...
             round(100*(i-1)./length(etarange)), round(toc(start)))
     end
     eta = etarange(i);
@@ -339,19 +339,19 @@ for i = 1:length(etarange)
     end
     fails = true(length(cp_range), 1);
     rout = [fails.*initial_conditions,  nan(length(cp_range), floor(((numpoints - 1 - transient_cutoff)./savestep) - 1))];
+    numbytes = 0; % For displaying progress
     
     for attempt = 1:maxAttempts
-        r = zeros(sum(fails), 1) + initial_conditions;
-        Wl = size(r, 1); % Length of noise vector
-        mu = cp_range(fails);
-
         %% Run a script containing the systems
         TSG_systems
         
         if isscalar(criteria)
             fails = false(length(cp_range), 1); % Let everything through
         else
+            mu = cp_range'; %In case TSG_systems changed its size
             fails = ~eval(criteria);
+            fprintf(repmat('\b', 1, numbytes))
+            numbytes = fprintf('>>>>>> Attempt %i/%i: %i/%i timeseries passed criteria for eta = %g <<<<<<\n', attempt, maxAttempts, sum(~fails), length(fails), etarange(i));
         end
         rout(fails, :) = nan;
         if sum(fails) == 0

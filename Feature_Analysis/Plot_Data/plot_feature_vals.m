@@ -1,6 +1,6 @@
 function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
         % A real shamble
-        
+        % Do not use reduced if the data is a single row
         
         a = figure;
         if nargin < 4 || isempty(combined)
@@ -12,6 +12,8 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
         elseif length(reduced) > 1
             indvec = reduced;
             reduced = 1;
+        else
+            indvec = [];
         end
         if nargin < 6 || isempty(correlated)
             correlated = 0;
@@ -30,7 +32,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
             set(a, 'units','normalized','outerposition',[0.25 0.2 0.4 0.5]);
         end
         figure(a)
-        if size(data, 1) > 7
+        if 1%size(data, 1) > 7
             if strcmp(on_what, 'noise')
                 param = sort(arrayfun(@(x) x.Inputs.eta, data));
             elseif strcmp(on_what, 'distance')
@@ -51,7 +53,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
     else
         plotStep = 1;
     end
-    if reduced
+    if reduced 
         cmap = inferno(length(1:plotStep:length(data)));%BF_getcmap('dark2', length(1:plotStep:length(data)));
         cmap = cmap(1:end, :);
         cbarcmap = [];
@@ -81,7 +83,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
         % 
         %name = (time_series_data(ind).Inputs.cp_range(1));
         %a = figure('Name', sprintf("Spearman's Correlation for eta = %g", name));
-        if size(data, 1) <= 7 || ~combined || reduced
+        if ~combined || reduced
             plot(deltamu, TS_DataMat, '.-', 'MarkerSize', 12.5, 'Color', cmap(1, :), 'LineWidth', 2.5)
             cbarcmap(end+1, :) = cmap(1, :);
             cbareta(end+1) = data(ind).Inputs.eta;
@@ -105,9 +107,11 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
                 end
             end
         else 
-            colormap(cmp)
-            c = colorbar;
-            caxis([min(param), max(param)])
+            if size(data, 1) > 1
+                colormap(cmp)
+                c = colorbar;
+                caxis([min(param), max(param)])
+            end
             c.Label.Rotation = 0;
             c.Label.FontSize = 14;
             if strcmp(on_what, 'noise')
