@@ -2,11 +2,14 @@ function [TS_DataMat, operations, mus, etas]  = extractDataMat(data, yourmus, yo
 %EXTRACTDATAMAT Extract a datamat at a specific mu/eta/ops from
 %time_series_data. mus and etas label the rows of the TS_DataMat,
 %operations labels the columns (with operation IDS). 
-
-if ~checkConsistency(data)
-    error('The data struct must be consisted; same cp and operations for every row')
+if ischar(data)
+    data = load(data);
+    data = data.time_series_data;
+    fprintf('Data loaded\n')
 end
-
+if ~checkConsistency(data)
+    error('The data struct must be consistent; same cp and operations for every row')
+end
 if nargin < 2 || isempty(yourmus)
     yourmus = data(1).Inputs.cp_range;
 end

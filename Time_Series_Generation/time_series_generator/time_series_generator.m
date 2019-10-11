@@ -312,11 +312,18 @@ savestruct = struct();
 initial_conditions = initial_conditions(:);
 initial_conditions = zeros(length(cp_range), 1) + initial_conditions;
 
+etaWriter = reWriter;
+attemptWriter = reWriter;
+if ~isscalar(criteria)
+    inactivate(etaWriter);
+end
+
+
 %% Calculate time series values
 for i = 1:length(etarange)
     if vocal
-        fprintf('------------------------ %g%% complete, %gs elapsed ------------------------\n',...
-            round(100*(i-1)./length(etarange)), round(toc(start)))
+        reWrite(etaWriter, '------------------------ %g%% complete, %gs elapsed ------------------------\n',...
+            round(100*(i-1)./length(etarange)), round(toc(start)));
     end
     eta = etarange(i);
     if isinf((numpoints - 1 - transient_cutoff)./savestep)
@@ -324,7 +331,6 @@ for i = 1:length(etarange)
     end
     fails = true(length(cp_range), 1);
     rout = [fails.*initial_conditions,  nan(length(cp_range), floor(((numpoints - 1 - transient_cutoff)./savestep) - 1))];
-    numbytes = 0; % For displaying progress
     
     for attempt = 1:maxAttempts
         %% Run a script containing the systems
@@ -335,8 +341,10 @@ for i = 1:length(etarange)
         else
             mu = cp_range'; %In case TSG_systems changed its size and the criteria references mu
             fails = ~eval(criteria);
-            fprintf(repmat('\b', 1, numbytes))
-            numbytes = fprintf('>>>>>> Attempt %i/%i: %i/%i timeseries passed criteria for eta = %g <<<<<<\n', attempt, maxAttempts, sum(~fails), length(fails), etarange(i));
+            if vocal
+                reWrite(attemptWriter, '>>>>>> Attempt %i/%i: %i/%i timeseries passed criteria for eta = %g <<<<<<\n',...
+                    attempt, maxAttempts, sum(~fails), length(fails), etarange(i));
+            end
         end
         rout(fails, :) = nan;
         if sum(fails) == 0
@@ -458,6 +466,6 @@ else
 end
 %% Announce completion
 if vocal
-    fprintf('------------------------100%% complete, %gs elapsed------------------------\n', round(toc(start)))
+    reWrite(etaWriter, '------------------------100%% complete, %gs elapsed------------------------\n', round(toc(start)));
 end
 end

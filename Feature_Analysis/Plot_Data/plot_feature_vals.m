@@ -1,8 +1,8 @@
 function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
         % A real shamble
-        % Do not use reduced if the data is a single row
+        % Do not use reduced if the data is a single row. Don't know what might happen...
         
-        a = figure;
+        a = gcf();
         if nargin < 4 || isempty(combined)
             combined = 1;
         end
@@ -39,10 +39,8 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
                 param = sort(arrayfun(@(x) x.Inputs.cp_range(1), data));
             end
             %spacervec = min(param):min(diff(param)):max(param);
-    %------------------------Edit to change colormap-----------------------
             %cmp = parula(length(spacervec));
             cmp = inferno(length(param)); % Assume param is linearly spaced
-    %----------------------------------------------------------------------
             if length(param) ~= length(unique(param))
                 error('Cannot colour lines by noise when there are duplicate values')
             end
@@ -63,6 +61,10 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated)
     elseif size(data, 1) <= 7
         cmap = inferno(length(data)+1);%BF_getcmap('dark2', length(data));
         cmap = cmap(1:end-1, :);
+    end
+    if size(data, 1) == 1
+        cmap = [0 0 0];
+        cmp = [0 0 0];
     end
     if ~reduced
         indvec = 1:length(data);

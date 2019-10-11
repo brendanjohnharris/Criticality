@@ -198,5 +198,6 @@ function savestruct = save_data(filepath, keywords, source, datafile, inputfile,
         save(filepath, '-struct', 'm', '-v7.3')%, '-nocompression')
         savestruct = [];
     end
+    fprintf('Done!\n')
     %fprintf('------------------------100%% complete, %gs elapsed------------------------\n', round(toc))
 end

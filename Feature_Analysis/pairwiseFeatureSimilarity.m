@@ -1,6 +1,5 @@
 function [pmat, ps] = pairwiseFeatureSimilarity(datamat, ps, metric)
-%PAIRWIESEFEATUREDISTANCE Summary of this function goes here
-%   Detailed explanation goes here
+%PAIRWIESEFEATURESIMILARITY
     if nargin < 3 || isempty(metric)
         metric = 'euclidean';
     end

@@ -11,13 +11,20 @@ function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
 %
 % MAKE SURE DIRECTIONS IS SORTED IN OP ID ORDER!!!
     
+if nargin < 3
+    directions = [];
+end
+if nargin < 4 || isempty(optional_stats)
+    optional_stats = {};
+end
+
 %% Sort data by operation ID. It should be already, but it can't hurt
     data = sort_data(data);
     
 %% Get feature identifiers
-    Operation_ID = data.Operations.ID;
-    Operation_Name = data.Operations.Name;
-    Operation_Keywords = data.Operations.Keywords;
+    Operation_ID = data(1, :).Operations.ID;
+    Operation_Name = data(1, :).Operations.Name;
+    Operation_Keywords = data(1, :).Operations.Keywords;
     tbl = table(Operation_ID, Operation_Name, Operation_Keywords);
 
 %% Add optional statistics
@@ -53,22 +60,22 @@ function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
                     the_stat_values = sqrt(sum(((data.TS_DataMat(idxs, :)' - b)./m - data.Inputs.cp_range(idxs)).^2, 2)./length(data.Inputs.cp_range(idxs)));
                 end
                 
-            case 'Welch_t_test'
+            case 'welch_t_test'
                 if ~isfield(data, 'Group_ID')
                     error([the_stat{1}, ' requires the data to have a ''Group_ID'' field, added by ''addGroups()'''])
                 end
-                the_stat_values = nan(size(data.TS_DataMat, 2), 1);
+                the_stat_values = nan(size(data(1, :).TS_DataMat, 2), 1);
                 for s = 1:length(the_stat_values)
-                    the_stat_values(s) = compareClassification(data, data.Operations.ID(s), 'Welch', [], 0);
+                    the_stat_values(s) = compareClassification(data, data(1, :).Operations.ID(s), 'welch_t_test', [], 0);
                 end
                 
             case 'u_test'
                 if ~isfield(data, 'Group_ID')
                     error([the_stat{1}, ' requires the data to have a ''Group_ID'' field, added by ''addGroups()'''])
                 end
-                the_stat_values = nan(size(data.TS_DataMat, 2), 1);
+                the_stat_values = nan(size(data(1, :).TS_DataMat, 2), 1);
                 for s = 1:length(the_stat_values)
-                    the_stat_values(s) = compareClassification(data, data.Operations.ID(s), 'u_test', [], 0);
+                    the_stat_values(s) = compareClassification(data, data(1, :).Operations.ID(s), 'u_test', [], 0);
                 end
                 
 %             case {'Normalised_Feature_Value_Gradient', 'Normalised_Feature_Value_Intercept'}
@@ -87,7 +94,7 @@ function tbl = get_feature_stats(data, what_stats, directions, optional_stats)
 
                 
             otherwise
-                warning([the_stat{1}, ' is not a supported statistic, and will be ignored.\n%s'],...
+                error([the_stat{1}, ' is not a supported statistic.\n%s'],...
                     'Either check its name is spelt correctly or enter it as a custom statistic')
         end
         tbl = [tbl, table(the_stat_values, 'VariableNames', the_stat)];

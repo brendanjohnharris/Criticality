@@ -294,9 +294,29 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
                     end
                     the_stat_values = mean(abs(corrvals), 1)';
                     
+            case 'welch_t_test'
+                if ~isfield(data, 'Group_ID')
+                    error([the_stat{1}, ' requires the data to have a ''Group_ID'' field, added by ''addGroups()'''])
+                end
+                the_stat_values = nan(size(data(1, :).TS_DataMat, 2), 1);
+                for s = 1:length(the_stat_values)
+                    the_stat_values(s) = compareClassification(data, data(1, :).Operations.ID(s), 'welch_t_test', [], 0);
+                end
+                
+            case 'u_test'
+                if ~isfield(data, 'Group_ID')
+                    error([the_stat{1}, ' requires the data to have a ''Group_ID'' field, added by ''addGroups()'''])
+                end
+                the_stat_values = nan(size(data(1, :).TS_DataMat, 2), 1);
+                for s = 1:length(the_stat_values)
+                    the_stat_values(s) = compareClassification(data, data(1, :).Operations.ID(s), 'u_test', [], 0);
+                end
+                    
                 otherwise
                     error([the_stat{1}, ' is not a supported statistic'])
             end
+            
+            
         catch ME
             switch ME.identifier
                 case 'MATLAB:sum:wrongInput'

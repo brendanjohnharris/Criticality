@@ -101,6 +101,22 @@ switch system_type
             end
         end
         rout = abs(rout);
+        
+    case 'supercritical_pitchfork_(strogatz)'
+        for n = 1:numpoints-1
+            r = r + (mu.*r - (r.^3)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+            end
+        end
+        
+    case 'subcritical_pitchfork_(strogatz)'
+        for n = 1:numpoints-1
+            r = r + (-r.^5 + (r.^3) + mu.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+            end
+        end
 
     otherwise
         error("No match found for type '%s'", system_type)
