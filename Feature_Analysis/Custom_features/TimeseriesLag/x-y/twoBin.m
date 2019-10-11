@@ -139,8 +139,10 @@ function out = twoBin(x, mu, color, p)
 % ------------------------------------------------------------------------- 
     thresh = mean(res(1, :))+p*std(res_eq(2, :));
     out.upperpropsigma = sum(res(1, :) >=thresh)./(sum(res(1, :) <= thresh)+sum(res(1, :) >= thresh));
+    
     thresh = mean(res(1, :))+p*std(x);
     out.upperprop = sum(res(1, :) >=thresh)./(sum(res(1, :) <= thresh)+sum(res(1, :) >= thresh));
+    
     thresh = p*std(res_eq(2, :));
     out.upperpropnomeansigma = sum(res(1, :) >=thresh)./(sum(res(1, :) <= thresh)+sum(res(1, :) >= thresh));
 % ------------------------------------------------------------------------- 
