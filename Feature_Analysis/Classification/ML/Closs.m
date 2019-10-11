@@ -15,7 +15,7 @@ function theloss = Closs(templateORmdl, data, testdata, useGPU)
     end
     
     [X, Y] = reconstructDataMat(testdata);
-    
+    [X, Y] = ML_preprocess(X, Y, []);
     theloss = loss(mdl, X, Y);
 end
 

@@ -1,5 +1,4 @@
 function [operations, lossmat] = FeatureWisePerformance(template, data, numReps, pTrain, doPar)
-    rng('shuffle')
     timer = tic;
     if nargin < 3 || isempty(numReps)
         numReps = 20;
@@ -18,7 +17,7 @@ function [operations, lossmat] = FeatureWisePerformance(template, data, numReps,
     
     %% Load the data in matrix form
     [X, Y] = reconstructDataMat(data);
-    
+    [X, Y] = ML_preprocess(X, Y, pTrain, 1);
     [numObs, numFeatures] = size(X);
 
     lossmat = nan(numFeatures, numReps);

@@ -12,7 +12,6 @@ function [operations, selectedOpIdxs] = Csequentialfs(template, data, cutoffCond
 % <num features> is the number of features desired for the final model
 % <watch increase> is a binary; if 1, the selection algorithm will stop
 % when the best feature first increases the loss
-    rng('shuffle')
     timer = tic;
     if nargin < 3 || isempty(cutoffConditions)
         cutoffConditions = [0.01, inf, 1];
@@ -31,7 +30,7 @@ function [operations, selectedOpIdxs] = Csequentialfs(template, data, cutoffCond
     
     %% Load the data in matrix form
     [X, Y] = reconstructDataMat(data);
-    
+    [X, Y] = ML_preprocess(X, Y);
     [numObs, numFeatures] = size(X);
     
     %fX = zeros(numObs, 1);

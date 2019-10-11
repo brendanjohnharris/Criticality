@@ -21,6 +21,7 @@ function [mdl, X, labels] = Ctrain(template, data, useGPU)
             featurenames = data(1, :).Operations.Name;
         end
     end
+    [X, labels] = ML_preprocess(X, labels, []);
     if useGPU
         X = gpuArray(X);
     end

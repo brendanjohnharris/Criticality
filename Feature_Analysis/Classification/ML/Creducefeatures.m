@@ -21,7 +21,7 @@ function [OpsRanked, history, inmodel] = Creducefeatures(template, data, opargs,
     operations = data.Operations;
     
     [X, Y] = reconstructDataMat(data);
-    
+    [X, Y] = ML_preprocess(X, Y, []);
 %     if useGPU
 %         X = gpuArray(X);
 % %         Xte = gpuArray(Xte);
