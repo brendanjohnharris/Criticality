@@ -27,10 +27,11 @@ function [operations, selectedOpIdxs] = Csequentialfs(template, data, cutoffCond
     end
     
     operations = data(1, :).Operations;
-    
+    featureIDs = operations.ID;
     %% Load the data in matrix form
     [X, Y] = reconstructDataMat(data);
-    [X, Y] = ML_preprocess(X, Y);
+    [X, Y, subIDs] = ML_preprocess(X, Y);
+    featureIDs = featureIDs(subIDs);
     [numObs, numFeatures] = size(X);
     
     %fX = zeros(numObs, 1);
@@ -100,7 +101,7 @@ function [operations, selectedOpIdxs] = Csequentialfs(template, data, cutoffCond
         topf = featureRec(topf); % Get the original feature Idx
         % Record the loss and the top feature
         operations(topf, :).Running_Loss = lowestLoss;
-        selectedOpIdxs(end+1) = topf; % REMEMBER this is not neccessarily the opID. Index into operations for this, or for the name
+        selectedOpIdxs(end+1) = featureIDs(topf); % This IS the opID, matching the ID in 'operations'
         numFeatures = numFeatures - 1;
         featureRec = setxor(topf, featureRec);
         fX = [fX, X(:, topf)]; % Ready for the next round

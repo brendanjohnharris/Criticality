@@ -17,9 +17,10 @@ function [X, Y, outIDs] = ML_preprocess(X, Y, pTrain, consistent)
     if nargin < 4 || isempty(consistent)
         consistent = 0;
     end
+    X = BF_NormalizeMatrix(X, 'mixedSigmoid');
+    goodIdxs = true(1, size(X, 2));
     if ~consistent
         cv = abs(corr(X));
-        goodIdxs = true(1, size(X, 2));
         for i = size(X, 2):-1:1 % In reverse since the simpler features tend to be near the start of the datamat; would prefer to keep those
             if any(cv(i, [1:i-1, i+1:length(cv)]) == 1) % If this feature is perfectly correlated with any others
                 goodIdxs(i) = false;
@@ -35,7 +36,6 @@ function [X, Y, outIDs] = ML_preprocess(X, Y, pTrain, consistent)
         end
         X = X(:, goodIdxs);
     end
-    X = BF_NormalizeMatrix(X, 'mixedSigmoid');
     outIDs = find(goodIdxs);
 end
 

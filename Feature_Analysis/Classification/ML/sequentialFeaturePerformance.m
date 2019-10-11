@@ -90,17 +90,17 @@ function [lossmat, fmat, trainlossmat] = sequentialFeaturePerformance(template, 
                     fX = X(:, [topfs, f]);
                     mdl = fitcecoc(fX(trainIdxs, :), Y(trainIdxs, :), 'Learners', template, 'ClassNames', categories(Y));
                     flossvec(f) = loss(mdl, fX(trainIdxs, :), Y(trainIdxs, :)); % Evaluate for the next depth using training data
-                    fprintf('Depth %i/%i, Feauture %i/%i complete, %is elapsed\n', d, depth, f, numFeatures, round(toc(timer)))
                 end
                 [themin, theminIdx] = min(flossvec); % This gives the best feature (INDEX) for this depth
                 topfs(d) = theminIdx; % THIS IS THE FEATURE INDEX, NOT ID
-                trainlossmat(d, rep) = theminloss;
+                trainlossmat(d, rep) = themin;
                 % ----------- Evaluate this feature set using the test data ----------
                 fX = X(:, topfs);
                 testmdl = fitcecoc(fX(trainIdxs, :), Y(trainIdxs, :), 'Learners', template, 'ClassNames', categories(Y));
                 testloss = loss(testmdl, fX(testIdxs, :), Y(testIdxs, :));
                 fmat{d, rep} = featureIDs(topfs); % THESE ARE THE FEATURE IDS, AS IN OPERATIONS, not INDICES
                 lossmat(d, rep) = testloss;
+                fprintf('Depth %i/%i Complete, %is elapsed\n', d, depth, round(toc(timer)))
                 % ----------------------------------------------------------------
             end
 
