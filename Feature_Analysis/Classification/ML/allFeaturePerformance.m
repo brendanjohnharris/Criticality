@@ -17,6 +17,18 @@ function lossvec = allFeaturePerformance(template, data, numReps, pTrain)
     %% Load the data in matrix form
     [X, Y] = reconstructDataMat(data);
     [X, Y] = ML_preprocess(X, Y, pTrain);
+    
+    % Since this uses all features, naive bayes might be picky. Add an
+    % extra step if:
+    if strcmp(template.Method, 'NaiveBayes')
+        classes = grp2idx(Y);
+        cids = unique(classes);
+        for u = 1:length(cids)
+            gInds = var(X(classes==cids(u), :), [], 1) ~= 0;
+            X = X(:, gInds);
+        end
+    end % This removes any features that have in-class variance of 0
+    
     [numObs, numFeatures] = size(X);
 
     lossvec = nan(numReps, 1);

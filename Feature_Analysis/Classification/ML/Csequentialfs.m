@@ -39,72 +39,80 @@ function [operations, selectedOpIdxs] = Csequentialfs(template, data, cutoffCond
     selectedOpIdxs = [];
     featureRec = 1:numFeatures; % Record the original order of the features
     operations.Running_Loss = inf(height(operations), 1);
+    operations.Running_Shuffle_Loss = inf(height(operations), 1);
     lowestLoss = inf;
     featureWriter = reWriter();
     
+    c = cvpartition(Y, 'KFold', numFolds, 'Stratify', true);
+    
     while lowestLoss > cutoffConditions(1) && sum(~isinf(operations.Running_Loss)) < cutoffConditions(2) && (~cutoffConditions(3) || min(operations.Running_Loss) == lowestLoss)
         featureLoss = inf(1, numFeatures);
-        
+        cshuffle = repartition(c);
         if doPar
-            %% Parallel
-            fprintf('---------- %i/%i features selected, %is elapsed ----------\n', sum(~isinf(operations.Running_Loss)), size(X, 2), round(toc(timer)))
-            Xpar = X(:, featureRec); % To avoid broadcast
-            parfor fi = 1:numFeatures
-                foldLoss = zeros(1, numFolds);
-                %f = featureRec(fi);
-                nextfX = Xpar(:, fi); % Just this feature
-                % Find cross validation indices
-                crossInds = buffer(randperm(numObs, numObs), numFolds)'; % If I ask for buffers of length 10 but transpose, I will have a matrix with 10 columns (buffers); the values aren't ordered
-                % Train and compute loss for each feature
-                for c = 1:numFolds
-                    outInds = crossInds(:, c); % Select one buffer to leave out
-                    outInds = outInds(outInds > 0);
-                    inInds = setxor(1:numObs, outInds);
-                    if numFolds == 1
-                        mdl = fitcecoc([fX, nextfX], Y, 'Learners', template, 'ClassNames', categories(Y));
-                        foldLoss(c) = loss(mdl, [fX, nextfX], Y);
-                    else
-                        mdl = fitcecoc([fX(inInds, :), nextfX(inInds, :)], Y(inInds), 'Learners', template, 'ClassNames', categories(Y));
-                        foldLoss(c) = loss(mdl, [fX(outInds, :), nextfX(outInds, :)], Y(outInds));
-                    end
-                end
-                featureLoss(fi) = mean(foldLoss);
-            end
+%             %% Parallel
+%             fprintf('---------- %i/%i features selected, %is elapsed ----------\n', sum(~isinf(operations.Running_Loss)), size(X, 2), round(toc(timer)))
+%             Xpar = X(:, featureRec); % To avoid broadcast
+%             parfor fi = 1:numFeatures
+% %                 foldLoss = zeros(1, numFolds);
+% %                 %f = featureRec(fi);
+% %                 nextfX = Xpar(:, fi); % Just this feature
+% %                 % Find cross validation indices
+% %                 crossInds = buffer(randperm(numObs, numObs), numFolds)'; % If I ask for buffers of length 10 but transpose, I will have a matrix with 10 columns (buffers); the values aren't ordered
+% %                 % Train and compute loss for each feature
+% %                 for c = 1:numFolds
+% %                     outInds = crossInds(:, c); % Select one buffer to leave out
+% %                     outInds = outInds(outInds > 0);
+% %                     inInds = setxor(1:numObs, outInds);
+% %                     if numFolds == 1
+% %                         mdl = fitcecoc([fX, nextfX], Y, 'Learners', template, 'ClassNames', categories(Y));
+% %                         foldLoss(c) = loss(mdl, [fX, nextfX], Y);
+% %                     else
+% %                         mdl = fitcecoc([fX(inInds, :), nextfX(inInds, :)], Y(inInds), 'Learners', template, 'ClassNames', categories(Y));
+% %                         foldLoss(c) = loss(mdl, [fX(outInds, :), nextfX(outInds, :)], Y(outInds));
+% %                     end
+%                 end
+%                 featureLoss(fi) = mean(foldLoss);
+%             end
         else
             %% Serial
             for fi = 1:numFeatures
-                foldLoss = zeros(1, numFolds);
+%                 foldLoss = zeros(1, numFolds);
                 f = featureRec(fi);
                 featureWriter.reWrite('---------- Calculating loss for feature %i/%i (%i/%i features selected, %is elapsed) ----------\n',...
                                         fi, numFeatures, size(fX, 2), size(X, 2), round(toc(timer)));
                 nextfX = X(:, f); % Just this feature
                 % Find cross validation indices
-                crossInds = buffer(randperm(numObs, numObs), numFolds)'; % If I ask for buffers of length 10 but transpose, I will have a matrix with 10 columns (buffers); the values aren't ordered
-                % Train and compute loss for each feature
-                for c = 1:numFolds
-                    outInds = crossInds(:, c); % Select one buffer to leave out
-                    outInds = outInds(outInds > 0);
-                    inInds = setxor(1:numObs, outInds);
-                    if numFolds == 1
-                        mdl = fitcecoc([fX, nextfX], Y, 'Learners', template, 'ClassNames', categories(Y));
-                        foldLoss(c) = loss(mdl, [fX, nextfX], Y);
-                    else
-                        mdl = fitcecoc([fX(inInds, :), nextfX(inInds, :)], Y(inInds), 'Learners', template, 'ClassNames', categories(Y));
-                        foldLoss(c) = loss(mdl, [fX(outInds, :), nextfX(outInds, :)], Y(outInds));
-                    end
-                end
-                featureLoss(fi) = mean(foldLoss);
+% %                 crossInds = buffer(randperm(numObs, numObs), numFolds)'; % If I ask for buffers of length 10 but transpose, I will have a matrix with 10 columns (buffers); the values aren't ordered
+% %                 % Train and compute loss for each feature
+% %                 for c = 1:numFolds
+% %                     outInds = crossInds(:, c); % Select one buffer to leave out
+% %                     outInds = outInds(outInds > 0);
+% %                     inInds = setxor(1:numObs, outInds);
+% %                     if numFolds == 1
+% %                         mdl = fitcecoc([fX, nextfX], Y, 'Learners', template, 'ClassNames', categories(Y));
+% %                         foldLoss(c) = loss(mdl, [fX, nextfX], Y);
+% %                     else
+% %                         mdl = fitcecoc([fX(inInds, :), nextfX(inInds, :)], Y(inInds), 'Learners', template, 'ClassNames', categories(Y));
+% %                         foldLoss(c) = loss(mdl, [fX(outInds, :), nextfX(outInds, :)], Y(outInds));
+% %                     end
+% %                 end
+                mdl = fitcecoc([fX, nextfX], Y, 'Learners', template, 'ClassNames', categories(Y), 'CVPartition', c); % Find best feature using constant partition c
+                featureLoss(fi) = kfoldLoss(mdl, 'Mode', 'average');
             end
         end
         
         [lowestLoss, topf] = min(featureLoss); % featureLoss had losses by feature loop index (i.e. indices of featureRec)
         topf = featureRec(topf); % Get the original feature Idx
         % Record the loss and the top feature
-        operations(topf, :).Running_Loss = lowestLoss;
-        selectedOpIdxs(end+1) = featureIDs(topf); % This IS the opID, matching the ID in 'operations'
+        operations(featureIDs(topf), :).Running_Loss = lowestLoss; 
+        selectedOpIdxs(end+1) = featureIDs(topf); % THIS is the opID, matching the ID in 'operations'
         numFeatures = numFeatures - 1;
         featureRec = setxor(topf, featureRec);
         fX = [fX, X(:, topf)]; % Ready for the next round
+        
+        % Test again on the shuffled data
+        shufflemdl = fitcecoc(fX, Y, 'Learners', template, 'ClassNames', categories(Y), 'CVPartition', cshuffle);
+        operations(featureIDs(topf), :).Running_Shuffle_Loss = kfoldLoss(shufflemdl, 'Mode', 'average'); 
     end  
     featureWriter.reWrite('---------- %i/%i features selected, %is elapsed ----------\n', size(fX, 2), size(X, 2), round(toc(timer)));
     operations = sortrows(operations, find(strcmp('Running_Loss', operations.Properties.VariableNames)), 'Ascend');

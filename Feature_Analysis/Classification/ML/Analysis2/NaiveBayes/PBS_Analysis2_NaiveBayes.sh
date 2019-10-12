@@ -18,6 +18,6 @@
 # your commands/programs start here, for example:
 cd "$PBS_O_WORKDIR"
 hostname
-matlab -nodisplay -singleCompThread -r "home = pwd; cd('~/Criticality'), add_all_subfolders(), cd(home), Analysis2a_NaiveBayes($PBS_ARRAYID); exit"
+matlab -nodisplay -singleCompThread -r "home = pwd; cd('~/Criticality'), add_all_subfolders(), cd(home), Analysis2_NaiveBayes($PBS_ARRAYID); exit"
 exit
 
