@@ -27,13 +27,15 @@ function [operations, lossmat] = FeatureWisePerformance(template, data, numReps,
     end
     %% Main procedure
     fprintf('---------- Beginning Calculation ----------\n');
+    c = cvpartition(Y, 'HoldOut', 1-pTrain, 'Stratify', true);
     if doPar
         parfor (rep = 1:numReps, pl.NumWorkers)
             lossvec = nan(numFeatures, 1);
             for f = 1:numFeatures
                 fX = X(:, f);
-                trainIdxs = randperm(numObs, round(numObs.*pTrain));
-                testIdxs = setxor(trainIdxs, 1:numObs);
+                crep = repartition(c);
+                trainIdxs = training(crep);
+                testIdxs = test(crep);
                 if var(fX) ~= 0 % Then training will likely throw an error, and if it doesn't, will be useless
                     mdl = fitcecoc(fX(trainIdxs), Y(trainIdxs), 'Learners', template, 'ClassNames', categories(Y));
                     lossvec(f) = loss(mdl, fX(testIdxs), Y(testIdxs));
@@ -47,8 +49,9 @@ function [operations, lossmat] = FeatureWisePerformance(template, data, numReps,
             lossvec = nan(numFeatures, 1);
             for f = 1:numFeatures
                 fX = X(:, f);
-                trainIdxs = randperm(numObs, round(numObs.*pTrain));
-                testIdxs = setxor(trainIdxs, 1:numObs);
+                crep = repartition(c);
+                trainIdxs = training(crep);
+                testIdxs = test(crep);
                 if var(fX) ~= 0 % Then training will likely throw an error, and if it doesn't, will be useless
                     mdl = fitcecoc(fX(trainIdxs), Y(trainIdxs), 'Learners', template, 'ClassNames', categories(Y));
                     lossvec(f) = loss(mdl, fX(testIdxs), Y(testIdxs));

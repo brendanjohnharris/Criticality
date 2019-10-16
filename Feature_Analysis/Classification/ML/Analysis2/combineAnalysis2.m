@@ -1,4 +1,4 @@
-function [outlossmat, outfmat, outtrainlossmat] = combineAnalysis2(filestem)
+function [outlossmat, outfmat, outtrainlossmat, outlossvec] = combineAnalysis2(filestem)
 %COMBINEANALYSIS2 
     outlossmat = [];
     outfmat = [];

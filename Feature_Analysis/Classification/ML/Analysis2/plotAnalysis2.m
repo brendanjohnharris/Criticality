@@ -13,5 +13,6 @@ function plotAnalysis2(filename)
     a.XTickLabels = [arrayfun(@num2str, 1:d, 'un', 0), 'all'];
     ylabel('Misclassification rate')
     xlabel('Number of features')
+    %ylim([0, inf])
 end
 
