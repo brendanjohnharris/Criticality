@@ -1,28 +1,35 @@
-function h = VF_on_bifurcation_diagram(system_type)
+function f = VF_on_bifurcation_diagram(system_type, lims)
+    if nargin < 2 || isempty(lims)
+        lims = [-1, 1];
+    end
+    le = min(lims);
+    ri = max(lims);
     f = figure;
     hold on
-    xfin = -1:0.001:1;
-    xcoa = -0.9:0.1:0.9;
+    xfin = le:0.001:ri;
+    xcoa = le+0.05:0.05:ri+0.05;
     switch system_type
         case 'supercritical_hopf_radius_(strogatz)'
-            line([0, 1], [0, 0], 'LineStyle', '--')
-            plot(xfin, sqrt(xfin), '-')
+            line(lims, [0, 0], 'LineStyle', '--')
+            y = sqrt(xfin);
+            plot(xfin, y, '-')
             ylim([-0.1*sqrt(xfin(end)), inf])
-            [X, Y] = meshgrid(xcoa, 0.1:0.1:1);
+            [X, Y] = meshgrid(xcoa, 0.1:0.1:max(y));
             u = 0.*X;
             v = 0.05.*(X.*Y - Y.^3);
         case 'supercritical_hopf_radius_(strogatz)-non_reflecting'
-            line([0, 1], [0, 0], 'LineStyle', '--')
-            plot(xfin, sqrt(xfin), '-')
+            line(lims, [0, 0], 'LineStyle', '--')
+            y = sqrt(xfin);
+            plot(xfin, y, '-')
             ax = gca;
             ax.ColorOrderIndex = 1;
-            plot(xfin, -sqrt(xfin), '-')
-            [X, Y] = meshgrid(xcoa, -1:0.1:1);
+            plot(xfin, -y, '-')
+            [X, Y] = meshgrid(xcoa, -max(y):0.1:max(y));
             u = 0.*X;
             v = 0.05.*(X.*Y - Y.^3);
         case 'subcritical_hopf_radius_(strogatz)'
-            line([0, 1], [0, 0], 'LineStyle', '--')
-            line([-1, 0], [0, 0], 'LineStyle', '-')
+            line([0, ri], [0, 0], 'LineStyle', '--')
+            line([le, 0], [0, 0], 'LineStyle', '-')
             yfin = sqrt(1 - sqrt(4*xfin(xfin >= -0.25 & xfin <= 0) + 1))/sqrt(2);
             plot(xfin(xfin >= -0.25 & xfin <= 0), yfin, '--')
             ax = gca;

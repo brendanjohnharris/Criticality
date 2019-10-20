@@ -1,8 +1,11 @@
-function plotDiscrimination2(mdl)
+function plotDiscrimination2(mdl, noscatter)
 %PLOTDISCRIMINATION Give me a model (ECOC) with TWO predictors, I'll plot the data
 %   and draw the classification surface
+    if nargin < 2 || isempty(noscatter)
+        noscatter = 0;
+    end
     if size(mdl.X, 2) ~= 2
-        error('The supplied model does not have only two predictors')
+        error('The supplied model does not have exactly two predictors')
     end
     x = mdl.X(:, 1);
     y = mdl.X(:, 2);
@@ -35,8 +38,10 @@ function plotDiscrimination2(mdl)
                 0         0         0      ];
     cmp = cmp(1:length(unique(mdl.Y)), :);
     
-    h = gscatter(x, y, mdl.Y, cmp);
-    set(h, 'HandleVisibility', 'off')
+    if ~noscatter
+        h = gscatter(x, y, mdl.Y, cmp);
+        set(h, 'HandleVisibility', 'off')
+    end
     hold on
     pp = plot(px, py, '.k', 'MarkerSize', 10);
     pp.HandleVisibility = 'off';
@@ -54,11 +59,13 @@ function plotDiscrimination2(mdl)
 %     end
     
     %% Plot dummies for proper legend
-    lgd = legend;
-    lgdlabels = lgd.String;
-    for i = 1:size(mdl.X, 2)
-        plot(NaN, NaN,'.', 'Color', cmp(i, :), 'markersize', 20);
+    if ~noscatter
+        lgd = legend;
+        lgdlabels = lgd.String;
+        for i = 1:size(mdl.X, 2)
+            plot(NaN, NaN,'.', 'Color', cmp(i, :), 'markersize', 20);
+        end
+        delete(lgd)
+        legend(lgdlabels)
     end
-    delete(lgd)
-    legend(lgdlabels)
 end

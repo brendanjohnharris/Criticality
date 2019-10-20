@@ -96,7 +96,7 @@ function [operations, selectedOpIdxs] = Csequentialfs(template, data, cutoffCond
 % %                         foldLoss(c) = loss(mdl, [fX(outInds, :), nextfX(outInds, :)], Y(outInds));
 % %                     end
 % %                 end
-                mdl = fitcecoc([fX, nextfX], Y, 'Learners', template, 'ClassNames', categories(Y), 'CVPartition', c); % Find best feature using constant partition c
+                mdl = fitcecoc([fX, nextfX], Y, 'Learners', template, 'ClassNames', categories(Y), 'CVPartition', cshuffle); % Find best feature using constant partition c
                 featureLoss(fi) = kfoldLoss(mdl, 'Mode', 'average');
             end
         end
@@ -111,8 +111,8 @@ function [operations, selectedOpIdxs] = Csequentialfs(template, data, cutoffCond
         fX = [fX, X(:, topf)]; % Ready for the next round
         
         % Test again on the shuffled data
-        shufflemdl = fitcecoc(fX, Y, 'Learners', template, 'ClassNames', categories(Y), 'CVPartition', cshuffle);
-        operations(featureIDs(topf), :).Running_Shuffle_Loss = kfoldLoss(shufflemdl, 'Mode', 'average'); 
+        %shufflemdl = fitcecoc(fX, Y, 'Learners', template, 'ClassNames', categories(Y), 'CVPartition', cshuffle);
+        %operations(featureIDs(topf), :).Running_Shuffle_Loss = kfoldLoss(shufflemdl, 'Mode', 'average'); 
     end  
     featureWriter.reWrite('---------- %i/%i features selected, %is elapsed ----------\n', size(fX, 2), size(X, 2), round(toc(timer)));
     operations = sortrows(operations, find(strcmp('Running_Loss', operations.Properties.VariableNames)), 'Ascend');

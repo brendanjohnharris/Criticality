@@ -1,4 +1,4 @@
-function customHistogram(X, BinEdges, cutoff, fillit, theColor)
+function [origy, BinEdges] = customHistogram(X, BinEdges, cutoff, fillit, theColor)
     if ~isvector(X) && ~iscell(X) % Plot the columns of the matrix x
         X = arrayfun(@(u) X(:, u), 1:size(X, 2), 'un', 0);
     elseif isvector(X) && ~iscell(X)
@@ -50,6 +50,8 @@ function customHistogram(X, BinEdges, cutoff, fillit, theColor)
         bincenters = mean([binedges(1:end-1), binedges(2:end)], 2);
         origy = histcounts(x, binedges);
         COind = ax.ColorOrderIndex;
+        
+        
         if ~isempty(cutoff)
             zidxs = z < cutoff;
 

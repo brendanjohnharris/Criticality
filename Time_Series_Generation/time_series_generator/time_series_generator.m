@@ -351,7 +351,12 @@ for i = 1:length(etarange)
             break
         end
     end
-
+    
+    % Maybe a dirty fix
+    if size(timeSeriesData, 2) - 1 == size(rout, 2) 
+        % The first data point is missing, probably because no subsampling took place
+        rout = [initial_conditions, rout];
+    end
     %% If not using integrated_hctsa
     if no_hctsa
         timeSeriesData((1+length(cp_range)*(i-1)):length(cp_range)*i, :) = rout; % Copy to timeSeriesData

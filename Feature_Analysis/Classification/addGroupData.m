@@ -35,7 +35,7 @@ function time_series_data = addGroupData(time_series_data, muConditions, groupNa
         end
         time_series_data(i, :).Group_ID = groupIDs;
         if ~isempty(groupNames)
-            time_series_data(i, :).Group_Names = unique(Group_Names, 'stable');
+            time_series_data(i, :).Group_Names = groupNames;
         end
     end
     if ~isempty(savefile)

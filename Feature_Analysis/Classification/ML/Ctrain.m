@@ -1,4 +1,4 @@
-function [mdl, X, labels] = Ctrain(template, data, useGPU)
+function [mdl, X, labels, sl] = Ctrain(template, data, useGPU)
 %CTRAIN 
 % template is a template for fitcecoc
     if nargin < 3 || isempty(useGPU)
@@ -16,7 +16,7 @@ function [mdl, X, labels] = Ctrain(template, data, useGPU)
         if length(unique(data(1, :).Group_ID)) ~= length(data(1, :).Group_Names)
             error('The number of unique group IDs does not match the number of Group_Names. Perhaps you are still using an old addGroupData?')
         end
-        [X, labels] = reconstructDataMat(data);
+        [X, labels, sl] = reconstructDataMat(data);
         if checkConsistency(data, [0, 1, 1])
             featurenames = data(1, :).Operations.Name;
         end

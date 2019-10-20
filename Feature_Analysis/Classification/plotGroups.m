@@ -4,7 +4,8 @@ function plotGroups(data, opid, superGroups)
     % superGroups is a cell 'vector' containing vectors of indices with
     % which to group rows of data. If empty, the groups will be taken as
     % the rows, individually
-    
+    % Make sure the groups are CONSISTENT IN ORDER FOR ALL TIMESERIES
+    % ROWS!!!
     consistent = checkConsistency(data, [0, 1, 1]);
     if nargin < 3
         superGroups = [];

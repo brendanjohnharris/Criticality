@@ -117,6 +117,16 @@ switch system_type
                 rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
             end
         end
+        
+    case 'subcritical_hopf_radius_(strogatz)_varying_cp'
+        for n = 1:numpoints-1
+            r = r + (-r.^5 + (r.^3) + mu.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+            r = abs(r);
+            mu = mu + parameters(1).*dt; % The parameter is d(mu)/dt
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+            end
+        end
 
     otherwise
         error("No match found for type '%s'", system_type)
