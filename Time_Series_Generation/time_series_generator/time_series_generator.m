@@ -160,7 +160,7 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 %% Parse Inputs
 start = tic; % Start timer
 p = inputParser;
-addParameter(p, 'cp_range', (-1:0.1:1))
+addParameter(p, 'cp_range', -0.5)%(-1:0.1:1))
 addParameter(p, 'system_type', 'supercritical_hopf_radius_(strogatz)')
 addParameter(p, 'tmax', 'T')
 addParameter(p, 'initial_conditions', 0)

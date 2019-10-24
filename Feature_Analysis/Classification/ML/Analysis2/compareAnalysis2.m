@@ -17,7 +17,7 @@ function compareAnalysis2(filename1, filename2, depth)
     set(gcf,'color','w');
     a.XTick = 1:depth+1;
     a.XTickLabels = [arrayfun(@num2str, 1:depth, 'un', 0), 'all'];
-    ylabel('Misclassification rate')
+    ylabel('Mean misclassification rate')
     xlabel('Number of features')
 end
 

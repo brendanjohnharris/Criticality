@@ -110,7 +110,7 @@ function [f, ax] = plotFs2(data, template)
         % height
         tx = linspace(xg - 0.1.*yh, xg + 0.1.*yh, length(t));
         t = t + yg;
-        polyout = polybuffer([tx', t'], 'lines', 0.02);
+        polyout = polybuffer([tx', t'], 'lines', 0.01);
         plot(polyout, 'FaceColor', 'w', 'FaceAlpha', 1, 'EdgeColor', 'w');% 'EdgeColor', cmp(Groups(locidx), :), 'EdgeAlpha', 0.5, 'HoleEdgeColor', 'w', 'HoleEdgeAlpha', 0.75)
         plot(tx, t, 'color', cmp(Groups(locidx), :), 'LineWidth', 1.5)
         loc = [];

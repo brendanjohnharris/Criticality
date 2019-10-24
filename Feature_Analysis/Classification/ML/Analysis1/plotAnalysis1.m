@@ -6,7 +6,7 @@ function plotAnalysis1(filename, classifier, system)
     shufflemeanloss = shuffleoperations.Mean_Loss;
     figure('Color', 'w')
     ax = gca;
-    hist1 = customHistogram(meanloss, 50, [], 0, 'k');
+    [hist1, bs] = customHistogram(meanloss, 50, [], 0, 'k');
     max1 = max(hist1);
     %yyaxis right
     %ax = gca;

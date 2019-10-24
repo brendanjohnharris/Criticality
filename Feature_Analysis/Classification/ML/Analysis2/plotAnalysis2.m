@@ -5,7 +5,7 @@ function plotAnalysis2(filename, depth)
     if nargin < 2 || isempty(depth)
         depth = size(lossmat, 1);
     end
-    BF_JitteredParallelScatter([arrayfun(@(x) lossmat(x, :), 1:depth, 'un', 0), lossvec], 1, 1, 0)
+    BF_JitteredParallelScatter([arrayfun(@(x) lossmat(x, :), 1:depth, 'un', 0), lossvec], 1, 1, 0);
     a = gca;
     for i = 1:length(a.Children)
     a.Children(i).Color = 'k';

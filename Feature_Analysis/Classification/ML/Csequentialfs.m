@@ -96,7 +96,7 @@ function [operations, selectedOpIdxs] = Csequentialfs(template, data, cutoffCond
 % %                         foldLoss(c) = loss(mdl, [fX(outInds, :), nextfX(outInds, :)], Y(outInds));
 % %                     end
 % %                 end
-                mdl = fitcecoc([fX, nextfX], Y, 'Learners', template, 'ClassNames', categories(Y), 'CVPartition', cshuffle); % Find best feature using constant partition c
+                mdl = fitcecoc([fX, nextfX], Y, 'Learners', template, 'ClassNames', categories(Y), 'CVPartition', cshuffle); % Find best feature using shuffled partition c
                 featureLoss(fi) = kfoldLoss(mdl, 'Mode', 'average');
             end
         end

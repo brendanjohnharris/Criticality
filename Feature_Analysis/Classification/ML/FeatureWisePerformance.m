@@ -1,4 +1,4 @@
-function [operations, lossmat] = FeatureWisePerformance(template, data, numReps, pTrain, doPar)
+function [operations, lossmat] = FeatureWisePerformance(template, data, numReps, pTrain, doPar, shuffleLabels)
     timer = tic;
     if nargin < 3 || isempty(numReps)
         numReps = 20;
@@ -32,6 +32,12 @@ function [operations, lossmat] = FeatureWisePerformance(template, data, numReps,
         parfor (rep = 1:numReps, pl.NumWorkers)
             lossvec = nan(numFeatures, 1);
             for f = 1:numFeatures
+                % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                if shuffleLabels
+                    sIdxs = randperm(length(Y), length(Y));
+                    Y = Y(sIdxs);
+                end
+                % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 fX = X(:, f);
                 crep = repartition(c);
                 trainIdxs = training(crep);
@@ -48,6 +54,12 @@ function [operations, lossmat] = FeatureWisePerformance(template, data, numReps,
     	for rep = 1:numReps
             lossvec = nan(numFeatures, 1);
             for f = 1:numFeatures
+                % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                if shuffleLabels
+                    sIdxs = randperm(length(Y), length(Y));
+                    Y = Y(sIdxs);
+                end
+                % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 fX = X(:, f);
                 crep = repartition(c);
                 trainIdxs = training(crep);

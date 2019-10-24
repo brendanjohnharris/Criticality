@@ -129,7 +129,7 @@ function [f, ax] = plotFs3(data, template, numLobes, skipTimeseries)
         inputs.save_cp_split = [];
         inputs.foldername = [];
         t = time_series_generator('input_struct', inputs);
-        t = t(1:round(length(t)./20));
+        t = t(1:round(length(t)./15));
         delete(findall(gcf,'Type','hggroup'))
         fprintf('Select a location to place the timeseries...\n')
         axes(ax2)
@@ -146,7 +146,7 @@ function [f, ax] = plotFs3(data, template, numLobes, skipTimeseries)
         t = t + yg;
         polyout = polybuffer([tx', t'], 'lines', 0.01);
         plot(ax2, polyout, 'FaceColor', 'w', 'FaceAlpha', 1, 'EdgeColor', 'w');% 'EdgeColor', cmp(Groups(locidx), :), 'EdgeAlpha', 0.5, 'HoleEdgeColor', 'w', 'HoleEdgeAlpha', 0.75)
-        plot(ax2, tx, t, 'color', cmp(Groups(locidx), :), 'LineWidth', 1.5)
+        plot(ax2, tx, t, 'color', cmp(Groups(locidx), :), 'LineWidth', 1)
         ax2.XLim = xli; ax2.YLim = yli; % Just in case
         ax2.Visible = 'off';
     end

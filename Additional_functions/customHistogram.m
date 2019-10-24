@@ -7,11 +7,13 @@ function [origy, BinEdges] = customHistogram(X, BinEdges, cutoff, fillit, theCol
     if nargin < 2 || isempty(BinEdges)
         BinEdges = 20;
     end
-    if isscalar(BinEdges)
+    if isscalar(BinEdges) && ~iscell(BinEdges)
         numBins = BinEdges;
         BinEdges = cell(1, length(X));
         for t = 1:length(X)
-            BinEdges{t} = linspace(min(X{t}), max(X{t}), numBins);
+            binCs = linspace(min(X{t}), max(X{t}), numBins);
+            dB = (binCs(2) - binCs(1))./2;
+            BinEdges{t} = [binCs - dB, binCs(end) + dB];
         end
     elseif isvector(BinEdges) && ~iscell(BinEdges)
         BinEdges = {BinEdges};
