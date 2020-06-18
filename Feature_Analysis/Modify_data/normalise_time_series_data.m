@@ -1,8 +1,11 @@
-function data = normalise_time_series_data(data, what_range)
+function data = normalise_time_series_data(data, what_range, normMethod)
 %NORMALISE_TIME_SERIES_DATA Normalise the TS_Datamat contained in
 %time_series_data (using aggregated feature values)
     if nargin < 2
         what_range = [];
+    end
+    if nargin < 2
+        normMethod = 'maxmin';
     end
     % Get the unstacking indices
     unstack_inds = {};
@@ -26,8 +29,7 @@ function data = normalise_time_series_data(data, what_range)
     stacked_mat = cell2mat(stacked_mat);
     unstack_inds = cell2mat(unstack_inds);
     stacked_mat(isnan(stacked_mat)) = 0; % if nan, set to 0
-    
-    stacked_mat = BF_NormalizeMatrix(stacked_mat, 'maxmin');
+    stacked_mat = BF_NormalizeMatrix(stacked_mat, normMethod);
     for x = 1:size(data, 1)
         data(x, :).TS_DataMat = stacked_mat(unstack_inds == x, :);
     end

@@ -1,5 +1,5 @@
 function input_struct = make_input_struct(interactive, varargin)
-%MAKE_TEMPLATE_STRUCT Make an input structure for time_series_generator
+%MAKE_INPUT_STRUCT Make an input structure for time_series_generator
 % A structure with fields required by time_series_generator will be
 % returned. If no input arguments are given then a GUI will open, to interactively create the structure. 
 % For an empty structure, use 'make_input_struct(0)'. To fill in fields 

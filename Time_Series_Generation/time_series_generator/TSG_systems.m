@@ -1,4 +1,4 @@
-% This script contians the systems availiable to time_series_generator.
+% This script contains the systems availiable to time_series_generator.
 % To add a new system, remeber that it must:
 %     - Increment from 1 to numpoints-1
 %     - Refer to the evolving vector 'r' as the time series value; one element for every control parameter

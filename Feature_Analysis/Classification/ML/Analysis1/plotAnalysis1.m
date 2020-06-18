@@ -25,5 +25,5 @@ function plotAnalysis1(filename, classifier, system)
     xlabel('Mean Misclassification Rate')
     ylabel('Frequency')
     title(sprintf('Mean Individual Feature Performance: %s Classifier (n = %i)', classifier, n))
-    legend(system, 'Null (Shuffled Classes)', 'Location', 'NorthWest')
+    legend(system, 'Null (Shuffled)', 'Location', 'NorthWest')
 end

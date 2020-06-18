@@ -19,5 +19,5 @@
 cd "$PBS_O_WORKDIR"
 # cd time_series_data-$PBS_ARRAYID
 hostname
-matlab -nodisplay -singleCompThread -r "home_dir = pwd; cd('~/Criticality'), add_all_subfolders, cd(home_dir), time_series_generator('input_file', 'inputs-${PBS_ARRAYID}.mat'); exit"
+matlab -nodisplay -singleCompThread -r "home_dir = pwd; cd('~/hctsa_v098'); startup; cd('~/Criticality'), add_all_subfolders, cd(home_dir), time_series_generator('input_file', 'inputs-${PBS_ARRAYID}.mat'); exit"
 exit

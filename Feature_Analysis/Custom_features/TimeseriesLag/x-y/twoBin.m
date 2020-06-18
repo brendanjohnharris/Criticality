@@ -65,6 +65,13 @@ function out = twoBin(x, mu, color, p)
     out.corr_equiv = std(res_eq(2, :)).*(1./std(upperes_eq(1, :)) - 1./std(loweres_eq(1, :)));
     %----------------------------------------------------------------------
     
+    %!!!!!!----------------------------------------------------------------------  
+    pdf = ksdensity(x, linspace(0, max(x), 100));
+    idx = find(linspace(0, max(x), 100) > median(x), 1, 'first');
+    out.corr_equiv2 = std(res_eq(2, :)).*(mean(pdf(idx:end)) - mean(pdf(1:idx-1)));
+    out.corr_equiv3 = std(loweres_eq(1, :))./std(res_eq(2, :));
+    %!!!!!!----------------------------------------------------------------------
+    
     %----------------------------------------------------------------------    
     out.corr_equiv_nosigma = (1./std(upperes_eq(1, :)) - 1./std(loweres_eq(1, :)));
     %----------------------------------------------------------------------
@@ -78,8 +85,9 @@ function out = twoBin(x, mu, color, p)
     out.corr_equiv_all =  std(res_eq(2, :))./std(res_eq(1, :));
     %----------------------------------------------------------------------
     
+    %!!!!!!!!!!
     out.corr_equiv_density = std(res_eq(2, :)).*(1./(max(upperes_eq(1, :)) - min(upperes_eq(1, :))) - 1./(max(loweres_eq(1, :)) - min(loweres_eq(1, :))));
-    
+    %!!!!!!!!!!
     
     uv = max(upperes_eq(1, :)) - min(upperes_eq(1, :));
     lv = max(loweres_eq(1, :)) - min(loweres_eq(1, :));
@@ -87,7 +95,11 @@ function out = twoBin(x, mu, color, p)
     out.loggrad = logdiffequiv./(mean(upperes_eq(1, :)) - mean(loweres_eq(1, :)));%%%%% Optimal 2 bin so far
     
     out.densitygrad = std(res_eq(2, :)).*(-log(25000./uv) - -log(25000./lv))./(mean(upperes_eq(1, :)) - mean(loweres_eq(1, :)));
+    out.corr_equiv_equiv = std(res_eq(2, :)).*(1./(mean(upperes_eq(1, :))-median(res(1, :))) - 1./(mean(loweres_eq(1, :))));
     
+    histup = histcounts(upperes_eq(1, :),'BinWidth',0.001);
+    histdown = histcounts(loweres_eq(1, :),'BinWidth',0.001);
+    out.corr_equiv_pdfmean = std(res_eq(2, :)).*(mean(histup) - mean(histdown));
     %----------------------------------------------------------------------  
     fx = @(x, y) var(((x) + (y))./sqrt(2));
     fy = @(x, y) var(((y) - (x))./sqrt(2));
@@ -119,8 +131,8 @@ function out = twoBin(x, mu, color, p)
     %----------------------------------------------------------------------
     
     out.med = median(x);
-    
     out.dkurt = kurtosis([-x, x]);
+    out.dstd = std([-x, x])./std(res_eq(2, :));
     
 % ----Plot the difference over the potential function----------------------
     if ~isempty(mu)

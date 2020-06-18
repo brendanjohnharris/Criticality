@@ -2,7 +2,7 @@ function out = test_a_feature(featurestr, subfeaturestr, inputs, p, makeplot)
 % Parameter is 'p' in feature string
     fvals = [];
     if nargin < 3 || isempty(inputs)
-        cpvals = [-1:0.05:-0.05];%[-1:0.1:-0.1, -0.01];
+        cpvals = [-1:0.05:-0.01];%[-1:0.1:-0.1, -0.01];
         etavals = [0.05:0.05:1];%[0.01, 0.1:0.1:1];%[0.3, 0.5, 1];[0.01:0.01:1];%
     else
         cpvals = inputs.cp_range;
@@ -15,7 +15,7 @@ function out = test_a_feature(featurestr, subfeaturestr, inputs, p, makeplot)
         makeplot = 1;
     end
     if nargin < 3 || isempty(inputs)
-    	[z, ~, labels] = time_series_generator('cp_range', cpvals, 'etarange', etavals, 'savelength', 50000);%, 'system_type', 'quadratic_potential');%, 'system_type', 'supercritical_hopf_radius_(strogatz)-non-reflecting');
+    	[z, ~, labels] = time_series_generator('cp_range', cpvals, 'etarange', etavals, 'savelength', 5000, 'T', 'tmax./2');%, 'system_type', 'quadratic_potential');%, 'system_type', 'supercritical_hopf_radius_(strogatz)-non-reflecting');
     else
     	[z, ~, labels] = time_series_generator('input_struct', inputs, 'cp_range', cpvals, 'etarange', etavals);
     end

@@ -24,7 +24,7 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 %
 %       timeSeriesData- The time series
 %
-%       inputs-         A structure containing the options and aprameters
+%       inputs-         A structure containing the options and parameters
 %                       used to generate the time series, as well as any that were
 %                       calculated
 %
@@ -124,7 +124,7 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 %                               or neither
 %
 %           integrated_hctsa:   A structure containing options for
-%                               integrating hctsa calcualtions with time series
+%                               integrating hctsa calculations with time series
 %                               generation. If all fields are empty, time series
 %                               will be generated as normal. If not, a hctsa
 %                               file will be saved in place of a timeseries file.
@@ -158,11 +158,11 @@ function [timeSeriesData, inputs, labels, keywords] = time_series_generator(vara
 %                               Any that do not pass by this maximum number of attemtps will be NaN
 
 %% Parse Inputs
-start = tic; % Start timer
+start = tic;
 p = inputParser;
-addParameter(p, 'cp_range', -0.5)%(-1:0.1:1))
+addParameter(p, 'cp_range', -0.5)
 addParameter(p, 'system_type', 'supercritical_hopf_radius_(strogatz)')
-addParameter(p, 'tmax', 'T')
+addParameter(p, 'tmax', 1000)
 addParameter(p, 'initial_conditions', 0)
 addParameter(p, 'parameters', [])
 addParameter(p, 'bifurcation_point', 0)
@@ -170,7 +170,7 @@ addParameter(p, 'etarange', 0.1)
 addParameter(p, 'numpoints', 'max(1000000, savelength.*20)')
 addParameter(p, 'savelength', 5000)
 addParameter(p, 'dt', [])
-addParameter(p, 'T', 1000)
+addParameter(p, 'T', 'tmax')
 addParameter(p, 'sampling_period', [])
 addParameter(p, 'foldername', [])
 addParameter(p, 'rngseed', [])
@@ -332,11 +332,12 @@ for i = 1:length(etarange)
     fails = true(length(cp_range), 1);
     rout = [fails.*initial_conditions,  nan(length(cp_range), floor(((numpoints - 1 - transient_cutoff)./savestep) - 1))];
     
+    if isempty(maxAttempts); maxAttempts = 1; end
     for attempt = 1:maxAttempts
         %% Run a script containing the systems
         TSG_systems
         
-        if isscalar(criteria)
+        if isscalar(criteria) || isempty(criteria)
             fails = false(length(cp_range), 1); % Let everything through
         else
             mu = cp_range'; %In case TSG_systems changed its size and the criteria references mu
