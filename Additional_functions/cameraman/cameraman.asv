@@ -1,0 +1,94 @@
+classdef cameraman < handle
+    %CAMERAMAN Point me at a figure and I'll film it until you fire me.
+    
+    properties
+        subject = [];
+        destination = [];
+        reel = [];
+        record = [];
+        shutter = [];
+        production = [];
+        updated = [];
+        FrameCheck = [];
+    end
+    
+    methods (Static)
+        function out = setgetFrame(X)
+            persistent Frame;
+            if nargin
+                Frame = x;
+            end
+            out = Frame;
+        end
+    end
+    
+    methods
+        function obj = cameraman(f, fileName, profile)
+            %CAMERAMAN Hire me. Tell me what to film (figure f) and where
+            %to show it (fileName)
+            obj.subject = f;
+            obj.destination = fileName;
+            if nargin < 3 || isempty(profile) && strcmp(fileName(end-3:end), '.mp4')
+                profile = 'MPEG-4';
+            elseif nargin < 3
+                profile = [];
+            end
+            obj.production = VideoWriter(fileName, profile);
+            
+            % Add input parser later
+            obj.production.Quality = 95;
+            
+            
+            open(obj.production)
+            props = metaclass(f);
+            props = props.PropertyList;
+            props = props([props.SetObservable]); % Use only properties that we can watch
+            obj.shutter{1} = event.proplistener(f, props, 'PostSet', @(src,evnt) obj.snap(obj,src,evnt));
+            
+            chld = f.Children;
+            for axind = 1:length(chld)
+                ax = chld(axind);
+                props = metaclass(ax);
+                props = props.PropertyList;
+                props = props([props.SetObservable]); % Use only properties that we can watch
+                obj.shutter{axind+1} = event.proplistener(ax, props, 'PostSet', @(src,evnt) obj.snap(obj,src,evnt));
+                %obj.shutter{axind+1} = addlistener(ax, 'LegendableObjectsUpdated', @(src,evnt) obj.snap(obj,src,evnt));
+            end
+            
+            %obj.updated = addlistener(f, 'NodeChildAdded', @(src, evnt) obj.catchUpdate);
+            
+        end
+        
+        function fire(obj)
+            obj.record = false;
+            close(obj.production)
+            obj.delete
+        end
+        
+        function delete(obj)
+        end
+        
+        function obj = snap(obj, varargin)
+            catchUpdate(obj);
+            Frame = reWriter.setgetFrame;
+            
+            writeVideo(obj.production, getframe(obj.subject));
+        end
+        
+        function obj = catchUpdate(obj, varargin)
+            chld = obj.subject.Children;
+            for axind = 1:length(chld)
+                ax = chld(axind);
+                props = metaclass(ax);
+                props = props.PropertyList;
+                props = props([props.SetObservable]); % Use only properties that we can watch
+                obj.shutter{axind+1} = event.proplistener(ax, props, 'PostSet', @(src,evnt) obj.snap(obj,src,evnt));
+                %obj.shutter{axind+1} = addlistener(ax, 'MarkedClean', @(src,evnt) obj.snap(obj,src,evnt));
+            end
+        end
+    end
+end
+
+function test()
+    disp('test')
+end

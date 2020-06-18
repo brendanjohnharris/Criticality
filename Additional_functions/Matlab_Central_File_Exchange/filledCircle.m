@@ -22,7 +22,7 @@ RHO=ones(1,N)*r;
 [X,Y] = pol2cart(THETA,RHO);
 X=X+center(1);
 Y=Y+center(2);
-h=fill(X,Y,color);
+h=fill(X,Y,color, 'EdgeColor', 'none'); % BH- added 'EdgeColor', 'none'
 axis square;
 
 
