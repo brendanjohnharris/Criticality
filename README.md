@@ -1,12 +1,12 @@
 # Criticality
-.....................................Preamble..............................
+Simulate bifurcating dynamical systems, record time series and run [_hctsa_](https://github.com/benfulcher/hctsa) to produce feature that characterise the dynamical system and its parameters; then, run analyses to determine which features are most useful for predicting these parameters.
 
 ## Setup
 In addition to cloning this repository, _hctsa_ v0.98 should be [installed](https://hctsa-users.gitbook.io/hctsa-manual/) in a convenient location and the following modifications performed:
 - Add the -v7.3 flag to the save function on line `144` of `TS_init.m` (allowing for larger `.mat` files)
 - Change the maximum time series length to 10000000 on line `101` of `SQL_add.m` (allowing for longer time series)
 
-A workflow begins by adding files to the Matlab path; run `startup()` in the _hctsa_ directory and `add_all_subfolders()` in the _Criticality_ directory..
+A workflow begins by adding files to the Matlab path; run `startup()` in the _hctsa_ directory and `add_all_subfolders()` in the _Criticality_ directory.
 
 To reproduce main analyses, refer to the scripts `testTimeseries.m`, `testHCTSA.m` and `testAnalysis.m` in `./test/`. Below is an outline of a typical workflow-- simulating dynamical systems, running _hctsa_ and analysing feature values.
 
@@ -38,7 +38,7 @@ inputs = make_input_struct(false);
 ```
 
 ## hctsa
-If the `foldername` option is provided to `time_series_generator` then the time series will be saved into a _hctsa_ compatible `.mat` file (e.g. `timeseries.mat`). This can be directly transformed into an `HCTSA.mat` file, utilising all operations, with:
+If the `foldername` option is provided to `time_series_generator` then the time series will be saved into a _hctsa_ compatible `.mat` file (e.g. `timeseries.mat`). This can be directly transformed into an `HCTSA.mat` file, usually utilising all operations, with:
 
 ```java
 TS_init('timeseries.mat', [], [], 0);
@@ -57,15 +57,15 @@ For massive dynamical system simulations feature calculation can be performed on
 If the time series array is not intractably large it can simply be transferred to a cluster and [distributed_hctsa](https://github.com/benfulcher/distributed_hctsa) (or the slightly modified version at `./PBS/Distributed_hctsa/modified/`) can be used to subset timeseries, calculate features and recombine the results (as detailed in `./docs/USydPhysicsHPC.md`). In this repository the _hctsa_ install directory is assumed to be `~/hctsa_v098/` and the self location is `~/Criticality/`.
 
 #### PBS Array jobs
-For larger datasets the process of saving, loading and dividing an `HCTSA.mat` file becomes extremely slow, so the `save_cp_split` option of `time_series_generator` can be used to directly subset the timeseries at simulation. This option can be set to the number of jobs intended to run on the cluster, as long as this is smaller than the number of different control parameters represented in the dataset. Copying all the subdirectories produced, following [the same initialisation](./docs/USydPhysicsHPC.md) of Matlab and _hctsa_ and running `PBS_array_TS_compute.sh` (in the same directory as the time series subdirectories) fills the `HCTSA.mat` subset files with feature values.
+For larger datasets the process of saving, loading and dividing a single `HCTSA.mat` file becomes extremely slow, so the `save_cp_split` option of `time_series_generator` can be used to directly subset the timeseries at simulation. This option can be set to the number of jobs intended to run on the cluster, as long as this is smaller than the number of different control parameters represented in the dataset. Copying all the subdirectories produced to the cluster, following [the same initialisation](./docs/USydPhysicsHPC.md) of Matlab and _hctsa_ before running `PBS_array_TS_compute.sh` (in the same directory as the time series subdirectories) fills the `HCTSA.mat` subset files with feature values.
 
-Additionally, `time_series_generator` can itself be run on a cluster; `parameter_sweep.m` takes a template input structure and produces subdirectories that each contain an input file varying in the specified option. `PBS_generate_time_series.sh` can then be run on the cluster, in the folder containing these subdirectories, to fill them with a 'timeseries.mat' file, after which `PBS_array_TS_compute.sh` can be used to calculate feature values.
+Additionally, `time_series_generator` can itself be run on a cluster; `parameter_sweep.m` takes a template input structure and produces subdirectories that each contain an input file varying in the specified option. `PBS_generate_time_series.sh` can then be run on the cluster, in the folder containing these subdirectories, to fill them with a `timeseries.mat` file, after which `PBS_array_TS_compute.sh` can be used to calculate feature values.
 
 #### Integrated _hctsa_
 A (very) small number of analyses required datasets too large to save to disk; modified versions of `TS_init` (`./Modified_hctsa/light_TS_init.m`) and `TS_compute` (`./Modified_hctsa/light_TS_compute.m`) bypasses the usual save procedure and ***do not save time series***. These can be used in combination with the `parameter_sweep.m` and `PBS_generate_time_series.sh` files by setting the `integrated_hctsa` option of `time_series_generator` to non-default values (i.e each subdirectory with its own input file will simulate timeseries and calculate feature values, saving ***only*** `HCTSA.mat` subset files to disk-- ***without*** timeseries).
 
 ## Feature Analysis
-The majority of functions contained in this repository are for analysing the feature array-- `TS_DataMat`-- produced by _hctsa_ from time series datasets formatted by `time_series_generated`. Most operate on a `time_series_data` structure which is produced from an `HCTSA.mat`; many peripheral functions are unimportant but the central analyses are here outlined.
+The majority of functions contained in this repository are for analysing the feature array-- `TS_DataMat`-- produced using _hctsa_ from time series datasets formatted by `time_series_generator`. Most operate on a `time_series_data` structure which is produced from an `HCTSA.mat`; many peripheral functions are unimportant but the central analyses are here outlined.
 
 Analysis begins with `./Feature_Analysis/save_data.m`; the working directory should contain either an `HCTSA.mat` and an `inputs.mat` file. Then:
 
