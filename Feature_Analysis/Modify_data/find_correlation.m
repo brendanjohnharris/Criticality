@@ -43,13 +43,7 @@ function find_correlation(datafile, correlation_type, what_range, savefile)
         %correlation_cell = cell(1, length(time_series_data(i, :).Inputs.etarange));
         %for i = 1:length(parameters.etarange)
             trimmedsubDataMat = data.TS_DataMat(what_range_idxs, :);
-            switch correlation_type
-                case 'Spearman'
-                    r = corr(mu, trimmedsubDataMat, 'type', 'Spearman')';
-
-                case 'Pearson'
-                    r = corr(mu, trimmedsubDataMat, 'type', 'Pearson')';
-            end
+            r = corr(mu, trimmedsubDataMat, 'type', correlation_type)';
             [~, idxs] = maxk(abs(r), length(r)); % Sort counts NaN's as largest
             IDs = [data.Operations.ID]; %Assumes operation indices match TS_DataMat columns
             % First colum of entries of correlation_cell is the correlation, the

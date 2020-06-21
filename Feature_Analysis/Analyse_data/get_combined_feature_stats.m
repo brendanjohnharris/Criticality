@@ -111,7 +111,7 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
                     end
                     y = cell2mat(arrayfun(@(x) data(x, :).TS_DataMat(idxs, :), 1:size(data, 1), 'UniformOutput', 0)');
                     x = cell2mat(arrayfun(@(x) data(x, :).Inputs.cp_range(idxs), 1:size(data, 1), 'UniformOutput', 0))';
-                    the_stat_values = abs(corr(y, x, 'Type', 'Pearson'));
+                    the_stat_values = abs(corr(y, x, 'Type', 'Spearman'));
                     
                 case 'Aggregated_Correlation'
                     if ~isempty(data(1).Correlation_Range)
@@ -121,7 +121,7 @@ function tbl = get_combined_feature_stats(data, single_stats, combined_stats, di
                     end
                     y = cell2mat(arrayfun(@(x) data(x, :).TS_DataMat(idxs, :), 1:size(data, 1), 'UniformOutput', 0)');
                     x = cell2mat(arrayfun(@(x) data(x, :).Inputs.cp_range(idxs), 1:size(data, 1), 'UniformOutput', 0))';
-                    the_stat_values = (corr(y, x, 'Type', 'Pearson'));
+                    the_stat_values = (corr(y, x, 'Type', 'Spearman'));
                     
                 case 'Aggregated_cp_RMSE'
                     if ~isempty(data(1).Correlation_Range)

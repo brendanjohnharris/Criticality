@@ -1,3 +1,7 @@
+% Generate time series for the main analysis; this should only take a few
+% minutes, and will produce an `inputs.mat` file, a `results` folder and 100
+% `time_series_data` subfolders (each with a `timeseries.mat` file and an `inputs_out.mat` file)
+
 clear all
 
 inputs = make_input_struct(0, 'cp_range', -1:0.01:0, 'etarange', 0.01:0.01:1,...
