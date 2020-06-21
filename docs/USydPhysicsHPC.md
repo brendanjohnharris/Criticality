@@ -11,7 +11,7 @@ Steps to perform _hctsa_ calculations on a single `HCTSA.mat` file of time serie
 
 ## Scripts
 Shell, PBS and Matlab scripts are used to subset time series in a `HCTSA.mat` file, perform distributed _hctsa_ feature calculation and then recombine the subsets. Add the four files (`HCTSA_run.sh`, `HCTSA_Runscript.sh`, `PBS_combineBatchFiles.sh`, `pbs_runscript.sh`) found [here](./PBS/Distributed_hctsa/modified.md) (slightly modified from [distributed_hctsa](https://github.com/benfulcher/distributed_hctsa)) to the same directory on the cluster as `HCTSA.mat`
-Enter `module load Matlab2017b` to the terminal before running any scripts.
+Enter `module load Matlab2017b` to the terminal before running any scripts, and `dos2unix` each file just in case.
 
 
 ## `distributed_hctsa` Parameters

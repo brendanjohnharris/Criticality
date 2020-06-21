@@ -1,13 +1,19 @@
 function [pmat, ps] = pairwiseFeatureSimilarity(datamat, ps, metric)
 %PAIRWIESEFEATURESIMILARITY
     if nargin < 3 || isempty(metric)
-        metric = 'euclidean';
+        metric = 'spearman';
     end
-   
-    pmat = BF_pdist(datamat, metric);
+    %datamat = BF_NormalizeMatrix(datamat', 'zscore');
+    %pmat = squareform(pdist(datamat', metric));
+    pmat = abs(corr(datamat));
+    ord = BF_ClusterReorder(datamat', 1-pmat);
+    pmat = pmat(ord, ord);
+    ps = ps(ord);
+    
+    figure('color', 'w')
     imagesc(pmat)
     ax = gca;
-    tickidxs = [1, linspace(length(ps)./10, length(ps), 10)];
+    tickidxs = sort([ floor(linspace(length(ps)./4, length(ps), 4)), find(ps == 93), find(ps == 19)], 'asc');
     ax.XAxis.MinorTickValues = 1:size(datamat, 1);
     ax.YAxis.MinorTickValues = ax.XTick;
     ax.XAxis.TickValues = tickidxs;
@@ -22,7 +28,8 @@ function [pmat, ps] = pairwiseFeatureSimilarity(datamat, ps, metric)
 %         case 'correlation'
 %             colormap(cbrewer('div', 'RdBu', 100))
 %     end
-    colormap(inferno(100))
+    %colormap(inferno(100))
+    colormap(parula)
     c = colorbar;
     axis xy
 end

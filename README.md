@@ -8,7 +8,7 @@ In addition to cloning this repository, _hctsa_ v0.98 should be [installed](http
 
 A workflow begins by adding files to the Matlab path; run `startup()` in the _hctsa_ directory and `add_all_subfolders()` in the _Criticality_ directory.
 
-To reproduce main analyses, refer to the scripts `testTimeseries.m`, `testHCTSA.m` and `testAnalysis.m` in `./test/`. Below is an outline of a typical workflow-- simulating dynamical systems, running _hctsa_ and analysing feature values.
+To reproduce main analyses, refer to the files `testTimeseries.m`, `testHCTSA.md` and `testAnalysis.m` in `./test/`. Below is an outline of a typical workflow-- simulating dynamical systems, running _hctsa_ and analysing feature values.
 
 ## Time Series
 Stochastic dynamical systems are simulated by the `./Time_Series_Generation/time_series_generator/time_series_generator.m` function using the Euler-Maruyama method. For an example time series with the default parameters:
@@ -67,7 +67,7 @@ A (very) small number of analyses required datasets too large to save to disk; m
 ## Feature Analysis
 The majority of functions contained in this repository are for analysing the feature array-- `TS_DataMat`-- produced using _hctsa_ from time series datasets formatted by `time_series_generator`. Most operate on a `time_series_data` structure which is produced from an `HCTSA.mat`; many peripheral functions are unimportant but the central analyses are here outlined.
 
-Analysis begins with `./Feature_Analysis/save_data.m`; the working directory should contain either an `HCTSA.mat` and an `inputs.mat` file. Then:
+Analysis begins with `./Feature_Analysis/save_data.m`; the working directory should contain an `HCTSA.mat` and an `inputs.mat` file. Then:
 
 ```java
 save_data('./time_series_data.mat', 'keyword1,keyword2', 'timeseries_source', 'HCTSA.mat', 'inputs.mat');

@@ -7,19 +7,19 @@ function f = VF_on_bifurcation_diagram(system_type, lims)
     f = figure;
     hold on
     xfin = le:0.001:ri;
-    xcoa = le+0.05:0.05:ri+0.05;
+    xcoa = le+0.1:0.1:ri+0.1;
     switch system_type
         case 'supercritical_hopf_radius_(strogatz)'
-            line(lims, [0, 0], 'LineStyle', '--')
-            y = sqrt(xfin);
-            plot(xfin, y, '-')
+            line(lims, [0, 0], 'LineStyle', '--', 'Color', 'k', 'LineWidth', 2.5)
+            y = real(sqrt(xfin));
+            plot(xfin, y, '-k', 'LineWidth', 2.5)
             ylim([-0.1*sqrt(xfin(end)), inf])
             [X, Y] = meshgrid(xcoa, 0.1:0.1:max(y));
             u = 0.*X;
             v = 0.05.*(X.*Y - Y.^3);
         case 'supercritical_hopf_radius_(strogatz)-non_reflecting'
             line(lims, [0, 0], 'LineStyle', '--')
-            y = sqrt(xfin);
+            y = real(sqrt(xfin));
             plot(xfin, y, '-')
             ax = gca;
             ax.ColorOrderIndex = 1;
@@ -54,7 +54,7 @@ function f = VF_on_bifurcation_diagram(system_type, lims)
             v = 0.05.*(X.*Y + Y.^3 - Y.^5);
             
     end
-    quiver(X,Y,u,v, 'color', 'k')
+    quiver(X,Y,u,v, 'color', 'r')
     %ncquiverref(X,Y,u,v)
     %quiver_tri(X,Y,u,v, 0.015, 22.5, 0.015);
     %set(h,'MaxHeadSize',1e2,'AutoScaleFactor',1);
