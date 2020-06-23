@@ -56,7 +56,6 @@ function [fval, corrvec, diststd, samplepoints, ppoints] = nu_TimeseriesLag(x, n
 % % %     ft = fittype('-a*x^2/2 + x^4/4 + b', 'independent', {'x'}, 'coefficients', {'a', 'b'});
 % % %     thefit = fit(samplepoints', V(f, dt), ft);
 % % %     fval.Vfit = thefit.a; %By far the best. 0.98!
-    
     V = @(f) -std(res(2, :)).^2.*log(f);
     ft = fittype('-a*x^2 + b*x^4 + c', 'independent', {'x'}, 'coefficients', {'a', 'b', 'c'});
     thefit = fit(samplepoints', V(f), ft);

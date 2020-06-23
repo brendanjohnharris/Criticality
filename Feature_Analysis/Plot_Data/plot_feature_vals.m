@@ -180,7 +180,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, 
             tbl = get_combined_feature_stats(data, {}, {'Aggregated_Correlation'}, [], 1);
         end
         thecorr = tbl.Aggregated_Correlation(tbl.Operation_ID == op_id);
-        title(sprintf('$$\\rho = %.2g$$', thecorr), 'interpreter', 'latex', 'fontsize', 16)
+        title(sprintf('$$\\rho_{\\mu}^{\\mathrm{agg}} = %.2g$$', thecorr), 'interpreter', 'latex', 'fontsize', 16)
         st.Position(1) = ax.Position(1) + ax.Position(3)./2;
     end
 end

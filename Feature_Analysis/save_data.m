@@ -6,7 +6,8 @@ function savestruct = save_data(filepath, keywords, source, datafile, inputfile,
 %       (default: inputs.mat)
 %   
 %   'filepath' is the location in which the data will be saved (including
-%   the file name and extension!). If no such file is present, one will be created
+%   the file name and extension!). If no such file is present, one will be
+%   created. If no file name is provided, the data will be returned.
 %
 %   'keywords' is a comma delimited string containing keywords for the time
 %   series data, with no white space
