@@ -2,7 +2,7 @@ function out = test_a_feature(featurestr, subfeaturestr, inputs, p, makeplot)
 % Parameter is 'p' in feature string
     fvals = [];
     if nargin < 3 || isempty(inputs)
-        cpvals = [-1:0.05:-0.01];%[-1:0.1:-0.1, -0.01];
+        cpvals = [-1:0.01:0];%[-1:0.1:-0.1, -0.01];
         etavals = [0.05:0.05:1];%[0.01, 0.1:0.1:1];%[0.3, 0.5, 1];[0.01:0.01:1];%
     else
         cpvals = inputs.cp_range;
@@ -25,7 +25,7 @@ function out = test_a_feature(featurestr, subfeaturestr, inputs, p, makeplot)
     for i = 1:length(cpvals)
         for t = 1:length(etavals)
             %disp(i), disp(t)
-            x = z(((abs(cplabels - cpvals(i)) < abs(cpvals(i)*10^(-10))) &...
+            x = z(((abs(cplabels - cpvals(i)) < 10^(-10)) &...
                 (abs(etalabels - etavals(t)) < abs(etavals(t)*10^(-10)))), :); % Precision errors when converting to and from strings
             res = eval(featurestr); % Uses timeseries 'x', if user enters string correctly
             for v = 1:max(length(subfeaturestr), 1)
