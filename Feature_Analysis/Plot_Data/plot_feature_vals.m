@@ -157,7 +157,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, 
                 c.Label.String = '\Delta \mu';
             end
             if dilution
-                offset = max(param)/15; % Adjust this to get the colorbar ticks correct
+                offset = max(param)/10.5; % Adjust this to get the colorbar ticks correct
             else
                 offset = max(param);
             end
