@@ -22,7 +22,7 @@ function hctsaAllSubfolders(combine, varargin)
     end
     %varargin{2} = ['../', varargin{2}];
     %varargin{3} = ['../', varargin{3}];
-    for i = 1:length(paths)
+    parfor i = 1:length(paths)
         subvarargin = varargin;
         subvarargin{1} = fullfile(paths{i}, subvarargin{1});
         subvarargin{5} = fullfile(paths{i}, subvarargin{5});
@@ -31,7 +31,7 @@ function hctsaAllSubfolders(combine, varargin)
         end
         hctsafile = fullfile(paths{i}, 'HCTSA.mat');
         suphctsafile = fullfile(paths{i}, 'HCTSA_updated.mat');
-        TS_compute(1, [], [], [], subvarargin{5}, 0)
+        TS_compute(0, [], [], [], subvarargin{5}, 0)
         if isfile(hctsafile) && combine
             % Join the hctsa files together
             TS_combine(hctsafile,subvarargin{5}, 1, 1, suphctsafile, 1)

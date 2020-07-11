@@ -1,5 +1,5 @@
 function inputs = TranslateInputs(inputs)
-% You migth give time_series_generator an input struct containing strings
+% You might give time_series_generator an input struct containing strings
 % that reference other fields; this function replaces those with their
 % numeric values. Only guaranteed (?) to work if references are not
 % chained. If they are, whether this function throws an error or not

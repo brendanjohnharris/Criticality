@@ -1,4 +1,4 @@
-function f = delayDistributions(x, tau)
+function f = delayDistributions(x, tau, centre)
 % delayDistributions Some features of time series distributions useful for estimating
 % parameters of their generating stochastic differential equations.
 %
@@ -10,8 +10,17 @@ function f = delayDistributions(x, tau)
     if nargin < 2 || isempty(tau)
         tau = 1;
     end
+    if nargin < 3 || isempty(centre)
+        centre = 0;
+    end
     if isrow(x)
         x = x';
+    end
+    
+    % Center and absolute-value the time series
+    if centre
+        x = x - median(x);
+        x = abs(x);
     end
     
     % Delay embed at interval tau, m = 2

@@ -21,3 +21,7 @@ plot_feature_vals(3535, time_series_data, 'noise', 1, [1, 25, 50, 75, 100], 1) %
 
 % Scatter all features
 meanAgainstAggregated(tbl, 1)
+
+% Feature Bubble Plot
+data = normalise_time_series_data(time_series_data, [-1, 0]);
+visualise_feature_fit(data, [19, 93, 1763, 3332, 3535, 6275], 101)

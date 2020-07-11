@@ -2,6 +2,7 @@ function [TS_DataMat, operations, mus, etas]  = extractDataMat(data, yourmus, yo
 %EXTRACTDATAMAT Extract a datamat at a specific mu/eta/ops from
 %time_series_data. mus and etas label the rows of the TS_DataMat,
 %operations labels the columns (with operation IDS). 
+% The datamat is SORTED in incresing operation order
 if ischar(data)
     data = load(data);
     data = data.time_series_data;

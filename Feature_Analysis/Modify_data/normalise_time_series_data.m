@@ -4,7 +4,7 @@ function data = normalise_time_series_data(data, what_range, normMethod)
     if nargin < 2
         what_range = [];
     end
-    if nargin < 2
+    if nargin < 3
         normMethod = 'maxmin';
     end
     % Get the unstacking indices

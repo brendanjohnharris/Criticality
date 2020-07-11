@@ -2,36 +2,36 @@ function fval = testSemianalyticTwoBin(param)
 % Predict the upperprop feature values from only the control parameter and
 % eta, for the supercritical hopf bifurcation from Strogatz (radius only)
 
-   
+
     etavals = [0.005:0.005:1];
     cpvals = [-1:0.005:-0.005];
     dt = 0.01;
-    
+
     fvals = nan(length(cpvals), length(etavals));
-    
+
     for i = 1:length(etavals)
         for u = 1:length(cpvals)
-            
-            
-            
+
+
+
             mu = cpvals(u);
             eta = etavals(i);
-            
+
             p = @(x) exp(-2.*(-mu.*x.^2 + x.^4./2)/eta.^2);
             normfact = integral(p, 0, inf);
-            pn = @(x) p(x)./normfact;   
+            pn = @(x) p(x)./normfact;
             meanpn = integral(@(x) x.*pn(x), 0, inf);
             threshold = meanpn + param.*(eta*sqrt(dt));
-    
+
             fval = integral(pn, threshold, inf);
-            
+
             fvals(u, i) = fval;
-        end 
+        end
         fprintf('%i of %i \n', i, length(cpvals))
     end
-    
+
     % Plot the predicted values
-    cmap = inferno(length(etavals));
+    cmap = turbo(length(etavals));
     figure, hold on
     corrvecx = [];
     corrvecy = [];
@@ -53,4 +53,3 @@ function fval = testSemianalyticTwoBin(param)
     ylabel('$$f$$', 'interpreter', 'latex', 'fontsize', 18)
     set(gcf, 'Color', 'w')
 end
-

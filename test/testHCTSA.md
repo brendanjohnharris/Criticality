@@ -26,7 +26,7 @@ qsub PBS_array_TS_compute.sh
 
 > The jobs should then be submitted; wait until complete
 
-> Transfer `~/testTimeseries/results/` to `./test/results/`
+> Transfer `~/testTimeseries/results/` to `./test/<system>/results/`
 
 ```
 hctsaAllSubfolders(0, [], [], [], 0, 'HCTSA.mat')

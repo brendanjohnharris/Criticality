@@ -4,9 +4,9 @@ function [sampling_periods, window_lengths, aggregated_correlations, optimal_win
     % Currently only valid for ST_LocalExtreman_n[p]_diffmaxabsmin
     % Should give a more precise description of the format. Only vary in T,
     % for now. b
-    
+
     %savelengths = arrayfun(@(x) x.Inputs.savelength, data);
-    
+
     if nargin < 2 || isempty(makeplot)
         makeplot = 0;
     end
@@ -18,24 +18,24 @@ function [sampling_periods, window_lengths, aggregated_correlations, optimal_win
     end
     f = figure;
     sampling_periods = unique(arrayfun(@(x) x.Inputs.sampling_period, data));
-    
+
     Ts = arrayfun(@(x) x.Inputs.T, data);
     if ~all(Ts == Ts(1))
         error('All lengths, in seconds (T), of the saved time series should be the same')
     end
     window_counts = extractBetween(data(1, :).Operations.Name, 'ST_LocalExtrema_n', '_diffmaxabsmin'); % ASSUME ALL OPERATIONS FIELDS ARE THE SAME!!!
     window_lengths = (Ts(1)./cellfun(@(x) str2double(x), window_counts));
-    
+
     aggregated_correlations = zeros(length(window_lengths), length(sampling_periods));
-    
-    
+
+
     for i = 1:length(sampling_periods)
         subdata = data(arrayfun(@(x) x.Inputs.sampling_period == sampling_periods(i), data), :);
         aggregated_correlation_table = get_combined_feature_stats(subdata, {}, {'Aggregated_Absolute_Correlation'}, [], 1);
         aggregated_correlation_table = sortrows(aggregated_correlation_table, 1, 'ascend', 'MissingPlacement', 'last'); % Sort on opid
         aggregated_correlations(:, i) = aggregated_correlation_table.Aggregated_Absolute_Correlation;
     end
-    
+
     [~, optimal_windows] = max(aggregated_correlations, [], 1);
     optimal_window_lengths = window_lengths(optimal_windows);
 
@@ -51,15 +51,15 @@ function [sampling_periods, window_lengths, aggregated_correlations, optimal_win
         p = pcolor(X, window_lengths, aggregated_correlations);
         p.EdgeColor = 'none';
         shading interp
-        cmp = inferno(1000);
+        cmp = turbo(1000);
         colormap(cmp)
         ylim([0, 250])
         ylabel('Window Length (s)', 'fontsize', 14)
-        
+
     elseif makeplot == 2
-        cmp = inferno(1000);
+        cmp = turbo(1000);
         colormap(cmp)
-        col = arrayfun(@(x) max(aggregated_correlations(:, x)), 1:length(sampling_periods))'; 
+        col = arrayfun(@(x) max(aggregated_correlations(:, x)), 1:length(sampling_periods))';
         scatter(X, optimal_window_lengths, 50, col, 'filled')
         ylabel('Optimal Window Length (s)', 'fontsize', 14)
     end
@@ -76,17 +76,17 @@ function [sampling_periods, window_lengths, aggregated_correlations, optimal_win
     c.Label.Rotation = 0;
     c.Label.FontSize = 23;
     caxis([0, 1])
-    set(gcf,'color','w');   
+    set(gcf,'color','w');
     if ~isempty(cutoff)
         caxis([cutoff, 1])
         c.TickLabels{1} = ['<', num2str(cutoff)];
         c.Label.Position(2) = mean([cutoff, 1]);
     end
 end
-    
-    
-    
-    
+
+
+
+
 %     if strcmp(varying_parameter, 'savelength')
 %         savelengths = unique(arrayfun(@(x) x.Inputs.savelength, data));
 %         optimal_window_lengths = zeros(size(savelengths));
@@ -96,9 +96,9 @@ end
 %        	tmaxs = unique(arrayfun(@(x) x.Inputs.tmax, data));
 %         optimal_window_lengths = zeros(size(tmaxs));
 %         sampling_periods = optimal_window_lengths;
-%         aggregated_correlations = zeros(size(data, 1)./length(tmaxs), length(sampling_periods));        
+%         aggregated_correlations = zeros(size(data, 1)./length(tmaxs), length(sampling_periods));
 %     end
-%             
+%
 %     for i = 1:length(optimal_window_lengths)
 %         if only_optimal
 %             % Find the optimal window length
@@ -107,15 +107,15 @@ end
 %             elseif strcmp(varying_parameter, 'T')
 %                 subdata = data(arrayfun(@(x) x.Inputs.tmax == tmaxs(i), data), :);
 %             end
-% 
+%
 %             aggregated_correlation_table = get_combined_feature_stats(subdata, {}, {'Aggregated_Absolute_Correlation'}, [], 1);
-% 
+%
 %             aggregated_correlation_table = sortrows(aggregated_correlation_table, 1, 'descend', 'MissingPlacement', 'last'); % Sort on opid
 %             aggregated_correlations(:, i) = aggregated_correlation_table.Aggregated_Absolute_Correlation;
-% 
+%
 %             % Sort on correlation
 %             aggregated_correlation_table = sortrows(aggregated_correlation_table, size(aggregated_correlation_table, 2), 'descend', 'MissingPlacement', 'last');
-%             top_op = aggregated_correlation_table(2, :).Operation_Name; 
+%             top_op = aggregated_correlation_table(2, :).Operation_Name;
 %             top_op_parameter = extractBetween(top_op, 'ST_LocalExtrema_n', '_diffmaxabsmin');
 %             if isempty(top_op_parameter)
 %                 error('Something is wrong. Most likely is that you are using the wrong operation')
@@ -125,8 +125,8 @@ end
 %             if strcmp(varying_parameter, 'savelength')
 %                 window_length = floor(savelengths(i)/top_op_parameter);
 %                 %buffer_length = savelengths(i) - mod(savelengths(i), window_length);
-% 
-% 
+%
+%
 %                 % Calculate simulation time used in the windows
 %                 window_time = (window_length).*save_dt;
 %             else
@@ -136,14 +136,14 @@ end
 %                 % Calculate simulation time used in the windows
 %                 window_time = (window_length).*save_dt;
 %             end
-% 
+%
 %             optimal_window_lengths(i) = window_time;
 %         end
-%     end   
+%     end
 %     if strcmp(varying_parameter, 'savelength')
 %         savelengths_or_tmaxs = savelengths;
 %     elseif strcmp(varying_parameter, 'tmax')
 %         savelengths_or_tmaxs = tmaxs;
 %     end
 % end
-% 
+%

@@ -309,7 +309,9 @@ end
 savestruct = struct();
 %dt = tmax./numpoints;
 
-initial_conditions = initial_conditions(:);
+if isrow(initial_conditions)
+    initial_conditions = initial_conditions';
+end
 initial_conditions = zeros(length(cp_range), 1) + initial_conditions;
 
 etaWriter = reWriter;

@@ -8,7 +8,7 @@ function out = test_a_feature(featurestr, subfeaturestr, inputs, p, makeplot)
         cpvals = inputs.cp_range;
         etavals = inputs.etarange;
     end
-    if nargin < 4 
+    if nargin < 4
         p = [];
     end
     if nargin < 5 || isempty(makeplot)

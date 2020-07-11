@@ -13,8 +13,17 @@ function f = thresholdDistributions(x, p, tau)
     if nargin < 3 || isempty(tau)
         tau = 1;
     end
+    if nargin < 4 || isempty(centre)
+        centre = 0;
+    end
     if isrow(x)
         x = x';
+    end
+    
+    % Center and absolute-value the time series
+    if centre
+        x = x - median(x);
+        x = abs(x);
     end
     
     % Delay embed at interval tau, m = 2

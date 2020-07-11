@@ -37,6 +37,14 @@ switch system_type
                 rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
             end
         end
+       
+	case 'eta_normalised_saddle_node'
+        for n = 1:numpoints-1
+            r = r + (mu + (r.^2)).*dt + eta.*-mu.*sqrt(dt).*randn(Wl, 1);
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+            end
+        end
 
     case 'supercritical_hopf'
         for n = 1:numpoints-1
@@ -70,6 +78,15 @@ switch system_type
     case 'supercritical_hopf_radius_(strogatz)'
         for n = 2:numpoints-1
             r = r + (mu.*r - (r.^3)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+            end
+        end
+        rout = abs(rout);
+        
+	case 'supercritical_hopf_radius_(strogatz)_multiplicative'
+        for n = 2:numpoints-1
+            r = r + (mu.*r - (r.^3)).*dt + r.*eta.*sqrt(dt).*randn(Wl, 1);
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
                 rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
             end
@@ -127,7 +144,23 @@ switch system_type
                 rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
             end
         end
-
+        
+    % A sneaky way to handle 2nd order or 2D SDEs: r is a complex
+    % variable, but the real and imaginary parts won't mingle.
+    case 'vanderPol'
+    	for n = 1:numpoints-1
+            xp = real(r);
+            yp = imag(r);
+            
+            x = xp + yp.*dt;
+            y = yp + (mu.*(1-(xp).^2).*yp-xp).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+            
+            r = x + 1i.*y;
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = real(r);
+            end
+        end
+        
     otherwise
         error("No match found for type '%s'", system_type)
 end
