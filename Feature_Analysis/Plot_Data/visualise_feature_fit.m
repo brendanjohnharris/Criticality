@@ -5,8 +5,8 @@ function visualise_feature_fit(data, opids, num_per_feature)
     tbl = get_combined_feature_stats(data, {'Absolute_Correlation', 'Feature_Value_Gradient', 'Feature_Value_Intercept'}, {}, [], 0);
     redo = 1;
     f = figure;
-    
-    while redo 
+
+    while redo
         delete(f)
         outercircles = [];
         r = tbl{opids, contains(tbl.Properties.VariableNames, 'Correlation')}';
@@ -32,20 +32,23 @@ function visualise_feature_fit(data, opids, num_per_feature)
 
         f = figure;
         ax = gca;
-        ax.ColorOrder = [0 0.4470 0.7410;...
-    0.8500    0.3250    0.0980;...
-    0.3718    0.7176    0.3612;...
-    0.9718    0.5553    0.7741;...
-    0.6400    0.6400    0.6400;...
-    0.6859    0.4035    0.2412;...
-    0.6365    0.3753    0.6753;...
-    0 0 0];
+%         ax.ColorOrder = [0 0.4470 0.7410;... %turbo(length(opids)+1)
+%     0.8500    0.3250    0.0980;...
+%     0.3718    0.7176    0.3612;...
+%     0.9718    0.5553    0.7741;...
+%     0.6400    0.6400    0.6400;...
+%     0.6859    0.4035    0.2412;...
+%     0.6365    0.3753    0.6753;...
+%     0 0 0];
+        corder = [GiveMeColors(length(opids)); {[0, 0, 0]}];
+        corder{1, :} = [31 120 180]./256; % A better first colour
+        ax.ColorOrder = vertcat(corder{:});
         hold on
         colours = get(gca, 'ColorOrder');
         g = [];
         for op = 1:length(opids)
             disp(feature_names{op}), disp(opids(op))
-            viscircles([m(:, op), f0(:, op)], r(:, op), 'Color', colours(mod(op, size(colours, 1)), :), 'LineWidth', 10, 'EnhanceVisibility', 0);    
+            viscircles([m(:, op), f0(:, op)], r(:, op), 'Color', colours(mod(op, size(colours, 1)), :), 'LineWidth', 10, 'EnhanceVisibility', 0);
             outercircles(op) = 2*(length(opids) - op + 1); % To keep track of where this object is in the stack. How many back from end of stack
             h(op) = plot(NaN, NaN, '-', 'Color', colours(mod(op, size(colours, 1)), :));
         end
@@ -59,6 +62,7 @@ function visualise_feature_fit(data, opids, num_per_feature)
         xlabel('Gradient')
         ylabel('Intercept')
         ax.XLim = [-max(abs(ax.XLim)), max(abs(ax.XLim))];
+        ax.YTick = 0:0.2:2;
         set(gcf,'color','w');
         % Need to find a way to label the groups of circles (maybe
         % interactive?)
@@ -68,7 +72,7 @@ function visualise_feature_fit(data, opids, num_per_feature)
 %         for op = 1:length(opids)
 %             fprintf([feature_names{op}, ', see the legend for its colour\n'])
 %             gtext(feature_names{op}, 'Interpreter', 'None')
-%         end  
+%         end
          legend off
 %         redo = strcmp('y', input('Do you want to relabel (y/n)?\n', 's'));
         redo = 0;
@@ -88,10 +92,10 @@ function visualise_feature_fit(data, opids, num_per_feature)
                 'MarkerFaceColor', colours(mod(op, size(colours, 1)), :), 'MarkerSize', 12);
         lgdGroup(op).DisplayName = ['\fontname{Helvetica} ', strrep(feature_names{op}, '_', '\_')];
     end
-    %lgdGroup = [plot(NaN, NaN, 'ok', 'MarkerSize', 15), lgdGroup]; 
-    %lgdGroup(1).DisplayName = ['\fontname{Times}', sprintf('| r |: %.2g — %.2g', min(min(ri)), max(max(ri)))];
+    %lgdGroup = [plot(NaN, NaN, 'ok', 'MarkerSize', 15), lgdGroup];
+    %lgdGroup(1).DisplayName = ['\fontname{Times}', sprintf('| r |: %.2g ï¿½ %.2g', min(min(ri)), max(max(ri)))];
     lgd = legend(lgdGroup, 'Interpreter', 'Tex', 'Fontsize', 10, 'Location', 'NorthWest');
-    lgd.Box = 'off';
+    lgd.Box = 'on';
     lgdT = title(lgd, 'Feature Name');
     axis equal
     c = colorbar;
@@ -102,4 +106,3 @@ function visualise_feature_fit(data, opids, num_per_feature)
     c.YTick = linspace(min(c.YTick), max(c.YTick), 5);
     c.Label.Position = [3, 0.55, 0];
 end
-

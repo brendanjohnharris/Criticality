@@ -10,7 +10,7 @@ classdef reWriter < handle
             % So, this is a vector
             % The first element is the currently active reWriter
             % The subsequent elements refer to created reWriters (whether
-            % thay have been deleted or not), mathich a unique index
+            % thay have been deleted or not), with a unique index
             % defined as the ID property of each instance.
             persistent whichOne;
             if nargin
@@ -37,7 +37,7 @@ classdef reWriter < handle
             obj = Write(obj, message, varargin{:});
         end
         function obj = Write(obj, message, varargin)
-            Bytes = fprintf(message, varargin{:});
+            Bytes = builtin('fprintf', message, varargin{:});
             obj.LastBytes = Bytes;
             whichOne = reWriter.setgetWhichOne;
             whichOne(1) = obj.ID; % Pick me

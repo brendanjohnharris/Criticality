@@ -1,4 +1,4 @@
-function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, dilution)
+function st = plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, dilution)
         % A (bit of a) mess
         % Do not use reduced if the data is a single row. Don't know what might happen...
         a = figure;
@@ -53,7 +53,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, 
     else
         plotStep = 1;
     end
-    if reduced 
+    if reduced
         cmap = inferno(length(1:plotStep:length(data)));%BF_getcmap('dark2', length(1:plotStep:length(data)));
         cmap = cmap(1:end, :);
         cbarcmap = [];
@@ -61,8 +61,8 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, 
             indvec = 1:plotStep:length(data);
         end
     elseif size(data, 1) <= 7
-        cmap = inferno(length(data)+1);%BF_getcmap('dark2', length(data));
-        cmap = cmap(1:end-1, :);
+        cmap = inferno(length(data));%BF_getcmap('dark2', length(data));
+        %cmap = cmap(1:end-1, :);
     end
     if size(data, 1) == 1
         cmap = [0 0 0];
@@ -91,15 +91,15 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, 
         else
             hold on
         end
-        % 
+        %
         %name = (time_series_data(ind).Inputs.cp_range(1));
         %a = figure('Name', sprintf("Spearman's Correlation for eta = %g", name));
         if ~combined || reduced
             plot(deltamu, TS_DataMat, '.-', 'MarkerSize', 10, 'Color', cmap(1, :), 'LineWidth', 2)
             cbarcmap(end+1, :) = cmap(1, :);
             cbareta(end+1) = data(ind).Inputs.eta;
-           
-            
+
+
             %p = fit(deltamu', TS_DataMat, 'smoothingspline', 'SmoothingParam', 0.999);
             %plot([min(deltamu):0.01:max(deltamu)] , p([min(deltamu):0.01:max(deltamu)]), '-', 'Color', cmap(1, :), 'HandleVisibility', 'off', 'LineWidth', 3)
             cmap = cmap(2:end, :);
@@ -109,7 +109,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, 
                     title(['Noise: ', num2str(data(ind).Inputs.eta)])
                 end
                     %legendcell{ind} = ['Noise: ', num2str(data(ind).Inputs.eta)];%, ', ', 'Correlation: ', num2str(correlation(1))];
-                %end       
+                %end
             elseif strcmp(on_what, 'distance')
                 if ~combined
                     title(['Distance: ', num2str(data(ind).Inputs.cp_range(1))])
@@ -117,7 +117,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, 
                     legendcell{ind} = ['Distance: ', num2str(data(ind).Inputs.cp_range(1))];
                 end
             end
-        else 
+        else
             if size(data, 1) > 1
                 colormap(cmp)
                 c = colorbar;
@@ -126,7 +126,7 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, 
             c.Label.Rotation = 0;
             c.Label.FontSize = 14;
             if strcmp(on_what, 'noise')
-                plot(deltamu, TS_DataMat, '.', 'MarkerSize', 8, 'Color', cmp(param == data(ind).Inputs.eta, :))%, 'MarkerFaceColor', 'b')   
+                plot(deltamu, TS_DataMat, '.', 'MarkerSize', 8, 'Color', cmp(param == data(ind).Inputs.eta, :))%, 'MarkerFaceColor', 'b')
                 %scaleScatter(deltamu, TS_DataMat, 0.01, cmp(param == data(ind).Inputs.eta, :));
                 c.Label.String = '\eta';
             elseif strcmp(on_what, 'distance')
@@ -166,18 +166,19 @@ function plot_feature_vals(op_id, data, on_what, combined, reduced, correlated, 
     end
     if combined && all(cellfun(@(x) ~isempty(x), legendcell)) && (size(data, 1) <= 7 || reduced)
        legend(legendcell)
-    end  
+    end
     ops = data.Operations;
     opname = ops.Name{op_id};
-    st = suptitle(strrep(opname, '_', '\_'));
     set(a,'color','w');
     ax = gca;
     ax.Box = 'on';
+    st = suptitle(strrep(opname, '_', '\_'));
     if combined && correlated
         if isempty(tbl)
             title('<Finding correlation, please wait>')
             drawnow
-            tbl = get_combined_feature_stats(data, {}, {'Aggregated_Correlation'}, [], 1);
+           % tbl = get_combined_feature_stats(data, {'Absolute_Correlation'}, {'Absolute_Correlation_Mean', 'Aggregated_Absolute_Correlation'}, [], 1);
+           tbl = get_combined_feature_stats(data, {}, {'Aggregated_Correlation'}, [], 1);
         end
         thecorr = tbl.Aggregated_Correlation(tbl.Operation_ID == op_id);
         title(sprintf('$$\\rho_{\\mu}^{\\mathrm{agg}} = %.2g$$', thecorr), 'interpreter', 'latex', 'fontsize', 16)

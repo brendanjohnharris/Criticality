@@ -1,11 +1,11 @@
 # Criticality
-Simulate bifurcating dynamical systems, record time series and run [_hctsa_](https://github.com/benfulcher/hctsa) to produce feature that characterise the dynamical system and its parameters; then, run analyses to determine which features are most useful for predicting these parameters.
+Simulate bifurcating dynamical systems, record time series and run [_hctsa_](https://github.com/benfulcher/hctsa) to produce feature that characterise the dynamical system and its control parameter; then, run analyses to determine which features are most useful for predicting this parameter.
 
 ## Setup
 In addition to cloning this repository, _hctsa_ v0.98 should be [installed](https://hctsa-users.gitbook.io/hctsa-manual/) in a convenient location and the following modifications performed:
 - Add the -v7.3 flag to the save function on line `144` of `TS_init.m` (allowing for larger `.mat` files)
 - Change the maximum time series length to 10000000 on line `101` of `SQL_add.m` (allowing for longer time series)
-- Use `setdiff` and `isempty` to compare time series labels on lines 207 and 208 of `TS_combine`
+- Use `strcmp` to compare time series labels on lines 207 of `TS_combine`
 - Comment out line `194` of `TS_Compute.m`
 
 A workflow begins by adding files to the Matlab path; run `startup()` in the _hctsa_ directory and `add_all_subfolders()` in the _Criticality_ directory.

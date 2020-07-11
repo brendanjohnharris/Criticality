@@ -10,10 +10,12 @@ disp(a)
 disp(b)
 pause(0.5)
 obj.reWrite('testing4\n');
-bj2 = reWriter();
+obj2 = reWriter();
 pause(1)
-bj2.reWrite('testing21\n');
+obj2.reWrite('testing21\n');
 pause(1)
-bj2.reWrite('testing22\n');
+obj2.reWrite('testing22\n');
 pause(0.5)
 obj.reWrite('testing5\n');
+fprintf('123456789\n')
+obj.reWrite('testing6\n');

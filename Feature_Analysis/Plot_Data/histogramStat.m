@@ -1,8 +1,12 @@
-function histogramStat(data, theStat)
-    if nargin < 2 || isempty(theStat)
+function histogramStat(data, theSingleStat, theStat)
+    if nargin < 2 && ~isempty(theSingleStat)
+        theStat = theSingleStat;
+        theSingleStat = [];
+    elseif nargin < 3 || isempty(theStat) || nargin < 2 || isempty(theSingleStat)
         theStat = 'Aggregated_Absolute_Correlation';
     end
-    tbl = get_combined_feature_stats(data, {}, {theStat}, [], 1);
+ 
+    tbl = get_combined_feature_stats(data, {theSingleStat}, {theStat}, [], 1);
     X = tbl.(theStat);
     n = height(tbl);
     figure('Color', 'w')
@@ -13,7 +17,7 @@ function histogramStat(data, theStat)
     ylabel('Frequency', 'FontSize', 15)
     if strcmp(theStat, 'Aggregated_Absolute_Correlation')
         xlim([0, 1])
-        xlabel('$$|\rho|$$', 'Interpreter', 'LaTeX', 'FontSize', 16)
+        xlabel('$$|\rho_\mu^\mathrm{agg}|$$', 'Interpreter', 'LaTeX', 'FontSize', 16)
     elseif strcmp(theStat, 'Aggregated_Correlation')
         xlim([-1, 1])
         xlabel('$$\rho$$', 'Interpreter', 'LaTeX', 'FontSize', 16)

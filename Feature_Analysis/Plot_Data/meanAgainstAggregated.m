@@ -28,10 +28,11 @@ function f = meanAgainstAggregated(data, emph)
     hold on
     if emph
         % Emphasise the salient features
-        idxs = [19, 93, 1711, 3349, 3535, 6275];
+        idxs = [19, 93, 1763, 3332, 3535, 6275]; %[19, 93, 1711, 3349, 3535, 6275];
         offsetX = [-0.02 0.03 0 0 0 0];
         offsetY = [0.005, -0.065, 0.07, 0.035, -0.075, -0.035]';
         colors = GiveMeColors(length(idxs));
+        colors{1, :} = [31 120 180]./256; % A better first colour
         for i = 1:length(idxs)
             idx = (tbl.Operation_ID == idxs(i));
             text(x(idx)+offsetX(i), y(idx)+offsetY(i), tbl.Operation_Name(idx), 'interpreter',...
