@@ -6,3 +6,4 @@
 *.mex
 *.autosave
 **/results/**
+**/Data/**

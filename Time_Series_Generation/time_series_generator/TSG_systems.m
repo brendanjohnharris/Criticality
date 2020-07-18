@@ -84,6 +84,15 @@ switch system_type
         end
         rout = abs(rout);
         
+	case 'supercritical_hopf_radius_(strogatz)_pink'
+        for n = 2:numpoints-1
+            r = r + (mu.*r - (r.^3)).*dt + eta.*sqrt(dt).*pinknoise(Wl, 1);
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+            end
+        end
+        rout = abs(rout);
+        
 	case 'supercritical_hopf_radius_(strogatz)_multiplicative'
         for n = 2:numpoints-1
             r = r + (mu.*r - (r.^3)).*dt + r.*eta.*sqrt(dt).*randn(Wl, 1);

@@ -19,6 +19,9 @@ plot_feature_vals(93, time_series_data, 'noise', 1, [1, 25, 50, 75, 100], 1) % S
 plot_feature_vals(93, time_series_data, 'noise', 1, [1, 25, 50, 75, 100], 1) % AC
 plot_feature_vals(3535, time_series_data, 'noise', 1, [1, 25, 50, 75, 100], 1) % SB_MotifTwo_mean_uu
 
+% Distribution of feature scores
+histogramStat(time_series_data)
+
 % Scatter all features
 meanAgainstAggregated(tbl, 1)
 

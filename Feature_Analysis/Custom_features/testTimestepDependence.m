@@ -34,7 +34,7 @@ function out = testTimestepDependence(featurestr, subfeaturestr, inputs)
                 end
             end
     end
-    %cmap = inferno(length(etavals));
+    %cmap = turbo(length(etavals));
     for v = 1:length(subfeaturestr)
         figure, hold on
         corrvecx = [];

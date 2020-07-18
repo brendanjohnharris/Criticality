@@ -2,7 +2,7 @@ function out = test_a_feature(featurestr, subfeaturestr, inputs, p, makeplot)
 % Parameter is 'p' in feature string
     fvals = [];
     if nargin < 3 || isempty(inputs)
-        cpvals = [-1:0.01:0];%[-1:0.1:-0.1, -0.01];
+        cpvals = [-1:0.05:0];%[-1:0.1:-0.1, -0.01];
         etavals = [0.05:0.05:1];%[0.01, 0.1:0.1:1];%[0.3, 0.5, 1];[0.01:0.01:1];%
     else
         cpvals = inputs.cp_range;

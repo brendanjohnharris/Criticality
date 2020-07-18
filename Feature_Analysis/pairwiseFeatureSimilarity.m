@@ -19,8 +19,8 @@ function [pmat, ps, pnums] = pairwiseFeatureSimilarity(datamat, ps, metric, redu
     ps = sort(ps, 'asc');
     %datamat = BF_NormalizeMatrix(datamat', 'zscore');
     %pmat = squareform(pdist(datamat', metric));
-    pmat = abs(corr(datamat, 'Type', metric));
-    ord = BF_ClusterReorder(datamat', 1-pmat);
+    pmat = 1-abs(corr(datamat, 'Type', metric));
+    ord = BF_ClusterReorder(datamat', pmat);
     pmat = pmat(ord, ord);
     ps = ps(ord);
 
@@ -57,15 +57,15 @@ function [pmat, ps, pnums] = pairwiseFeatureSimilarity(datamat, ps, metric, redu
 %             colormap(cbrewer('div', 'RdBu', 100))
 %     end
     %colormap(turbo(1000))
-    colormap(gray(1000));
+    colormap(flipud(gray(1000)));
     c = colorbar;
     %axis xy
     axis square
     ax.FontSize = 6;
     %caxis([0, 1])
     c.FontSize = 15;
-    c.Ticks = c.Ticks(1:2:end);
-    c.Label.String = '$|\rho|$';
+    %c.Ticks = c.Ticks(1:2:end);
+    c.Label.String = '$1-|\rho|$';
     c.Label.Interpreter = 'LaTeX';
     c.Label.FontSize = 28;
     c.Label.Rotation = 0;
@@ -74,7 +74,7 @@ function [pmat, ps, pnums] = pairwiseFeatureSimilarity(datamat, ps, metric, redu
     if isempty(reduce) || length(reduce) > 1 || reduce
         ax.FontSize = 10;
          c.Label.Position.*[1.3, 1.025, 0];
-         c.Ticks = c.Ticks(1):0.1:c.Ticks(end);
+         %c.Ticks = c.Ticks(1):0.1:c.Ticks(end);
     end
     
     set(gca, 'TickLength',[0 0])    

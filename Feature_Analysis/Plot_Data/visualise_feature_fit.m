@@ -105,4 +105,5 @@ function visualise_feature_fit(data, opids, num_per_feature)
     c.Label.FontSize = 23;
     c.YTick = linspace(min(c.YTick), max(c.YTick), 5);
     c.Label.Position = [3, 0.55, 0];
+    fprintf('Minimum radius has a correlation of %0.3g, maximum is %.3g\n', min(min(ri)), max(max(ri)))
 end

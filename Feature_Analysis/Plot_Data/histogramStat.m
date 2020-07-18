@@ -1,12 +1,16 @@
 function histogramStat(data, theSingleStat, theStat)
-    if nargin < 2 && ~isempty(theSingleStat)
+    if nargin < 3 && (nargin == 2 && ~isempty(theSingleStat))
         theStat = theSingleStat;
         theSingleStat = [];
     elseif nargin < 3 || isempty(theStat) || nargin < 2 || isempty(theSingleStat)
         theStat = 'Aggregated_Absolute_Correlation';
+        theSingleStat = [];
     end
- 
-    tbl = get_combined_feature_stats(data, {theSingleStat}, {theStat}, [], 1);
+    if ~isempty(theSingleStat)
+        theSingleStat = {theSingleStat};
+    end
+    tbl = get_combined_feature_stats(data, theSingleStat, {theStat}, [], 1);
+    
     X = tbl.(theStat);
     n = height(tbl);
     figure('Color', 'w')

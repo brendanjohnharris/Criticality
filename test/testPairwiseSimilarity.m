@@ -7,6 +7,7 @@ tbl = tbl(tbl.Operation_ID <= 7873, :);% Remove custom features
 tbl = sortrows(tbl, 4, 'Desc', 'Comparison', 'abs', 'Missing', 'Last');
 ps = tbl.Operation_ID(1:100); % Top 100 features
 [~, ps, pnums] = pairwiseFeatureSimilarity(time_series_data, ps, 'Spearman');%, [19, 93]);
+set(gca,'ColorScale','log')
 % First cluster is 84 features large
 fprintf('Fixed Noise: First cluster average correlation is %g\n', mean(tbl(ismember(tbl.Operation_ID, pnums(1:84)), :).('Absolute_Correlation_Mean')))
 fprintf('Fixed Noise: Second cluster average correlation is %g\n', mean(tbl(ismember(tbl.Operation_ID, pnums(85:end)), :).('Absolute_Correlation_Mean')))

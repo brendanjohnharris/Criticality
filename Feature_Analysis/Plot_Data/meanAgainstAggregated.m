@@ -23,7 +23,7 @@ function f = meanAgainstAggregated(data, emph)
     s.MarkerEdgeColor = s.MarkerFaceColor;
     %s.MarkerFaceAlpha = gS;
     %s.MarkerEdgeAlpha = gS;
-    xlabel('$\overline{|\rho_{\mu}|}$', 'FontSize', 18, 'Interpreter', 'LaTeX')
+    xlabel('$\langle \abs{\rho_{\mu}} \rangle_{\eta}$', 'FontSize', 18, 'Interpreter', 'LaTeX')
     ylabel('$|\rho_{\mu}^{\mathrm{agg}}|$', 'FontSize', 18, 'Interpreter', 'LaTeX')
     hold on
     if emph

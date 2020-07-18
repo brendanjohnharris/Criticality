@@ -5,7 +5,7 @@ function visualise_PP_Compare(cp_vals, noise_vals, l, how_long, system, standard
         system = 'supercritical_hopf_radius_(strogatz)';
     end
     if nargin < 6 || isempty(standardise)
-        standardise = 1;
+        standardise = 0;
     end
     if nargin < 7 || isempty(tmax)
         tmax = 100;
@@ -23,6 +23,9 @@ function visualise_PP_Compare(cp_vals, noise_vals, l, how_long, system, standard
     if standardise
         ztime_series = zscore(time_series, [], 2);
         ztime_series_d = zscore(time_series_d, [], 2);
+    else
+        ztime_series = time_series;
+        ztime_series_d = time_series_d;
     end
     ylim1 = Inf;
     ylim2 = -Inf;
@@ -98,9 +101,11 @@ function visualise_PP_Compare(cp_vals, noise_vals, l, how_long, system, standard
         xlim([-xmax, xmax])
     end
     subplot(numplots, 2, 2.*numplots - 1)
-    xlabel('Standardised Time Series Value')
+    xlabel('Time Series Value')
+    title('')
     subplot(numplots, 2, 2.*numplots)
-    xlabel('Standardised Time Series Value')
+    xlabel('Time Series Value')
+    title('')
     
     subplot(numplots, 2, 1)
     text(0.5, 1.2, 'Time Series Distributions', 'Units', 'Normalized', 'HorizontalAlignment', 'center', 'Fontsize', 16, 'Fontweight', 'Bold')

@@ -27,7 +27,7 @@ function out = checkDiffVar(sampling_period, savelength, inputs)
    end
     cplabels = cellfun(@(x) str2double(regexprep(x, '\|.*', '')), labels);
     etalabels = cellfun(@(x) str2double(regexprep(x, '.*\|', '')), labels);
-    
+
         for i = 1:length(cpvals)
             for t = 1:length(etavals)
                 %if nargin < 3 || isempty(inputs)
@@ -37,7 +37,7 @@ function out = checkDiffVar(sampling_period, savelength, inputs)
                 %    x = time_series_generator('input_struct', inputs, 'cp_range',...
                 %        cpvals(i), 'etarange', etavals(t), 'sampling_period', sampling_period(el), 'savelength', savelength, 'T', sampling_period(el).*savelength);
                 %end
-                
+
                 x = z(((abs(cplabels - cpvals(i)) < abs(cpvals(i)*10^(-10))) &...
                 (abs(etalabels - etavals(t)) < abs(etavals(t)*10^(-10)))), :); % Precision errors when converting to and from strings
                 %fvals(i, t, el) = std((x(2:end) - x(1:end-1))./(sqrt(2)).*etavals(t));
@@ -49,9 +49,9 @@ function out = checkDiffVar(sampling_period, savelength, inputs)
         end
     end
     if length(sampling_period) > 1
-        cmap = inferno(length(sampling_period));
-    else 
-        cmap = inferno(length(plotcellcp));
+        cmap = turbo(length(sampling_period));
+    else
+        cmap = turbo(length(plotcellcp));
     end
         figure, hold on
         %plotcell = arrayfun(@(x) reshape(fvals(:, :, x), numel(fvals(:, :, x)), 1), 1:size(fvals, 3), 'uniformoutput', 0);
@@ -71,7 +71,7 @@ function out = checkDiffVar(sampling_period, savelength, inputs)
                 colrs = unique(cellfun(@(x) x(1), plotcellcp));
                 colrs = tiedrank(colrs);
             end
-            
+
                 if length(sampling_period) > 1
                     for u = 1:length(colrs)
                     x = plotcellx{i}(plotcelldt{i} == colrs(u));
@@ -117,4 +117,3 @@ function out = checkDiffVar(sampling_period, savelength, inputs)
     %out.featurestrings = subfeaturestr;
     out.featurevals = fvals;
 end
-
