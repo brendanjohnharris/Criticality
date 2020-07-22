@@ -8,5 +8,9 @@ function slra = cellsqueeze(slra)
     slra = slra(fullinds);
     deepinds = cellfun(@(x) numel(x) == 1 && iscell(x), slra);
     slra(deepinds) = cellfun(@(x) x{1}, slra(deepinds), 'uniformoutput', 0);
+    
+    while prod(size(slra)) == 1 && iscell(slra)
+    	slra = slra{1};
+    end
 end
 

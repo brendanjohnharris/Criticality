@@ -17,7 +17,7 @@ function f = delayDistributions(x, tau, centre)
         x = x';
     end
     
-    % Center and absolute-value the time series
+    % Centre and absolute-value the time series
     if centre
         x = x - median(x);
         x = abs(x);
@@ -25,7 +25,7 @@ function f = delayDistributions(x, tau, centre)
     
     % Delay embed at interval tau, m = 2
     y = x(tau+1:end);
-    x = x(1:end-tau); % Lose a point here
+    x = x(1:end-tau); 
     
     % Rotate the embedding by pi/4, scaling xt
     xt = (x+y)./2;
