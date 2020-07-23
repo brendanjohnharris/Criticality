@@ -7,15 +7,17 @@ function varargout = autoLoad(filePath)
     if nargin < 1 || isempty(filePath)
         filePath = pwd;
     end
-    if strcmp(filePath(end-3:end), '.mat')
-        varargout = load(filePath);
+    if strcmp(filePath(end-3:end), '.mat') % You just want to load all variables from a file
+        fout = load(filePath);
+        outNames = fieldnames(fout);
+        fout = cellfun(@(x) fout.(x), outNames, 'UniformOutput', 0);
     else
         funcs = dir(filePath);
         funcs = {funcs(~cellfun(@isempty, regexp({funcs.name}, '.*\.m$', 'match'))).name};
         fout = [];
         notPath = 0;
         % Check if filePath is on matlab path
-        if ~sum(~cellfun(@isempty, regexp(strsplit(path(), ';'), strrep(['^(', pwd, ')$'], '\', '\\'), 'match')))
+        if ~sum(~cellfun(@isempty, regexp(strsplit(path(), ';'), strrep(['^(', filePath, ')$'], '\', '\\'), 'match')))
             notPath = 1;
             p = what(filePath);
             addpath(p.path); 
@@ -43,16 +45,18 @@ function varargout = autoLoad(filePath)
         if isempty(fout)
             error('No valid, or functional, load file found')
         end
-        varargout = fout;
     end
+    varargout = fout;
     if nargout <= 1 && length(fout) > 1 % You don't know how many arguments to expect, so give them all as a cell
-        fid = fopen([f, '.m']);
-        outNames = fgetl(fid);
-        fclose(fid);
-        outNames = regexp(outNames, '(?<=\[).*(?=\])', 'match');
-        outNames = regexprep(outNames, '\s', '');
-        outNames = strsplit(outNames{1}, ',');
-        varargout = {table(fout{:}, 'VariableNames', outNames)};
+        if ~strcmp(filePath(end-3:end), '.mat')
+            fid = fopen([f, '.m']);
+            outNames = fgetl(fid);
+            fclose(fid);
+            outNames = regexp(outNames, '(?<=\[).*(?=\])', 'match');
+            outNames = regexprep(outNames, '\s', '');
+            outNames = strsplit(outNames{1}, ',');
+        end
+        varargout = {cell2table(fout', 'VariableNames', outNames)};
     end
 end
 

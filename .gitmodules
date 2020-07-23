@@ -1,0 +1,3 @@
+[submodule "Brain/mouseStructuralConnectivity"]
+	path = Brain/mouseStructuralConnectivity
+	url = https://github.com/BrendanJHarris/mouseStructuralConnectivity.git
