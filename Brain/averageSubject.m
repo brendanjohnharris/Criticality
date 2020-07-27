@@ -10,7 +10,7 @@ function averageSubject(workFile)
         r = regionIDs(ri);
         subtbl = data(data.regionID == r, :);
         singlesubtbl = subtbl(1, :);
-        % Assume the first 6 columns are the same accross subjects
+        % Assume the first 6 columns are the same across subjects
         singlesubtbl{1, 7:end} = mean(subtbl{:, 7:end}, 1);
         newdata(end+1, :) = singlesubtbl;
     end

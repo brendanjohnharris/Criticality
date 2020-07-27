@@ -7,20 +7,26 @@ function varargout = autoLoad(filePath)
     if nargin < 1 || isempty(filePath)
         filePath = pwd;
     end
-    if strcmp(filePath(end-3:end), '.mat') % You just want to load all variables from a file
+
+    if strcmp(filePath(end-3:end), '.mat') % You just want to load all variables from a mat file
         fout = load(filePath);
         outNames = fieldnames(fout);
         fout = cellfun(@(x) fout.(x), outNames, 'UniformOutput', 0);
     else
-        funcs = dir(filePath);
-        funcs = {funcs(~cellfun(@isempty, regexp({funcs.name}, '.*\.m$', 'match'))).name};
+        if strcmp(filePath(end-1:end), '.m') % You give a path to a specific load function
+            [filePath,funcs] = fileparts(filePath);
+            funcs = {funcs};
+        else
+            funcs = dir(filePath);
+            funcs = {funcs(~cellfun(@isempty, regexp({funcs.name}, '.*\.m$', 'match'))).name};
+        end
         fout = [];
         notPath = 0;
         % Check if filePath is on matlab path
         if ~sum(~cellfun(@isempty, regexp(strsplit(path(), ';'), strrep(['^(', filePath, ')$'], '\', '\\'), 'match')))
             notPath = 1;
             p = what(filePath);
-            addpath(p.path); 
+            addpath(p.path);
             % This is now at the top of the search path, so it supercedes any other functions with the same name
         end
         for fi = 1:length(funcs)
@@ -59,4 +65,3 @@ function varargout = autoLoad(filePath)
         varargout = {cell2table(fout', 'VariableNames', outNames)};
     end
 end
-
