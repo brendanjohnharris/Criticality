@@ -22,7 +22,10 @@ function add_all_subfolders()
         paths = regexp(genpath(homedir),['[^', pathsep, ']*'],'match');
         paths = paths(~contains(paths, [filesep, '.'])); % Leave out .git and other unwanted files
     end
-    
+    paths = paths(end:-1:1); % For the rare case of overloading user
+                             % functions in submodules, we want the files in the 
+                             % outermost directories to be higher on the search path.
+                             % I wish Matlab had multiple dispatch...
     for i = 1:length(paths)
         addpath(paths{i})
     end
