@@ -5,13 +5,11 @@ function add_all_subfolders()
     try
         paths = regexp(genpath(homedir),['[^', pathsep, ']*'],'match');
         paths = paths(~contains(paths, [filesep, '.'])); % Leave out .git and other unwanted files
-        % Read the .gitignore file to find folders to exclude
-        fid = fopen('.gitignore');
+        fid = fopen('.gitignore'); % Read the .gitignore file to find folders to exclude
         ign = textscan(fid, '%s');
         fclose(fid);
         ign = ign{1};
         ign = ign(~cellfun(@isempty, regexp(ign, '[/][*]{2}$|[/]$|', 'match'))); % Only these things are folders
-        %ign = catCellEl(ign, repmat({'$'}, size(ign)));
         ign = strrep(ign, '**', '.*');
         ign = strrep(ign, '/', ['\', filesep]);
         ign = cellfun(@(x) ~cellfun(@isempty, regexp(paths, x, 'match')), ign, 'UniformOutput', 0);
@@ -20,10 +18,10 @@ function add_all_subfolders()
     catch
         warning('Error gitting your subfolders. Adding ALL subfolders...')
         paths = regexp(genpath(homedir),['[^', pathsep, ']*'],'match');
-        paths = paths(~contains(paths, [filesep, '.'])); % Leave out .git and other unwanted files
+        paths = paths(~contains(paths, [filesep, '.']));
     end
     paths = paths(end:-1:1); % For the rare case of overloading user
-                             % functions in submodules, we want the files in the 
+                             % functions in submodules, we want files in the 
                              % outermost directories to be higher on the search path.
                              % I wish Matlab had multiple dispatch...
     for i = 1:length(paths)

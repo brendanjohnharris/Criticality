@@ -19,30 +19,33 @@ end
 % Compute group NS:
 grpNS = GroupNodeStrength(params.data);
 
-switch whatFeature
-case 'RLFP'
-    % Compute group RLFP:
-    RLFPMat = GroupTimeSeriesFeature(params,whatFeature);
-    grpTSstat = nanmean(RLFPMat,2);
-case 'fALFF'
-    fALFFMat = GroupTimeSeriesFeature(params,whatFeature);
-    grpTSstat = nanmean(fALFFMat,2);
-case 'timescale'
-    % Compute timescale:
-    [timescaleMatDecay,timescaleMatArea] = GroupTimeSeriesFeature(params,whatFeature);
-    switch params.timescale.whatTimeScale
-        case 'decay' % as Murray
-            grpTSstat = nanmean(timescaleMatDecay,2);
-        case 'area' % as Watanabe
-            grpTSstat = nanmean(timescaleMatArea,2);
+if ~iscell(whatFeature)
+    switch whatFeature
+    case 'RLFP'
+        % Compute group RLFP:
+        RLFPMat = GroupTimeSeriesFeature(params,whatFeature);
+        grpTSstat = nanmean(RLFPMat,2);
+    case 'fALFF'
+        fALFFMat = GroupTimeSeriesFeature(params,whatFeature);
+        grpTSstat = nanmean(fALFFMat,2);
+    case 'timescale'
+        % Compute timescale:
+        [timescaleMatDecay,timescaleMatArea] = GroupTimeSeriesFeature(params,whatFeature);
+        switch params.timescale.whatTimeScale
+            case 'decay' % as Murray
+                grpTSstat = nanmean(timescaleMatDecay,2);
+            case 'area' % as Watanabe
+                grpTSstat = nanmean(timescaleMatArea,2);
+        end
+    case 'criticality' 
+        % Compute a robust feature for measuring distance to bifurcations
+        SSDMat = GroupTimeSeriesFeature(params,whatFeature);
+        grpTSstat = nanmean(SSDMat,2);
     end
-case 'criticality' 
-    % Compute a robust feature for measuring distance to bifurcations
-    SSDMat = GroupTimeSeriesFeature(params,whatFeature);
-    grpTSstat = nanmean(SSDMat,2);
-otherwise % Arbitrary feature. See overloaded groupTimeSeriesFeature.
+else % Arbitrary feature. See overloaded groupTimeSeriesFeature.
     fMat = GroupTimeSeriesFeature(params,whatFeature);
     grpTSstat = nanmean(fMat,2);
+    whatFeature = [whatFeature{:}];
 end
 
 %-------------------------------------------------------------------------------
