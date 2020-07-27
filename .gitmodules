@@ -1,3 +1,6 @@
 [submodule "Brain/mouseStructuralConnectivity"]
 	path = Brain/mouseStructuralConnectivity
 	url = https://github.com/benfulcher/mouseStructuralConnectivity.git
+[submodule "Brain/humanStructureFunction"]
+	path = Brain/humanStructureFunction
+	url = https://github.com/NeuralSystemsAndSignals/humanStructureFunction.git
