@@ -82,7 +82,7 @@ function [origy, BinEdges] = customHistogram(X, BinEdges, cutoff, fillit, theCol
         end
         ax.ColorOrderIndex = COind + advanceCO;
         if ax.ColorOrderIndex > size(ax.ColorOrder, 1)
-            ax.COlorOrderIndex = 1;
+            ax.ColorOrderIndex = 1;
         end
     end
     hold off

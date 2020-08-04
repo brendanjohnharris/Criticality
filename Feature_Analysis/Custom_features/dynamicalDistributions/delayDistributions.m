@@ -44,9 +44,11 @@ function f = delayDistributions(x, tau, centre)
     % Delay distribution properties
     f.sigma_dx = std(yt);
     f.densityDifference = 1./f.superMedianSD - 1./f.subMedianSD;
+    f.widthDifference = f.superMedianSD - f.subMedianSD;
     %!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     f.scaleSigmaDifference = f.sigma_dx.*f.densityDifference;
     %!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    f.scaleWidthDifference = f.sigma_dx.*f.widthDifference;
     f.delayDensityRatio = f.sigma_dx./std(xt);
     f.scaleDensityDifference = f.sigma_dx.*(1./(max(x(~subMedians)) - f.median) - 1./(f.median - min(x(subMedians))));
     f.logSigmaDifference = f.sigma_dx.*(log(f.superMedianSD) - log(f.subMedianSD));
