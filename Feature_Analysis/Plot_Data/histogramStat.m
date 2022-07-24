@@ -15,7 +15,9 @@ function histogramStat(data, theSingleStat, theStat)
     n = height(tbl);
     figure('Color', 'w')
     ax = gca;
-    [hist1, bs] = customHistogram(X, 40, [], 0, 'k');
+    [hist1, bs] = customHistogram(X, 40, [], 1, 'k', 'k');
+    hold on
+    [hist11, bs11] = customHistogram(X, 40, [], 0, 'k');
 
     xlabel(theStat)
     ylabel('Frequency', 'FontSize', 15)

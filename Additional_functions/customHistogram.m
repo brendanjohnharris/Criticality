@@ -1,4 +1,4 @@
-function [origy, BinEdges] = customHistogram(X, BinEdges, cutoff, fillit, theColor)
+function [origy, BinEdges] = customHistogram(X, BinEdges, cutoff, fillit, theColor,  edgecolor)
     if ~isvector(X) && ~iscell(X) % Plot the columns of the matrix x
         X = arrayfun(@(u) X(:, u), 1:size(X, 2), 'un', 0);
     elseif isvector(X) && ~iscell(X)
@@ -26,6 +26,9 @@ function [origy, BinEdges] = customHistogram(X, BinEdges, cutoff, fillit, theCol
     end
     if nargin < 4 || isempty(fillit)
         fillit = 0;
+    end
+    if nargin < 6 || isempty(edgecolor)
+        edgecolor = 'none';
     end
     ax = gca;
     set(gcf, 'color', 'w')
@@ -74,7 +77,7 @@ function [origy, BinEdges] = customHistogram(X, BinEdges, cutoff, fillit, theCol
             end
         else
             if fillit
-                b = bar(bincenters, origy, 1, 'edgecolor', 'none', 'FaceColor', theColor);
+                b = bar(bincenters, origy, 1, 'edgecolor', edgecolor, 'FaceColor', theColor);
                 b.FaceAlpha = 0.3;
             else
                 plot(z, y, '-', 'LineWidth', 4, 'Color', theColor)
