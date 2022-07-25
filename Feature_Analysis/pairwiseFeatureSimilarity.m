@@ -11,11 +11,11 @@ function [pmat, ps, pnums] = pairwiseFeatureSimilarity(datamat, ps, metric, redu
         ops = datamat(1, :).Operations; % Assume same ops for all rows
         datamat = extractDataMat(datamat, [], [], ps);
     end
-    if isscalar(ps)
-        tbl = get_combined_feature_stats(time_series_data, {}, {'Aggregated_Absolute_Correlation'}, [], 1);
-        tbl = sortrows(tbl, 4, 'Desc', 'Comparison', 'abs', 'Missing', 'Last');
-        ps = tbl(1:ps).Operation_ID;
-    end
+    % if isscalar(ps)
+    %     tbl = get_combined_feature_stats(time_series_data, {}, {'Aggregated_Absolute_Correlation'}, [], 1);
+    %     tbl = sortrows(tbl, 4, 'Desc', 'Comparison', 'abs', 'Missing', 'Last');
+    %     ps = tbl(1:ps).Operation_ID;
+    % end
     ps = sort(ps, 'asc');
     %datamat = BF_NormalizeMatrix(datamat', 'zscore');
     %pmat = squareform(pdist(datamat', metric));

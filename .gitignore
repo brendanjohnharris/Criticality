@@ -7,3 +7,5 @@
 *.autosave
 **/results/**
 **/Data/**
+*.code-workspace
+*.pdf
