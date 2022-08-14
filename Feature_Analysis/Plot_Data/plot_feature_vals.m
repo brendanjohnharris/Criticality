@@ -172,7 +172,7 @@ function st = plot_feature_vals(op_id, data, on_what, combined, reduced, correla
     set(a,'color','w');
     ax = gca;
     ax.Box = 'on';
-    st = suptitle(strrep(opname, '_', '\_'));
+    st = sgtitle(strrep(opname, '_', '\_'));
     if combined && correlated
         if isempty(tbl)
             title('<Finding correlation, please wait>')
@@ -182,6 +182,6 @@ function st = plot_feature_vals(op_id, data, on_what, combined, reduced, correla
         end
         thecorr = tbl.Aggregated_Correlation(tbl.Operation_ID == op_id);
         title(sprintf('$$\\rho_{\\mu}^{\\mathrm{agg}} = %.2g$$', thecorr), 'interpreter', 'latex', 'fontsize', 16)
-        st.Position(1) = ax.Position(1) + ax.Position(3)./2;
+        %st.Position(1) = ax.Position(1) + ax.Position(3)./2;
     end
 end
