@@ -167,7 +167,7 @@ addParameter(p, 'initial_conditions', 0)
 addParameter(p, 'parameters', [])
 addParameter(p, 'bifurcation_point', 0)
 addParameter(p, 'etarange', 0.1)
-addParameter(p, 'numpoints', 'max(1000000, savelength.*20)')
+addParameter(p, 'numpoints', [])
 addParameter(p, 'savelength', 5000)
 addParameter(p, 'dt', [])
 addParameter(p, 'T', 'tmax')
@@ -252,7 +252,7 @@ if ~lDt && ~lTm && ~lN
     else
         error('This combination of dt, tmax and numpoints is not consistent')
     end
-elseif lDt && ~lTm && ~lN || (tmax ~= dt.*numpoints)
+elseif lDt && ~lTm && ~lN
     dt = tmax./numpoints;
     p.Results.dt = dt;
 elseif ~lDt && lTm && ~lN

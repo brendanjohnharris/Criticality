@@ -2,6 +2,9 @@ addpath(genpath('../'));
 load('./time_series_data.mat');
 num_hctsa = 7873; % The number of hctsa features. Any above this are custom
 
+%% Figure 6
+scatterScript
+
 %% Remove the custom features
 for r = 1:length(time_series_data)
     time_series_data(r).TS_DataMat = time_series_data(r).TS_DataMat(:, 1:num_hctsa);
@@ -50,6 +53,3 @@ visualise_feature_fit(time_series_data, ops, 101)
 set(gcf, 'visible', 'off'); 
 set(gcf, 'Units', 'Inches', 'Position', [0, 0, 8, 8], 'PaperUnits', 'points');
 exportgraphics(gcf,'fig4.pdf')
-
-%% Figure 6
-scatterScript
