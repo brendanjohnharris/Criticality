@@ -9,7 +9,11 @@ function plotSystemDistribution(ax, time_series_data, mu, eta, xlims, vlims, pli
         vlims (2, 1) double {mustBeFinite} = [0, 0.8];
         plims (2, 1) double {mustBeFinite} = [0, 4];
         opts.axison (1, 1) = true;
+        opts.rescale = false;
     end
+
+
+
     axison = opts.axison;
     blue = [0,    0.4470,    0.7410];
     red = [0.8500,    0.3250,    0.0980];
@@ -27,18 +31,42 @@ function plotSystemDistribution(ax, time_series_data, mu, eta, xlims, vlims, pli
 %     idx = find(cp_range == mu, 1);
     data = time_series_data(1, :);
 
+
+    inputs = data.Inputs;
+    inputs.etarange = [eta];
+    inputs.foldername = [];
+    inputs.cp_range = [mu];
+    inputs.numpoints = [];
+    inputs.savelength = [];
+    inputs.T = 1000;
+    inputs.tmax = 1010;
+    inputs.sampling_period = 0.1;
+    x = time_series_generator('input_struct', inputs);
+    ts = 0:inputs.sampling_period:inputs.sampling_period*(length(x)-1);
+
+    if opts.rescale
+        sigma = 1./std(x(2:end) - x(1:end-1));
+    else
+        sigma = 1;
+    end
+
+
     % Now get on to plotting everything. 
     % First the potential
     title(sprintf('$$\\mu = %.2g, \\eta = %.2g$$', mu, eta), 'Interpreter', 'latex')
     if axison
-        xlabel("$$x$$", 'Interpreter', 'latex')
+        if opts.rescale
+            xlabel("$$x\sigma$$", 'Interpreter', 'latex')
+        else
+            xlabel("$$x$$", 'Interpreter', 'latex')
+        end
     end
 
     yyaxis('left')
     xs = linspace(xlims(1), xlims(2), 100);
     V = @(x) -mu.*x.^2./2 + x.^4./4;
 %     plot(xs, V(xs), 'parent', ax, 'color', gray)
-    fill([0, xs, xs(end)], [0, V(xs), 0], gray, 'FaceAlpha', 0.7, 'EdgeColor', gray, 'LineWidth', 2)
+    fill([0, xs.*sigma, xs(end)*sigma], [0, V(xs), 0], gray, 'FaceAlpha', 0.7, 'EdgeColor', gray, 'LineWidth', 2)
     ylim(ax, vlims)
     if axison
         ylabel("$$V(x)$$", 'Interpreter', 'latex')
@@ -52,10 +80,10 @@ function plotSystemDistribution(ax, time_series_data, mu, eta, xlims, vlims, pli
 
     % Then the distribution
     p = @(x) exp(-2.*V(x)/eta.^2);
-    ps = p(xs)./(sum(p(xs)).*(xs(2)-xs(1)));
+    ps = p(xs)./(sum(p(xs)).*(xs(2)-xs(1)).*sigma);
 %     plot(xs, ps, 'color', blue, 'linewidth', 5)
     xlim(ax, xlims)
-    fill([0, xs, xs(end)], [0, ps, 0], blue, 'FaceAlpha', 0.5, 'edgecolor', blue, 'LineWidth', 2)
+    fill([0, xs.*sigma, xs(end).*sigma], [0, ps, 0], blue, 'FaceAlpha', 0.5, 'edgecolor', blue, 'LineWidth', 2)
     ylim(ax, plims)
     if axison
         ylabel("$$p(x)$$", 'Interpreter', 'latex')
@@ -63,5 +91,15 @@ function plotSystemDistribution(ax, time_series_data, mu, eta, xlims, vlims, pli
         ax.XTickLabel = [];
         ax.YTickLabel = [];
     end
+
+
+    % Label the autocorrelation
+%     plot(x, ts, 'parent', ax1)
+% And the AC
+    r = autocorr(x, 'numlags', 2);
+    dy = (plims(2) - plims(1))*0.1;
+    dx = (xlims(2) - xlims(1))*0.1;
+    text((xlims(1)+dx), (plims(end)-dy), sprintf("$$r_{t-1} = %.2g$$", r(2)), 'Interpreter', 'latex')
+
 end
 

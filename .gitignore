@@ -9,3 +9,4 @@
 **/Data/**
 *.code-workspace
 *.pdf
+!paper/**.pdf

@@ -53,3 +53,6 @@ visualise_feature_fit(time_series_data, ops, 101)
 set(gcf, 'visible', 'off'); 
 set(gcf, 'Units', 'Inches', 'Position', [0, 0, 8, 8], 'PaperUnits', 'points');
 exportgraphics(gcf,'fig4.pdf')
+
+%% Figure 5
+systemSchematic
