@@ -66,7 +66,7 @@ function plotSystemDistribution(ax, time_series_data, mu, eta, xlims, vlims, pli
     xs = linspace(xlims(1), xlims(2), 100);
     V = @(x) -mu.*x.^2./2 + x.^4./4;
 %     plot(xs, V(xs), 'parent', ax, 'color', gray)
-    fill([0, xs.*sigma, xs(end)*sigma], [0, V(xs), 0], gray, 'FaceAlpha', 0.7, 'EdgeColor', gray, 'LineWidth', 2)
+    fill([0, xs.*sigma, xs(end)*sigma], [0, V(xs), 0], gray, 'FaceAlpha', 0.0, 'EdgeColor', gray, 'LineWidth', 2)
     ylim(ax, vlims)
     if axison
         ylabel("$$V(x)$$", 'Interpreter', 'latex')

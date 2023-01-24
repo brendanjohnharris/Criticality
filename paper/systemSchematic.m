@@ -37,7 +37,7 @@ for mu = mus
         if i > 1
             axison = false;
         end
-        plotSystemDistribution(ax, time_series_data, mu, eta, [0, 5], [0, 0.8], [0, 0.5], 'axison', axison, 'rescale', true);
+        plotSystemDynamics(ax, time_series_data, mu, eta, [0, 3.5], [0, 3.5], 'axison', axison);
     end
 end
 set(f, 'visible', 'off'); 
