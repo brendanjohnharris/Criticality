@@ -17,6 +17,7 @@ for mu = mus
     end
 end
 set(f, 'visible', 'off'); 
+set(f, 'renderer', 'painters')
 set(f, 'Units', 'Inches', 'Position', [0, 0, 7, 5], 'PaperUnits', 'points');
 exportgraphics(f,'fig5a.pdf')
 
@@ -41,6 +42,7 @@ for mu = mus
     end
 end
 set(f, 'visible', 'off'); 
+set(f, 'renderer', 'painters')
 set(f, 'Units', 'Inches', 'Position', [0, 0, 7, 5], 'PaperUnits', 'points');
 exportgraphics(f,'fig5b.pdf')
 

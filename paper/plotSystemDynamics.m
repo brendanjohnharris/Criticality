@@ -50,16 +50,16 @@ function plotSystemDynamics(t, time_series_data, mu, eta, xlims, ylims, opts)
     xy = T*[x_; y_];
     x_ = xy(1, :);
     y_ = xy(2, :);
-    s = scatter(x_, y_, 2, blue, 'filled', 'MarkerFaceAlpha', 0.05);
+    s = scatter(x_(1:1500), y_(1:1500), 2, blue, 'filled', 'MarkerFaceAlpha', 0.2);
     p1 = covEllipse([mean(x_), mean(y_)], cov([x_' y_']).*2, ...
-        blue, 'FaceAlpha', 0.1, 'EdgeColor', blue);
+        blue, 'FaceAlpha', 0.2, 'EdgeColor', blue);
     x_ = xt;
     y_ = xt1;
-    s = scatter(x_, y_, 2, red, 'filled', 'MarkerFaceAlpha', 0.05);
+    s = scatter(x_(1:1500), y_(1:1500), 2, red, 'filled', 'MarkerFaceAlpha', 0.2);
     C = cov([x_' y_']).*2;
     display(C)
     p2 = covEllipse([mean(x_), mean(y_)], C, ...
-        red, 'FaceAlpha', 0.1, 'EdgeColor', red);
+        red, 'FaceAlpha', 0.2, 'EdgeColor', red);
     % axis square
     if axison
         legend([p2, p1], {"$$\hat{x}_t = x_t$$", "$$\hat{x}_t = x_t$$"}, 'Interpreter', 'LaTeX')
