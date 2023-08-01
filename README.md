@@ -3,6 +3,8 @@
 
 Simulate bifurcating dynamical systems, record time series and run [_hctsa_](https://github.com/benfulcher/hctsa) to produce feature that characterise the dynamical system and its control parameter; then, run analyses to determine which features are most useful for predicting this parameter.
 
+A script to reproduce the key figures of this project is available at [Criticality/paper/figures.m](paper/figures.m).
+
 ## Setup
 In addition to cloning this repository, _hctsa_ v0.98 should be [installed](https://hctsa-users.gitbook.io/hctsa-manual/) in a convenient location and the following modifications performed:
 - Add the -v7.3 flag to the save function on line `144` of `TS_init.m` (allowing for larger `.mat` files)
