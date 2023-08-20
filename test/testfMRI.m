@@ -1,5 +1,5 @@
 
-loadFile = './Data/18SubjfMRI/';
+loadFile = './Data/FallonfMRI/';
 workFile = 'testSubjfMRIData.mat';
 
 doBinarize = false;%true;
@@ -10,9 +10,9 @@ lag = [1, 34];
 
 data = autoLoad(loadFile);
 save(workFile, 'data')
-%calcfMRI({'CO_AutoCorr(x, params)', 'delayDistributions(x, params, 1)'}, {[], 'scaleSigmaDifference'}, workFile, lag);
+calcfMRI({'CO_AutoCorr(x, params)', 'delayDistributions(x, params, 1)'}, {[], 'scaleSigmaDifference'}, workFile, lag);
 
-calcfMRI({'SB_MotifTwo(zscore(x),"mean")'}, {'uu'}, workFile, lag);
+%calcfMRI({'SB_MotifTwo(zscore(x),"mean")'}, {'uu'}, workFile, lag);
 %calcfMRI({'DN_RemovePoints(zscore(x),"absfar",0.1)'}, {'ac2diff'}, workFile, lag);
 %calcfMRI({'PP_Compare(x,''rav2'')'}, {'kscn_olapint'}, workFile, lag);
 %calcfMRI({'ST_LocalExtrema(zscore(x),''l'',100)'}, {'meanrat'}, workFile, lag);

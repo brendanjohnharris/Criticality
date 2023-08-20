@@ -2,7 +2,7 @@ addpath(genpath('../'));
 load('./time_series_data.mat');
 num_hctsa = 7873; % The number of hctsa features. Any above this are custom
 
-%% Figure 6
+%% Figure 4
 scatterScript
 
 %% Remove the custom features
@@ -46,13 +46,24 @@ exportgraphics(gcf,'fig3b.pdf')
 [~, ~, idxs] = intersect(pnums, tbl.Operation_ID, 'stable');
 writetable(tbl(idxs, :), 'variableNoiseClusters.xls')
 
-%% Figure 4
-ops = [19, 93, 1763, 3332, 3535, 6275];
-time_series_data = normalise_time_series_data(time_series_data, [-1, 0]);
-visualise_feature_fit(time_series_data, ops, 101)
-set(gcf, 'visible', 'off'); 
-set(gcf, 'Units', 'Inches', 'Position', [0, 0, 8, 8], 'PaperUnits', 'points');
-exportgraphics(gcf,'fig4.pdf')
+%%% Figure 4
+%ops = [19, 93, 1763, 3332, 3535, 6275];
+%time_series_data = normalise_time_series_data(time_series_data, [-1, 0]);
+%visualise_feature_fit(time_series_data, ops, 101)
+%set(gcf, 'visible', 'off'); 
+%set(gcf, 'Units', 'Inches', 'Position', [0, 0, 8, 8], 'PaperUnits', 'points');
+%exportgraphics(gcf,'fig4.pdf')
 
 %% Figure 5
 systemSchematic
+
+%% A feature matrix from the schematic
+% F = arrayfun(@(x) time_series_data(x, :).TS_DataMat', 1:size(time_series_data, 1), 'un', 0);
+% F = [F{:}]';
+F = time_series_data(end, :).TS_DataMat;
+F = BF_NormalizeMatrix(F);
+F(isnan(F)) = 0;
+idxs = BF_ClusterReorder(F');
+F = F(:, idxs);
+colormap(BF_getcmap('redyellowblue'))
+imagesc(F)

@@ -3,7 +3,9 @@
 
 Simulate bifurcating dynamical systems, record time series and run [_hctsa_](https://github.com/benfulcher/hctsa) to produce feature that characterise the dynamical system and its control parameter; then, run analyses to determine which features are most useful for predicting this parameter.
 
-A script to reproduce the key figures of this project is available at [Criticality/paper/figures.m](paper/figures.m).
+A script to reproduce the key figures of this project is available at [figures.m](paper/figures.m).
+
+The two new features we introduce in the paper are `CR_RAD_1`, available in [RAD.m](./Feature_Analysis/Custom_features/dynamicalDistributions/RAD.m), and `fitSupercriticalHopfRadius_1`, available in [fitSupercriticalHopfRadius.m](./Feature_Analysis/Custom_features/dynamicalDistributions/potentialDistributions.m).
 
 ## Setup
 In addition to cloning this repository, _hctsa_ v0.98 should be [installed](https://hctsa-users.gitbook.io/hctsa-manual/) in a convenient location and the following modifications performed:
@@ -14,7 +16,7 @@ In addition to cloning this repository, _hctsa_ v0.98 should be [installed](http
 
 A workflow begins by adding files to the Matlab path; run `startup()` in the _hctsa_ directory and `add_all_subfolders()` in the _Criticality_ directory.
 
-To reproduce main analyses, refer to the files `testTimeseries.m`, `testHCTSA.md` and `testAnalysis.m` in `./test/`. Below is an outline of a typical workflow-- simulating dynamical systems, running _hctsa_ and analysing feature values.
+To reproduce main analyses, refer to the files `testTimeseries.m`, `testHCTSA.md` and `testAnalysis.m` in `./test/`. Below is an outline of a typical workflow: simulating dynamical systems, running _hctsa_ and analysing feature values.
 
 ## Time Series
 Stochastic dynamical systems are simulated by the `./Time_Series_Generation/time_series_generator/time_series_generator.m` function using the Euler-Maruyama method. For an example time series with the default parameters:

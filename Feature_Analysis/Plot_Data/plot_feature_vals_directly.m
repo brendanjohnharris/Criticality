@@ -7,8 +7,12 @@ function plot_feature_vals_directly(ops, mops, input_file, cp_range, etarange)
         mops = SQL_add('mops', 'INP_mops.txt', 0, 0);
     end
     [ops, mops] = TS_LinkOperationsWithMasters(ops, mops);
-    f = struct2cell(load(input_file));
-    parameters = f{1};
+    if ischar(input_file) || isstring(input_file)
+        f = struct2cell(load(input_file));
+        parameters = f{1};
+    else
+        parameters = input_file;
+    end
     if nargin > 3 && ~isempty(cp_range)
         parameters.cp_range = cp_range;
     end
@@ -21,8 +25,8 @@ function plot_feature_vals_directly(ops, mops, input_file, cp_range, etarange)
         p.etarange = etarange(ind);
         time_series_data = time_series_generator('input_struct', p);
         feature_vals = generate_feature_vals(time_series_data, ops, mops, 0);
-        figure
-        plot(p.cp_range, feature_vals', 'o', 'markersize', 2)
+%         figure
+        plot(p.cp_range, feature_vals', '-', 'markersize', 20, 'Marker', '.')
         title(sprintf('\\eta = %g', etarange(ind)), 'interpreter', 'Tex') 
     end
 end
