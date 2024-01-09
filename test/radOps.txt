@@ -1,0 +1,6 @@
+CR_RAD_1_1                CR_RAD_1_1                 distribution,bifurcation,delay
+CR_RAD_0_1                CR_RAD_0_1                 distribution,bifurcation,delay
+AC_1		AC_1		correlation
+DN_Spread_std	    standard_deviation	        distribution,spread,raw,spreaddep
+DN_Moments_3	    DN_Moments_3	    distribution,moment,shape
+DN_Moments_4	    DN_Moments_4	    distribution,moment,shape

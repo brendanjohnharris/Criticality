@@ -26,6 +26,7 @@ st = plot_feature_vals(7882, time_series_data, 'noise', 1, [1, 25, 50, 75, 100],
 st.String = '';%['g) ', st.String];
 pdfprint('NewFeature_Scatter.pdf', '-dpdf')
 
+%% 
 st = plot_feature_vals(8009, time_series_data, 'noise', 1, [5, 25, 50, 75, 100], 1); ax = gca; ax.XTick = ax.XTick(1:2:end);
 st.String = '';%['g) ', st.String];
 pdfprint('fitSupercriticalHopfRadius_Scatter.pdf', '-dpdf')

@@ -1,0 +1,6 @@
+RAD(x,true,1)             CR_RAD_1_1
+RAD(x,false,1)            CR_RAD_0_1
+CO_AutoCorr(x,1,'Fourier')	AC_1
+DN_Spread(x,'std')			DN_Spread_std
+DN_Moments(x,3)		DN_Moments_3
+DN_Moments(x,4)		DN_Moments_4
