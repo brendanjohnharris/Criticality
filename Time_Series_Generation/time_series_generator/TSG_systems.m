@@ -23,163 +23,243 @@ mu = cp_range(fails)';
 switch system_type
     case 'staircase'
         % This one works best with cp_range = -1, etarange = 1
-        for n = 1:numpoints-1
-            r = r + (sin(mu.*r)).*dt + (eta.*sqrt(dt).*randn(Wl, 1)+(0.01*abs(eta.*sqrt(dt).*randn(Wl, 1))));
+        for n = 1:numpoints - 1
+            r = r + (sin(mu .* r)) .* dt + (eta .* sqrt(dt) .* randn(Wl, 1) + (0.01 * abs(eta .* sqrt(dt) .* randn(Wl, 1))));
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
 
     case 'saddle_node'
-        for n = 1:numpoints-1
-            r = r + (mu + (r.^2)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+
+        for n = 1:numpoints - 1
+            r = r + (mu + (r .^ 2)) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
-       
-	case 'eta_normalised_saddle_node'
-        for n = 1:numpoints-1
-            r = r + (mu + (r.^2)).*dt + eta.*-mu.*sqrt(dt).*randn(Wl, 1);
+
+    case 'eta_normalised_saddle_node'
+
+        for n = 1:numpoints - 1
+            r = r + (mu + (r .^ 2)) .* dt + eta .* -mu .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
+        end
+
+    case 'transcritical'
+
+        for n = 1:numpoints - 1
+            r = r + (mu .* r - r .^ 2) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
+            end
+
         end
 
     case 'supercritical_hopf'
-        for n = 1:numpoints-1
-            r = r + (mu.*r - parameters(1).*r.*(abs(r)).^2).*dt;
+
+        for n = 1:numpoints - 1
+            r = r + (mu .* r - parameters(1) .* r .* (abs(r)) .^ 2) .* dt;
             theta = angle(r);
-            r = r + (cos(theta) + 1i.*sin(theta)).*eta.*sqrt(dt).*randn(Wl, 1);
+            r = r + (cos(theta) + 1i .* sin(theta)) .* eta .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
 
     case 'supercritical_hopf-varying_cp'
-        for n = 1:numpoints-1
-            r = r + (mu.*r - parameters(1).*r.*(abs(r)).^2).*dt;
+
+        for n = 1:numpoints - 1
+            r = r + (mu .* r - parameters(1) .* r .* (abs(r)) .^ 2) .* dt;
             theta = angle(r);
-            r = r + (cos(theta) + 1i.*sin(theta)).*eta.*sqrt(dt).*randn(Wl, 1);
-            mu = mu + parameters(2).*dt;
+            r = r + (cos(theta) + 1i .* sin(theta)) .* eta .* sqrt(dt) .* randn(Wl, 1);
+            mu = mu + parameters(2) .* dt;
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
 
     case 'simple_supercritical_beta_hopf'
-        for n = 1:numpoints-1
-            r = r + (mu.*r - parameters(1).*r.*(abs(r)).^2).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+
+        for n = 1:numpoints - 1
+            r = r + (mu .* r - parameters(1) .* r .* (abs(r)) .^ 2) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
 
     case 'supercritical_hopf_radius_(strogatz)'
-        for n = 2:numpoints-1
-            r = r + (mu.*r - (r.^3)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+
+        for n = 2:numpoints - 1
+            r = r + (mu .* r - (r .^ 3)) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
+
         rout = abs(rout);
 
     case 'supercritical_hopf_radius_(measurement)'
-        for n = 2:numpoints-1
-            r = r + (mu.*r - (r.^3)).*dt + 0.1.*sqrt(dt).*randn(Wl, 1); % Fixed dynamical eta of 0.1
+
+        for n = 2:numpoints - 1
+            r = r + (mu .* r - (r .^ 3)) .* dt + 0.1 .* sqrt(dt) .* randn(Wl, 1); % Fixed dynamical eta
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
+
         rout = abs(rout);
-        rout = rout + eta.*sqrt(dt).*randn(size(rout)); % Measurement noise
-        
-	case 'supercritical_hopf_radius_(strogatz)_pink'
-        for n = 2:numpoints-1
-            r = r + (mu.*r - (r.^3)).*dt + eta.*sqrt(dt).*pinknoise(Wl, 1);
+        rout = rout + eta .* randn(size(rout)); % Measurement noise
+
+    case 'supercritical_hopf_radius_(strogatz)_pink'
+
+        for n = 2:numpoints - 1
+            r = r + (mu .* r - (r .^ 3)) .* dt + eta .* sqrt(dt) .* pinknoise(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
-        rout = abs(rout);
-        
-	case 'supercritical_hopf_radius_(strogatz)_multiplicative'
-        for n = 2:numpoints-1
-            r = r + (mu.*r - (r.^3)).*dt + r.*eta.*sqrt(dt).*randn(Wl, 1);
-            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
-            end
-        end
+
         rout = abs(rout);
 
-   case 'supercritical_hopf_radius_(strogatz)-non-reflecting'
-        for n = 1:numpoints-1
-            r = r + (mu.*r - (r.^3)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+    case 'supercritical_hopf_radius_(strogatz)_multiplicative'
+
+        for n = 2:numpoints - 1
+            r = r + (mu .* r - (r .^ 3)) .* dt + r .* eta .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
+        end
+
+        rout = abs(rout);
+
+    case 'supercritical_hopf_radius_(strogatz)-non-reflecting'
+
+        for n = 1:numpoints - 1
+            r = r + (mu .* r - (r .^ 3)) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
+            end
+
         end
 
     case 'subcritical_hopf_radius_(strogatz)'
-        for n = 1:numpoints-1
-            r = r + (-r.^5 + (r.^3) + mu.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+
+        for n = 1:numpoints - 1
+            r = r + (-r .^ 5 + (r .^ 3) + mu .* r) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
+
+        rout = abs(rout);
+
+    case 'subcritical_hopf_radius'
+
+        for n = 1:numpoints - 1
+            r = r + (mu .* r + (r .^ 3)) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
+            end
+
+        end
+
         rout = abs(rout);
 
     case 'quadratic_potential'
-        for n = 1:numpoints-1
-            r = r + (mu.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+
+        for n = 1:numpoints - 1
+            r = r + (mu .* r) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
+
         rout = abs(rout);
-        
+
     case 'supercritical_pitchfork_(strogatz)'
-        for n = 1:numpoints-1
-            r = r + (mu.*r - (r.^3)).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+
+        for n = 1:numpoints - 1
+            r = r + (mu .* r - (r .^ 3)) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
-        
+
     case 'subcritical_pitchfork_(strogatz)'
-        for n = 1:numpoints-1
-            r = r + (-r.^5 + (r.^3) + mu.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+
+        for n = 1:numpoints - 1
+            r = r + (-r .^ 5 + (r .^ 3) + mu .* r) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
-        
+
     case 'subcritical_hopf_radius_(strogatz)_varying_cp'
-        for n = 1:numpoints-1
-            r = r + (-r.^5 + (r.^3) + mu.*r).*dt + eta.*sqrt(dt).*randn(Wl, 1);
+
+        for n = 1:numpoints - 1
+            r = r + (-r .^ 5 + (r .^ 3) + mu .* r) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
             r = abs(r);
-            mu = mu + parameters(1).*dt; % The parameter is d(mu)/dt
+            mu = mu + parameters(1) .* dt; % The parameter is d(mu)/dt
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = r;
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
             end
+
         end
-        
-    % A sneaky way to handle 2nd order or 2D SDEs: r is a complex
-    % variable, but the real and imaginary parts won't mingle.
+
+        % A sneaky way to handle 2nd order or 2D SDEs: r is a complex
+        % variable, but the real and imaginary parts won't mingle.
     case 'vanderPol'
-    	for n = 1:numpoints-1
+
+        for n = 1:numpoints - 1
             xp = real(r);
             yp = imag(r);
-            
-            x = xp + yp.*dt;
-            y = yp + (mu.*(1-(xp).^2).*yp-xp).*dt + eta.*sqrt(dt).*randn(Wl, 1);
-            
-            r = x + 1i.*y;
+
+            x = xp + yp .* dt;
+            y = yp + (mu .* (1 - (xp) .^ 2) .* yp - xp) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
+            r = x + 1i .* y;
+
             if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
-                rout(fails, 1 + (n - transient_cutoff - 1)./savestep) = real(r);
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = real(r);
             end
+
         end
-        
+
     otherwise
         error("No match found for type '%s'", system_type)
 end
