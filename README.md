@@ -1,7 +1,7 @@
 # Criticality
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.8185428.svg)](https://doi.org/10.5281/zenodo.8185428)
 
-Simulate bifurcating dynamical systems, record time series and run [_hctsa_](https://github.com/benfulcher/hctsa) to produce feature that characterise the dynamical system and its control parameter; then, run analyses to determine which features are most useful for predicting this parameter.
+Simulate bifurcating dynamical systems, record time series and run [_hctsa_](https://github.com/benfulcher/hctsa) to produce features that characterise the dynamical system and its control parameter; then, run analyses to determine which features are most useful for predicting this parameter.
 
 A script to reproduce the key figures of this project is available at [figures.m](paper/figures.m).
 
