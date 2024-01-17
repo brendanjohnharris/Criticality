@@ -1,14 +1,14 @@
-function f = RAD(x, centre, tau)
+function f = RAD(x, center, tau)
     % RAD Compute the rescaled auto-density, a metric for inferring the
     % distance to criticality that is insensitive to uncertainty in the noise strength
     % INPUTS
     %   x:        A vector, the input time series
-    %   centre:   Whether to centre the time series at 0 then take absolute values
+    %   center:   Whether to center the time series at 0 then take absolute values
     %   tau:      An integer; the embedding and differencing delay in units of the timestep
     % OUTPUTS
     %   f:        The RAD feature value
-    if nargin < 2 || isempty(centre)
-        centre = 0;
+    if nargin < 2 || isempty(center)
+        center = 0;
     end
 
     if nargin < 3 || isempty(tau)
@@ -19,7 +19,7 @@ function f = RAD(x, centre, tau)
         x = x';
     end
 
-    if centre
+    if center
         x = x - median(x);
         x = abs(x);
     end
