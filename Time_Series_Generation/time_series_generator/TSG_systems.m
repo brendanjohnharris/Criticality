@@ -130,6 +130,34 @@ switch system_type
         rout = abs(rout);
         rout = rout + eta .* randn(size(rout)); % Measurement noise
 
+    case 'supercritical_hopf_radius_(dnm)'
+
+        for n = 2:numpoints - 1
+            r = r + (mu .* r - (r .^ 3)) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
+            end
+
+        end
+
+        rout = abs(rout);
+        rout = rout + parameters(1) .* randn(size(rout)); % Measurement noise
+
+    case 'supercritical_hopf_radius_(snr)'
+
+        for n = 2:numpoints - 1
+            r = r + (mu .* r - (r .^ 3)) .* dt + eta .* sqrt(dt) .* randn(Wl, 1);
+
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
+            end
+
+        end
+
+        rout = abs(rout);
+        rout = rout + (std(rout, 0, 2)./parameters(1)) .* randn(size(rout)); % Measurement noise
+
     case 'supercritical_hopf_radius_(strogatz)_pink'
 
         for n = 2:numpoints - 1
