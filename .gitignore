@@ -10,3 +10,5 @@
 *.code-workspace
 *.pdf
 !paper/**.pdf
+**/.CondaPkg/**
+.vscode
