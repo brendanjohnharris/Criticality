@@ -1,3 +1,4 @@
+!paper/**.pdf
 *.asv
 *.mat
 *.xlsx
@@ -9,6 +10,5 @@
 **/Data/**
 *.code-workspace
 *.pdf
-!paper/**.pdf
 **/.CondaPkg/**
 .vscode

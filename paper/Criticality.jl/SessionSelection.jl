@@ -83,5 +83,5 @@ oursessions = subset(session_metrics,
     :has_target_location => ByRow(==(1)),
     :equipment_name => ByRow(==("NP.1")))
 
-write("$(@__DIR__)/data/session_table.json", JSON.json(oursessions))
+# write("$(@__DIR__)/data/session_table.json", JSON.json(oursessions))
 # Read the dataframe as read("$(@__DIR__)/data/session_table.json", String) |> JSON.parse |> DataFrame
