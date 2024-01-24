@@ -1,3 +1,4 @@
+!paper/**.pdf
 *.asv
 *.mat
 *.xlsx
@@ -11,5 +12,3 @@
 *.pdf
 **/.CondaPkg/**
 .vscode
-!paper/**.pdf
-!paper/Criticality.jl/**.pdf
