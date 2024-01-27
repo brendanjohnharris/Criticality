@@ -16,7 +16,7 @@ using Distributed
 using TimeseriesTools.Unitful
 using JSON
 using USydClusters
-import AllenNeuropixels as AN
+import AllenNeuropixelsBase as AN
 
 plotpath = "$(@__DIR__)/Data"
 outfile = joinpath(plotpath, "criticality.jld2")
@@ -30,13 +30,14 @@ oursessions = session_table.ecephys_session_id
 USydClusters.Physics.addprocs(length(oursessions); ncpus=2, mem=16, walltime=96)
 
 begin
+    @everywhere ENV["ALLEN_NEUROPIXELS_OFFLINE"] = "true"
     @everywhere using Distributed
     @everywhere using JLD2
     @everywhere using DSP
     @everywhere using StatsBase
     @everywhere using TimeseriesTools
     @everywhere using Catch22
-    @everywhere import AllenNeuropixels as AN
+    @everywhere import AllenNeuropixelsBase as AN
     @everywhere function send_criticality(sessionid, plotpath=$plotpath)
         params = (;
             sessionid,

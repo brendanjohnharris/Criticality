@@ -1,5 +1,4 @@
 [deps]
-AllenNeuropixels = "c7dbd8d7-5c13-4dcb-90e2-bff79a096f56"
 AllenNeuropixelsBase = "0b0e28cf-a3af-44db-8bea-1c4507018d35"
 AllenSDK = "9d22b198-c11d-497b-9ac7-6add78eade21"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
@@ -10,6 +9,7 @@ DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 Foresight = "c6e1034d-1844-4b96-abf2-c5824a5aa8c3"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"

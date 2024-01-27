@@ -7,7 +7,7 @@ exec julia -t auto --project=$HOME/code/Criticality/paper/Criticality.jl/ "${BAS
 using CairoMakie
 using TimeseriesTools
 using Foresight
-import AllenNeuropixels as AN
+import AllenNeuropixelsBase as AN
 import TimeseriesTools.Operators.𝒯
 using Catch22
 set_theme!(foresight(:dark, :serif, :physics))

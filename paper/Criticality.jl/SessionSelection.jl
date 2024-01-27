@@ -1,5 +1,5 @@
 using DataFrames, FileIO, Statistics, JLD2, JSON
-import AllenNeuropixels as AN
+import AllenNeuropixelsBase as AN
 session_table = AN.VisualBehavior.getsessiontable()
 
 function numprobes(sessionid)
