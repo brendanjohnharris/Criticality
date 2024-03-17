@@ -32,13 +32,21 @@ function pulldata(f)
         [[xs[i][j] .= j for j in eachindex(xs[i])] for i in eachindex(xs)]
         xs = vcat([vcat(vec.(x)...) for x in zip(xs...)]...)
         ys = vcat([vcat(vec.(x)...) for x in zip(F...)]...)
-        ρ = cor(xs, tiedrank(ys))
+
+        xsm = vcat([median.(f) for f in F]...)
+        ysm = vcat([1:6 for f in F]...)
+        ρm = cor(xsm, tiedrank(ysm)) # Correlation over median feature from each region
+        𝑝m = HypothesisTests.pvalue(CorrelationTest(xsm, tiedrank(ysm)))
+
+        ρ = cor(xs, tiedrank(ys)) # Correlation over all channels
+        𝑝 = HypothesisTests.pvalue(CorrelationTest(xs, tiedrank(ys)))
 
         ρs = map(F) do f
             _xs = vcat([fill(i, length(f[i])) for i in 1:length(f)]...)
             _ys = vcat(collect.(f)...)
             cor(_xs, tiedrank(_ys))
         end
+        @infiltrate
 
         # xm = vcat((F̄ .|> axes .|> only .|> collect)...)
         # ym = vcat(F̄...)
@@ -86,8 +94,9 @@ function criticality_boxplot!(ax, features; kwargs...)
     text!(ax, [1.5], [0.65]; text="𝑝 = $(round(p1, sigdigits=3))", fontsize=16, align=(:center, :bottom))
     text!(ax, [2.5], [0.92]; text="𝑝 = $(round(p2, sigdigits=3))", fontsize=16, align=(:center, :bottom))
 
-    # lines!.([ax], [1:length(features)], collect.(zip(ρ...)), color=(:black, 0.2)) # Connect subject medians
-    # scatter!.([ax], [1:length(features)], collect.(zip(ρ...)), color=:black) # Connect subject medians
+    # lines!.([ax], [1:length(features)], collect.(zip(ρ...)), color=(:black, 0.2)) #
+    # Connect subject medians scatter!.([ax], [1:length(features)], collect.(zip(ρ...)),
+    # color=:black) # Connect subject medians
 end
 
 begin # * RAD vs conventional features
@@ -111,7 +120,7 @@ begin # * All catch22 features
 end
 
 begin # * Paper figure
-    f = Figure(size=(720, 360))
+    f = Figure(size=(400, 500))
     features = [:DN_Spread_Std, :AC_1, :CR_RAD]
     ax1 = Axis(f[1, 1], limits=((nothing, nothing), (0, 1)), ylabel=L"|ρ|", xgridvisible=false, ygridvisible=false)
     ax1.xticks = (1:length(features), string.(features))
@@ -119,7 +128,8 @@ begin # * Paper figure
 
     criticality_boxplot!(ax1, features; strokewidth=3, whiskerwidth=0.2)
 
-    ax2 = Axis(f[1, 2]; xgridvisible=false, ygridvisible=false)
+    ax2 = Axis(f[2, 1]; xgridvisible=false, ygridvisible=false)
     criticality_plot!(ax2, :CR_RAD)
     display(f)
+    save(joinpath(@__DIR__, "criticality_neuropixels.pdf"), f)
 end

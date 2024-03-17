@@ -2,6 +2,7 @@
 #=
 exec julia -t auto --project=$HOME/code/Criticality/paper/Criticality.jl/ "${BASH_SOURCE[0]}" "$@"
 =#
+ENV["ALLEN_NEUROPIXELS_OFFLINE"] = "true"
 @info @__FILE__
 @info pwd()
 using StatsBase
@@ -44,7 +45,7 @@ begin
             epoch=:longest,
             pass=(1, 20),
             stimulus="flash_250ms",
-            structures=["VISp", "VISl", "VISal", "VISrl", "VISpm", "VISam"]
+            structures=["VISp", "VISl", "VISrl", "VISal", "VISpm", "VISam"]
         )
         session = AN.Session(params[:sessionid])
         𝑓 = [Catch22.DN_Spread_Std, Catch22.AC[1], Catch22.CR_RAD] |> FeatureSet
