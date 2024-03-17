@@ -1,10 +1,10 @@
 dryrun = false;
-load("inputs_template.mat", "inputs")
+load("inputs_template_dnm.mat", "inputs")
 system = inputs.system_type;
 
 if ~dryrun
-%     metas = 1:0.1:5;
-    metas = 0.1:0.1:0.5;
+    metas = 0.0:0.01:0.3;
+%     metas = 0.1:0.1:2;
     
     cp = -1:0.01:0.0; %
     inputs.cp_range = cp;
