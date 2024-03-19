@@ -13,6 +13,7 @@ import TimeseriesTools.Operators.𝒯
 using Catch22
 set_theme!(foresight(:dark, :serif, :physics))
 
+
 params = (;
     sessionid=1130113579, #1119946360, #1067588044, # 1128520325, #
     epoch=:longest,

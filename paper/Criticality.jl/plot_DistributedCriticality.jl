@@ -2,6 +2,7 @@ using CairoMakie
 using DimensionalData
 using StatsBase
 using HypothesisTests
+using MultipleTesting
 using JLD2
 using Catch22
 using TimeseriesTools
@@ -10,6 +11,7 @@ file = jldopen("$(@__DIR__)/Data/criticality.jld2")
 sessions = keys(file)
 badsessions = [s for s in sessions if isnothing(file[s])]
 goodsessions = setdiff(sessions, badsessions)
+ascore = [-0.357, -0.093, -0.059, 0.152, 0.327, 0.441]
 
 function pulldata(f)
     begin # * Plot the median values of a given metric over visual cortical areas, across subjects
@@ -33,34 +35,37 @@ function pulldata(f)
         xs = vcat([vcat(vec.(x)...) for x in zip(xs...)]...)
         ys = vcat([vcat(vec.(x)...) for x in zip(F...)]...)
 
-        xsm = vcat([median.(f) for f in F]...)
-        ysm = vcat([1:6 for f in F]...)
-        ρm = cor(xsm, tiedrank(ysm)) # Correlation over median feature from each region
-        𝑝m = HypothesisTests.pvalue(CorrelationTest(xsm, tiedrank(ysm)))
-
-        ρ = cor(xs, tiedrank(ys)) # Correlation over all channels
-        𝑝 = HypothesisTests.pvalue(CorrelationTest(xs, tiedrank(ys)))
-
         ρs = map(F) do f
-            _xs = vcat([fill(i, length(f[i])) for i in 1:length(f)]...)
-            _ys = vcat(collect.(f)...)
-            cor(_xs, tiedrank(_ys))
+            _xs = 1:Ns# ascore
+            _ys = median.(f) |> tiedrank
+            ρ = cor(_xs, _ys)
+            𝑝 = HypothesisTests.pvalue(CorrelationTest(_xs, _ys))
+            return ρ, 𝑝
         end
-        @infiltrate
+        𝑝s = last.(ρs)
+        ρs = first.(ρs)
+        ρ = ρs .|> atanh |> mean |> tanh
+        𝑝 = combine(𝑝s, Fisher())
+        # ρs = map(F) do f
+        #     _xs = vcat([fill(i, length(f[i])) for i in 1:length(f)]...)
+        #     _ys = vcat(collect.(f)...)
+        #     cor(_xs, tiedrank(_ys))
+        # end
+
 
         # xm = vcat((F̄ .|> axes .|> only .|> collect)...)
         # ym = vcat(F̄...)
         xm = 1:Ns
         ym = [median(ys[xs.==i]) for i in 1:Ns]
     end
-    return F, F̄, structures, Ns, xs, ys, ρ, ρs, xm, ym
+    return F, F̄, structures, Ns, xs, ys, ρ, 𝑝, ρs, xm, ym
 end
 
 function criticality_plot!(ax, f)
-    F, F̄, structures, Ns, xs, ys, ρ, ρs, xm, ym = pulldata(f)
+    F, F̄, structures, Ns, xs, ys, ρ, 𝑝, ρs, xm, ym = pulldata(f)
     begin # * Plot the distribution of values over cortical regions
         colormap = getindex.([cgrad(:inferno; alpha=0.4)], (xs) ./ (Ns + 1))
-        ax.title = L"\rho = %$(round(ρ, digits=2))"
+        ax.title = L"\langle \rho \rangle = %$(round(ρ, digits=2)),\,  p = %$(round(𝑝, sigdigits=3))"
         ax.xlabel = "Structure"
         ax.ylabel = "$(f)"
         ax.xticks = (1:length(unique(xs)), structures)
@@ -75,7 +80,7 @@ end
 function criticality_boxplot!(ax, features; kwargs...)
     ρ = []
     for f in features
-        F, F̄, structures, Ns, xs, ys, _, ρs, xm, ym = pulldata(f)
+        F, F̄, structures, Ns, xs, ys, _, _, ρs, xm, ym = pulldata(f)
         push!(ρ, ρs)
     end
 
