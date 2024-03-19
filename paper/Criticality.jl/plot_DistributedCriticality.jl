@@ -1,8 +1,8 @@
 using CairoMakie
 using DimensionalData
+using Random
 using StatsBase
 using HypothesisTests
-using MultipleTesting
 using JLD2
 using Catch22
 using TimeseriesTools
@@ -13,7 +13,7 @@ badsessions = [s for s in sessions if isnothing(file[s])]
 goodsessions = setdiff(sessions, badsessions)
 ascore = [-0.357, -0.093, -0.059, 0.152, 0.327, 0.441]
 
-function pulldata(f)
+function pulldata(f; pvalue=false)
     begin # * Plot the median values of a given metric over visual cortical areas, across subjects
         F = map(goodsessions) do s
             map(file[s]) do F
@@ -36,36 +36,45 @@ function pulldata(f)
         ys = vcat([vcat(vec.(x)...) for x in zip(F...)]...)
 
         ρs = map(F) do f
-            _xs = 1:Ns# ascore
-            _ys = median.(f) |> tiedrank
-            ρ = cor(_xs, _ys)
-            𝑝 = HypothesisTests.pvalue(CorrelationTest(_xs, _ys))
-            return ρ, 𝑝
+            _xs = vcat([fill(i, length(f[i])) for i in 1:length(f)]...)
+            _ys = vcat(collect.(f)...)
+            ρ = corkendall(_xs, _ys)
         end
-        𝑝s = last.(ρs)
-        ρs = first.(ρs)
-        ρ = ρs .|> atanh |> mean |> tanh
-        𝑝 = combine(𝑝s, Fisher())
-        # ρs = map(F) do f
-        #     _xs = vcat([fill(i, length(f[i])) for i in 1:length(f)]...)
-        #     _ys = vcat(collect.(f)...)
-        #     cor(_xs, tiedrank(_ys))
-        # end
 
+        ρ = corkendall(xs, ys)
 
-        # xm = vcat((F̄ .|> axes .|> only .|> collect)...)
-        # ym = vcat(F̄...)
+        # Shuffle region labels for each subject, but keep relative labels from a given
+        # subject
+        if pvalue
+            @info "Computing permutations for $f, be patient"
+            xss = [collect.(f) for f in deepcopy(F)]
+            p = Vector{Float64}(undef, Int(1e6))
+            Threads.@threads for i in eachindex(p)
+                _xss = deepcopy(xss)
+                for j in eachindex(_xss)
+                    is = randperm(length(_xss[j]))
+                    for k in eachindex(_xss[j])
+                        _xss[j][k] .= is[k]
+                    end
+                end
+                p[i] = corkendall(vcat([vcat(x...) for x in zip(_xss...)]...), ys)
+            end
+            𝑝 = mean(ρ .< p)
+        else
+            𝑝 = NaN
+        end
+
         xm = 1:Ns
         ym = [median(ys[xs.==i]) for i in 1:Ns]
     end
     return F, F̄, structures, Ns, xs, ys, ρ, 𝑝, ρs, xm, ym
 end
 
-function criticality_plot!(ax, f)
-    F, F̄, structures, Ns, xs, ys, ρ, 𝑝, ρs, xm, ym = pulldata(f)
+function criticality_plot!(ax, f; pvalue=false)
+    F, F̄, structures, Ns, xs, ys, ρ, 𝑝, ρs, xm, ym = pulldata(f; pvalue)
     begin # * Plot the distribution of values over cortical regions
         colormap = getindex.([cgrad(:inferno; alpha=0.4)], (xs) ./ (Ns + 1))
-        ax.title = L"\langle \rho \rangle = %$(round(ρ, digits=2)),\,  p = %$(round(𝑝, sigdigits=3))"
+        ax.title = L"\tau = %$(round(ρ, digits=2)),\,  p = %$(round(𝑝, sigdigits=3))"
         ax.xlabel = "Structure"
         ax.ylabel = "$(f)"
         ax.xticks = (1:length(unique(xs)), structures)
@@ -125,16 +134,19 @@ begin # * All catch22 features
 end
 
 begin # * Paper figure
-    f = Figure(size=(400, 500))
+    f = Figure(size=(400, 1000))
     features = [:DN_Spread_Std, :AC_1, :CR_RAD]
-    ax1 = Axis(f[1, 1], limits=((nothing, nothing), (0, 1)), ylabel=L"|ρ|", xgridvisible=false, ygridvisible=false)
+    ax1 = Axis(f[1, 1], limits=((nothing, nothing), (0, 1)), ylabel=L"|τ|", xgridvisible=false, ygridvisible=false, xminorticksvisible=true, xminorticks=IntervalsBetween(5), yminorticksvisible=true, yminorticks=IntervalsBetween(5), xtickalign=1, ytickalign=1)
     ax1.xticks = (1:length(features), string.(features))
 
 
     criticality_boxplot!(ax1, features; strokewidth=3, whiskerwidth=0.2)
 
-    ax2 = Axis(f[2, 1]; xgridvisible=false, ygridvisible=false)
-    criticality_plot!(ax2, :CR_RAD)
+    for i = eachindex(features)
+        ax2 = Axis(f[i+1, 1]; xgridvisible=false, ygridvisible=false, xminorticksvisible=true,
+            xminorticks=IntervalsBetween(5), minorticksvisible=true, yminorticks=IntervalsBetween(5), xtickalign=1, ytickalign=2)
+        criticality_plot!(ax2, features[i]; pvalue=true)
+    end
     display(f)
     save(joinpath(@__DIR__, "criticality_neuropixels.pdf"), f)
 end
