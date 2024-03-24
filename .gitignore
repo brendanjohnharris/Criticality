@@ -1,5 +1,4 @@
 !paper/**.pdf
-!paper/Criticality.jl/Data/criticality.jld2
 *.asv
 *.mat
 *.xlsx
@@ -8,7 +7,6 @@
 *.mex
 *.autosave
 **/results/**
-**/Data/**
 *.code-workspace
 *.pdf
 **/.CondaPkg/**
