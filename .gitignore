@@ -1,5 +1,4 @@
 !paper/**.pdf
-!paper/Criticality.jl/**.pdf
 *.asv
 *.mat
 *.xlsx
