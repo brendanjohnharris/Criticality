@@ -19,7 +19,8 @@ params = (;
     epoch=:longest,
     pass=(1, 20),
     stimulus="spontaneous",
-    structures=["VISp", "VISl", "VISrl", "VISal", "VISpm", "VISam"]
+    structures=["VISp", "VISl", "VISrl", "VISal", "VISpm", "VISam"],
+    inbrain=200 # Discard channels less than 200 micros beneath the cortical surface
 )
 session = AN.Session(params[:sessionid])
 

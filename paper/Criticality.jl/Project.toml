@@ -1,5 +1,6 @@
 [deps]
 AllenNeuropixelsBase = "0b0e28cf-a3af-44db-8bea-1c4507018d35"
+AnovaMixedModels = "6832ca0c-c2dd-4d0c-851a-521ca5db42f5"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Catch22 = "acdeb78f-3d39-4310-8fdf-6d75c17c6d5a"
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
