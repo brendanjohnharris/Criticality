@@ -27,7 +27,7 @@ mice = session_table[string.(session_table.ecephys_session_id).∈[goodsessions]
 compare(x, y; kwargs...) = HypothesisTests.pvalue(HypothesisTests.MannWhitneyUTest(x, y); kwargs...)
 function formatrho(ρ)
     r = round(ρ, sigdigits=2)
-    r = r ≥ 0.01 ? r : "$(Int(sign(r)*10))^{$(round(Int, log10(abs(r))))}"
+    r = abs(r) ≥ 0.01 ? r : "$(Int(sign(r)*10))^{$(round(Int, log10(abs(r))))}"
 end
 function formatp(𝑝, nulls=NaN)
     if 𝑝 == 0.0
