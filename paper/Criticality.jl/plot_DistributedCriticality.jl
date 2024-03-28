@@ -7,11 +7,13 @@ using AnovaMixedModels
 using JSON
 using DataFrames
 using JLD2
+using Printf
 using Catch22
 using TimeseriesTools
 import Base.Iterators.flatten
 import CairoMakie.RGB
 
+Random.seed!(32)
 file = jldopen("$(@__DIR__)/Data/criticality.jld2")
 sessions = keys(file)
 badsessions = [s for s in sessions if isnothing(file[s])]
@@ -22,12 +24,29 @@ goodsessions = intersect(goodsessions, string.(oursessions))
 mice = session_table[string.(session_table.ecephys_session_id).∈[goodsessions], :mouse_id]
 @info "We have $(length(goodsessions)) sessions across $(length(unique(mice))) mice"
 
-ttest(x, y; kwargs...) = HypothesisTests.pvalue(HypothesisTests.OneSampleTTest(x, y); kwargs...)
+compare(x, y; kwargs...) = HypothesisTests.pvalue(HypothesisTests.MannWhitneyUTest(x, y); kwargs...)
 function lighten(c, a)
     c = parse(RGB, c)
     c = [(1 - a) + a * c.r, (1 - a) + a * c.g, (1 - a) + a * c.b]
     return RGB(c...)
 end
+function formatrho(ρ)
+    r = round(ρ, sigdigits=2)
+    r = r ≥ 0.01 ? r : "$(Int(sign(r)*10))^{$(round(Int, log10(abs(r))))}"
+end
+function formatp(𝑝, pvalue=NaN)
+    if 𝑝 == 0.0
+        p = "p\\, <\\, 10^{-$(floor(Int, log10(pvalue)))}"
+    else
+        if 𝑝 < 0.01
+            p = "p\\, <\\, 10^{$(ceil(Int, log10(𝑝)))}"
+        else
+            p = "p = $(round(𝑝, sigdigits=1))"
+        end
+    end
+end
+
+colors = [Makie.colorant"#D95319", Makie.colorant"#0072BD", Makie.colorant"black"]
 
 function pulldata(f; pvalue=false)
     F = [[F[f, :] for F in file[s]] for s in goodsessions]
@@ -87,15 +106,16 @@ function pulldata(f; pvalue=false)
     D = vcat(D...)
 
     session_table[!, :session] = session_table.ecephys_session_id
-    D = innerjoin(D, session_table[!, [:session, :experience_level, :equipment_name, :mouse_id]], on=:session)
-    D = groupby(D, [:session, :structure, :experience_level, :equipment_name, :mouse_id])
+    D = innerjoin(D, session_table[!, [:session, :experience_level, :equipment_name, :mouse_id, :sex, :is_wt]], on=:session)
+    D = groupby(D, [:session, :structure, :experience_level, :equipment_name, :mouse_id, :sex, :is_wt])
     D = combine(D, :value => mean)
     D[!, :experience_level] = string.(D.experience_level)
     D[!, :equipment_name] = string.(D.equipment_name)
     D[!, :session] = string.(D.session)
     D[!, :mouse_id] = string.(D.mouse_id)
 
-    fm = @formula(value_mean ~ structure * experience_level * equipment_name + (1 | mouse_id / session))
+    fm = @formula(value_mean ~ structure + (1 | mouse_id)) # * / session
+    # fm = @formula(value_mean ~ structure * experience_level * equipment_name + (1 | mouse_id / session))
     a = anova(lme(fm, D); type=3)
     open(@__DIR__() * "/$f.anova", "w") do file
         write(file, sprint(show, a))
@@ -104,29 +124,42 @@ function pulldata(f; pvalue=false)
     return (; f, F, F̄, structures, Ns, xs, ys, ρ, 𝑝, pvalue, ρs, ρs_sur)
 end
 
-function criticality_plot!(ax, D)
-    f, structures, Ns, xs, ys, ρ, 𝑝, pvalue = getindex.([D], [:f, :structures, :Ns, :xs, :ys, :ρ, :𝑝, :pvalue])
+function criticality_plot!(ax, D; session=nothing, color=:hierarchy, shift=0.0, medians=true, kwargs...)
+    f, F, structures, Ns, xs, ys, ρ, 𝑝, pvalue, ρs = getindex.([D], [:f, :F, :structures, :Ns, :xs, :ys, :ρ, :𝑝, :pvalue, :ρs])
+
+    if !isnothing(session) # Plot for a single mouse
+        xs = deepcopy(F[session])
+        [xs[i] .= i for i in eachindex(xs)]
+        xs = xs |> flatten |> collect
+        ys = F[session] |> flatten |> collect
+        ρ = ρs[session]
+        pvalue = 0
+    end
     begin # * Plot the distribution of values over cortical regions
-        colormap = getindex.([cgrad(:inferno; alpha=0.4)], (xs) ./ (Ns + 1))
+        colormap = cgrad(:inferno; alpha=0.4)
+        colormap = getindex.([colormap], (xs) ./ (Ns + 1))
+        strokecolor = Makie.RGB.(unique(colormap))
+        if color != :hierarchy
+            colormap = (color, 0.3)
+            strokecolor = color
+        end
         if pvalue > 0
-            if 𝑝 == 0.0
-                ax.title = L"\tau = %$(round(ρ, sigdigits=2)),\,  p\, <\, 10^{-%$(floor(Int, log10(pvalue)))}"
-            else
-                ax.title = L"\tau = %$(round(ρ, sigdigits=2)),\,  p = %$(round(𝑝, sigdigits=2))"
-            end
+            ax.title = L"\tau = %$(formatrho(ρ))\,\, (%$(formatp(𝑝, pvalue)))"
         else
-            ax.title = L"\tau = %$(round(ρ, sigdigits=2)); "
+            ax.title = L"\tau = %$(formatrho(ρ))"
         end
         ax.xlabel = "Structure"
         ax.ylabel = "$(f)"
         ax.xticks = (1:length(unique(xs)), structures)
         datalimits = x -> (mean(x) .- 3 * std(x), mean(x) .+ 3 * std(x))
-        violin!(ax, xs, ys; color=colormap, strokecolor=Makie.RGB.(unique(colormap)), strokewidth=3, show_median=true, datalimits)
+        violin!(ax, xs .- shift, ys; color=colormap, strokecolor, strokewidth=3, show_median=true, datalimits, kwargs...)
 
         # Plot subject means
-        F̃ = [median(ys[xs.==i]) for i in 1:Ns]
-        lines!(ax, 1:Ns, F̃, color=(:black, 0.3)) # Connect subject means
-        scatter!(ax, 1:Ns, F̃, color=:black)
+        if medians
+            F̃ = [median(ys[xs.==i]) for i in 1:Ns]
+            lines!(ax, (1:Ns) .- shift, F̃, color=(:black, 0.3)) # Connect subject means
+            scatter!(ax, (1:Ns) .- shift, F̃, color=:black)
+        end
     end
 end
 
@@ -137,10 +170,9 @@ function criticality_boxplot!(ax, Ds; kwargs...)
     Δ = 0.15
     hlines!(ax, [0], color=:black, linestyle=:dash, linewidth=2)
 
-    colors = [Makie.colorant"#D95319", Makie.colorant"#0072BD", Makie.colorant"black"]
     for i in eachindex(ρ)
-        boxplot!(ax, fill(i, length(ρ_sur[i])) .- Δ, (ρ_sur[i]); color=lighten(colors[i], 0.3), strokecolor=colors[i], outliercolor=(colors[i], 0.5), width=0.25, show_outliers=false, kwargs...)
-        boxplot!(ax, fill(i, length(ρ[i])) .+ Δ, (ρ[i]); color=lighten(colors[i], 0.3), strokecolor=colors[i], outliercolor=colors[i], width=0.25, show_outliers=false, kwargs...)
+        boxplot!(ax, fill(i, length(ρ_sur[i])) .- Δ, (ρ_sur[i]); color=lighten(colors[i], 0.3), strokecolor=colors[i], outliercolor=(colors[i], 0.5), width=0.25, show_outliers=false, strokestyle=:dash, kwargs...)
+        boxplot!(ax, fill(i, length(ρ[i])) .+ Δ, (ρ[i]); color=lighten(colors[i], 0.3), strokecolor=colors[i], outliercolor=colors[i], width=0.25, show_outliers=true, kwargs...)
     end
 
     rangebars!(ax, [0.45], [1 - Δ], [1 + Δ], direction=:x, whiskerwidth=10, color=:black)
@@ -148,16 +180,12 @@ function criticality_boxplot!(ax, Ds; kwargs...)
     rangebars!(ax, [0.8], [3 - Δ], [3 + Δ], direction=:x, whiskerwidth=10, color=:black)
 
     tail = :both
-    p0 = ttest(ρ[1], ρ_sur[1]; tail)
-    p1 = ttest(ρ[2], ρ_sur[2]; tail)
-    p2 = ttest(ρ[3], ρ_sur[3]; tail)
-    text!(ax, [1], [0.5]; text="𝑝 = $(round(p0, sigdigits=2))", fontsize=16, align=(:center, :bottom))
-    text!(ax, [2], [0.6]; text="𝑝 = $(round(p1, sigdigits=2))", fontsize=16, align=(:center, :bottom))
-    text!(ax, [3], [0.85]; text="𝑝 = $(round(p2, sigdigits=2))", fontsize=16, align=(:center, :bottom))
-
-    # lines!.([ax], [1:length(features)], collect.(zip(ρ...)), color=(:black, 0.2)) #    Connect subject medians
-    # scatter!.([ax], [1:length(features)], collect.(zip(ρ...)),
-    #     color=:black) # Connect subject means
+    p0 = compare(ρ[1], ρ_sur[1]; tail)
+    p1 = compare(ρ[2], ρ_sur[2]; tail)
+    p2 = compare(ρ[3], ρ_sur[3]; tail)
+    text!(ax, [1], [0.5]; text=L"%$(formatp(p0))", fontsize=12, align=(:center, :bottom))
+    text!(ax, [2], [0.6]; text=L"%$(formatp(p1))", fontsize=12, align=(:center, :bottom))
+    text!(ax, [3], [0.85]; text=L"%$(formatp(p2))", fontsize=12, align=(:center, :bottom))
 end
 
 if false # * All catch22 features
@@ -170,24 +198,83 @@ if false # * All catch22 features
 end
 
 begin # * Paper figure
-    f = Figure(size=(400, 1000))
+    f = Figure(size=(720, 420))
     features = [:DN_Spread_Std, :AC_1, :CR_RAD]
-    Ds = pulldata.(features; pvalue=1e6)
+    Ds = pulldata.(features; pvalue=1e7)
+    session = 16
+    axargs = (; xgridvisible=false, ygridvisible=false, xminorticksvisible=false, xminorticks=IntervalsBetween(5), yminorticksvisible=true, yminorticks=IntervalsBetween(5), xtickalign=1, ytickalign=1, xminortickalign=1, yminortickalign=1)
 
-    ax1 = Axis(f[1, 1], limits=((nothing, nothing), (-0.4, 1)), ylabel=L"τ", xgridvisible=false, ygridvisible=false, xminorticksvisible=false, xminorticks=IntervalsBetween(5), yminorticksvisible=true, yminorticks=IntervalsBetween(5), xtickalign=1, ytickalign=1, xminortickalign=1, yminortickalign=1)
+    ax1 = Axis(f[2, 1]; limits=((nothing, nothing), (-0.45, 1)), ylabel=L"\tau", ylabelsize=18, axargs...)
     ax1.xticks = (1:length(features), string.(features))
 
     criticality_boxplot!(ax1, Ds; strokewidth=3, whiskerwidth=0.2)
 
-    for i = reverse(eachindex(features))
-        ax2 = Axis(f[i+1, 1]; xgridvisible=false, ygridvisible=false, xminorticksvisible=false, xminorticks=IntervalsBetween(5), yminorticksvisible=true, yminorticks=IntervalsBetween(5), xtickalign=1, ytickalign=1, xminortickalign=1, yminortickalign=1)
-        criticality_plot!(ax2, Ds[i])
+    gl = f[1, 2][1:2, 1:2] = GridLayout()
+    ax2 = Axis(gl[1:2, 1]; axargs...)
+    ax2.xticklabelrotation = π / 6
+    criticality_plot!(ax2, Ds[3]; session)
+    ax2.limits = ((nothing, nothing), (-1.75, -0.1))
+    ax2.xlabelvisible = false
 
-        if features[i] == :DN_Spread_Std
-            ax2.ytickformat = x -> string.(round.(x .* 1e4, digits=1))
-            Label(f[i+1, 1, Top()], halign=:left, "×10⁻⁴")
-        end
-    end
+    # * Inset SD and AC
+    ax = Axis(gl[1, 2]; axargs..., yticklabelsvisible=false, ylabelvisible=false)
+    ax.xlabelvisible = ax.xticklabelsvisible = false
+    hideydecorations!(ax)
+    ax.ylabelvisible = true
+    ax.ylabelsize = 9
+    ax.yaxisposition = :right
+    criticality_plot!(ax, Ds[1]; session, medians=false, color=colors[1], strokewidth=1)
+
+    ax = Axis(gl[2, 2]; axargs...)
+    ax.xticklabelsvisible = false
+    hideydecorations!(ax)
+    ax.ylabelvisible = true
+    ax.ylabelsize = 9
+    ax.yaxisposition = :right
+    criticality_plot!(ax, Ds[2]; session, medians=false, color=colors[2], strokewidth=1)
+    ax.xlabel[] = ax.title[]
+    ax.title = ""
+
+    colsize!(gl, 1, Relative(0.66))
+    colgap!(gl, 1, Relative(0.01))
+    rowgap!(gl, 1, Relative(0.05))
+
+
+
+    gl = f[2, 2][1:2, 1:2] = GridLayout()
+    ax2 = Axis(gl[1:2, :]; axargs...)
+    criticality_plot!(ax2, Ds[3])
+    ax2.limits = ((nothing, nothing), (-1.8, 0.2))
+    ax2.xlabelvisible = false
+    ax2.xticklabelrotation = π / 6
+    # * Inset SD and AC
+    ax = Axis(gl[1, 2]; axargs..., yticklabelsvisible=false, ylabelvisible=false)
+    ax.xlabelvisible = ax.xticklabelsvisible = false
+    hideydecorations!(ax)
+    ax.ylabelvisible = true
+    ax.ylabelsize = 9
+    ax.yaxisposition = :right
+    criticality_plot!(ax, Ds[1]; medians=false, color=colors[1], strokewidth=1)
+    ax = Axis(gl[2, 2]; axargs...)
+    ax.xticklabelsvisible = false
+    hideydecorations!(ax)
+    ax.ylabelvisible = true
+    ax.ylabelsize = 9
+    ax.yaxisposition = :right
+    criticality_plot!(ax, Ds[2]; medians=false, color=colors[2], strokewidth=1)
+    ax.xlabel[] = ax.title[]
+    ax.title = ""
+
+    colsize!(gl, 1, Relative(0.66))
+    colgap!(gl, 1, Relative(0.01))
+    rowgap!(gl, 1, Relative(0.05))
+
+    Label(f[1, 1, TopLeft()], halign=:left, valign=:bottom, text="(a)", fontsize=22, font="Times")
+    Label(f[1, 2, TopLeft()], halign=:left, valign=:bottom, text="(b)", fontsize=22, font="Times")
+    Label(f[2, 1, TopLeft()], halign=:left, valign=:bottom, text="(c)", fontsize=22, font="Times")
+    Label(f[2, 2, TopLeft()], halign=:left, valign=:bottom, text="(d)", fontsize=22, font="Times")
+
+
     display(f)
     save(joinpath(@__DIR__, "criticality_neuropixels.pdf"), f)
 end

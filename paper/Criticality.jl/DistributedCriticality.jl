@@ -22,7 +22,7 @@ import AllenNeuropixelsBase as AN
 plotpath = "$(@__DIR__)/Data"
 outfile = joinpath(plotpath, "criticality.jld2")
 if isfile(outfile)
-    mv(outfile, joinpath(plotpath, "criticality.jld2.bak"))
+    mv(outfile, joinpath(plotpath, "criticality.jld2.bak"), force=true)
 end
 
 # * Distribute
