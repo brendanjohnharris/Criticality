@@ -7,13 +7,13 @@ using AnovaMixedModels
 using JSON
 using DataFrames
 using JLD2
-using Printf
 using Catch22
 using TimeseriesTools
 import Base.Iterators.flatten
 import CairoMakie.RGB
 
 Random.seed!(32)
+colors = [Makie.colorant"#D95319", Makie.colorant"#0072BD", Makie.colorant"black"]
 file = jldopen("$(@__DIR__)/Data/criticality.jld2")
 sessions = keys(file)
 badsessions = [s for s in sessions if isnothing(file[s])]
@@ -25,18 +25,13 @@ mice = session_table[string.(session_table.ecephys_session_id).∈[goodsessions]
 @info "We have $(length(goodsessions)) sessions across $(length(unique(mice))) mice"
 
 compare(x, y; kwargs...) = HypothesisTests.pvalue(HypothesisTests.MannWhitneyUTest(x, y); kwargs...)
-function lighten(c, a)
-    c = parse(RGB, c)
-    c = [(1 - a) + a * c.r, (1 - a) + a * c.g, (1 - a) + a * c.b]
-    return RGB(c...)
-end
 function formatrho(ρ)
     r = round(ρ, sigdigits=2)
     r = r ≥ 0.01 ? r : "$(Int(sign(r)*10))^{$(round(Int, log10(abs(r))))}"
 end
-function formatp(𝑝, pvalue=NaN)
+function formatp(𝑝, nulls=NaN)
     if 𝑝 == 0.0
-        p = "p\\, <\\, 10^{-$(floor(Int, log10(pvalue)))}"
+        p = "p\\, <\\, 10^{-$(floor(Int, log10(nulls)))}"
     else
         if 𝑝 < 0.01
             p = "p\\, <\\, 10^{$(ceil(Int, log10(𝑝)))}"
@@ -46,9 +41,7 @@ function formatp(𝑝, pvalue=NaN)
     end
 end
 
-colors = [Makie.colorant"#D95319", Makie.colorant"#0072BD", Makie.colorant"black"]
-
-function pulldata(f; pvalue=false)
+function pulldata(f; nulls=false)
     F = [[F[f, :] for F in file[s]] for s in goodsessions]
     structures = [f.metadata[:structure] for f in file[first(sessions)]]
     Ns = length(structures)
@@ -67,11 +60,11 @@ function pulldata(f; pvalue=false)
         corkendall(_xs, _ys)
     end
 
-    if pvalue > 0 # Shuffle structures, keeping relative labelling of channels
-        @info "Computing $(Int(pvalue)) permutations for $f, be patient"
+    if nulls > 0 # Shuffle structures, keeping relative labelling of channels
+        @info "Computing $(Int(nulls)) permutations for $f, be patient"
         xss = [collect.(f) for f in deepcopy(F)]
-        p = Vector{Float64}(undef, Int(pvalue))
-        ρs_sur = Vector{Any}(undef, Int(pvalue))
+        p = Vector{Float64}(undef, Int(nulls))
+        ρs_sur = Vector{Any}(undef, Int(nulls))
         Threads.@threads for i in eachindex(p)
             _xss = deepcopy(xss)
             for sesh in eachindex(_xss)
@@ -81,9 +74,7 @@ function pulldata(f; pvalue=false)
                 end
             end
             ρs_sur[i] = map(_xss, F) do xs, f
-                _xs = xs |> flatten |> collect
-                _ys = f |> flatten |> collect
-                corkendall(_xs, _ys)
+                corkendall(xs |> flatten |> collect, f |> flatten |> collect)
             end
             p[i] = corkendall(_xss |> flatten |> flatten |> collect, ys)
         end
@@ -104,28 +95,23 @@ function pulldata(f; pvalue=false)
         vcat(d...)
     end
     D = vcat(D...)
-
     session_table[!, :session] = session_table.ecephys_session_id
     D = innerjoin(D, session_table[!, [:session, :experience_level, :equipment_name, :mouse_id, :sex, :is_wt]], on=:session)
     D = groupby(D, [:session, :structure, :experience_level, :equipment_name, :mouse_id, :sex, :is_wt])
     D = combine(D, :value => mean)
-    D[!, :experience_level] = string.(D.experience_level)
-    D[!, :equipment_name] = string.(D.equipment_name)
-    D[!, :session] = string.(D.session)
     D[!, :mouse_id] = string.(D.mouse_id)
 
-    fm = @formula(value_mean ~ structure + (1 | mouse_id)) # * / session
-    # fm = @formula(value_mean ~ structure * experience_level * equipment_name + (1 | mouse_id / session))
+    fm = @formula(value_mean ~ structure + (1 | mouse_id))
     a = anova(lme(fm, D); type=3)
     open(@__DIR__() * "/$f.anova", "w") do file
         write(file, sprint(show, a))
     end
 
-    return (; f, F, F̄, structures, Ns, xs, ys, ρ, 𝑝, pvalue, ρs, ρs_sur)
+    return (; f, F, F̄, structures, Ns, xs, ys, ρ, 𝑝, nulls, ρs, ρs_sur)
 end
 
 function criticality_plot!(ax, D; session=nothing, color=:hierarchy, shift=0.0, medians=true, kwargs...)
-    f, F, structures, Ns, xs, ys, ρ, 𝑝, pvalue, ρs = getindex.([D], [:f, :F, :structures, :Ns, :xs, :ys, :ρ, :𝑝, :pvalue, :ρs])
+    f, F, structures, Ns, xs, ys, ρ, 𝑝, nulls, ρs = getindex.([D], [:f, :F, :structures, :Ns, :xs, :ys, :ρ, :𝑝, :nulls, :ρs])
 
     if !isnothing(session) # Plot for a single mouse
         xs = deepcopy(F[session])
@@ -133,7 +119,7 @@ function criticality_plot!(ax, D; session=nothing, color=:hierarchy, shift=0.0, 
         xs = xs |> flatten |> collect
         ys = F[session] |> flatten |> collect
         ρ = ρs[session]
-        pvalue = 0
+        nulls = 0
     end
     begin # * Plot the distribution of values over cortical regions
         colormap = cgrad(:inferno; alpha=0.4)
@@ -143,8 +129,8 @@ function criticality_plot!(ax, D; session=nothing, color=:hierarchy, shift=0.0, 
             colormap = (color, 0.3)
             strokecolor = color
         end
-        if pvalue > 0
-            ax.title = L"\tau = %$(formatrho(ρ))\,\, (%$(formatp(𝑝, pvalue)))"
+        if nulls > 0
+            ax.title = L"\tau = %$(formatrho(ρ))\,\, (%$(formatp(𝑝, nulls)))"
         else
             ax.title = L"\tau = %$(formatrho(ρ))"
         end
@@ -171,8 +157,8 @@ function criticality_boxplot!(ax, Ds; kwargs...)
     hlines!(ax, [0], color=:black, linestyle=:dash, linewidth=2)
 
     for i in eachindex(ρ)
-        boxplot!(ax, fill(i, length(ρ_sur[i])) .- Δ, (ρ_sur[i]); color=lighten(colors[i], 0.3), strokecolor=colors[i], outliercolor=(colors[i], 0.5), width=0.25, show_outliers=false, strokestyle=:dash, kwargs...)
-        boxplot!(ax, fill(i, length(ρ[i])) .+ Δ, (ρ[i]); color=lighten(colors[i], 0.3), strokecolor=colors[i], outliercolor=colors[i], width=0.25, show_outliers=true, kwargs...)
+        boxplot!(ax, fill(i, length(ρ_sur[i])) .- Δ, (ρ_sur[i]); color=(colors[i], 0.3), strokecolor=colors[i], outliercolor=(colors[i], 0.5), width=0.25, show_outliers=false, strokestyle=:dash, kwargs...)
+        boxplot!(ax, fill(i, length(ρ[i])) .+ Δ, (ρ[i]); color=(colors[i], 0.3), strokecolor=colors[i], outliercolor=colors[i], width=0.25, show_outliers=true, kwargs...)
     end
 
     rangebars!(ax, [0.45], [1 - Δ], [1 + Δ], direction=:x, whiskerwidth=10, color=:black)
@@ -200,7 +186,7 @@ end
 begin # * Paper figure
     f = Figure(size=(720, 420))
     features = [:DN_Spread_Std, :AC_1, :CR_RAD]
-    Ds = pulldata.(features; pvalue=1e7)
+    Ds = pulldata.(features; nulls=1e6)
     session = 16
     axargs = (; xgridvisible=false, ygridvisible=false, xminorticksvisible=false, xminorticks=IntervalsBetween(5), yminorticksvisible=true, yminorticks=IntervalsBetween(5), xtickalign=1, ytickalign=1, xminortickalign=1, yminortickalign=1)
 
