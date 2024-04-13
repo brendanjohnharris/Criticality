@@ -19,16 +19,47 @@ D = permute(D, [2, 1, 3, 4]);
 dims = ["f", "mu", "eta", "meta"];
 
 %% Plot mu-F scatters for different values of meta
-% for m = metas
-%     f = figure();
-%     ax = axes(f);
-%     hold on
-%     setas = etas(1:20:end);
-%     for e = setas
-%         plot(mus, squeeze(D(2, :, etas==e, metas==m)))
-%     end
-%     ax.Title.String=string(m);
-% end
+mm = [metas(1), metas(3), metas(6), metas(9)];
+eis = 1:5:size(D, 3);
+cmp = inferno(length(eis));
+for mi = 1:length(mm)
+    m = mm(mi);
+    f = figure();
+    ft = 3; % AC1
+  
+    ax = axes(f);
+    hold on
+    setas = etas(eis);
+    for ei = 1:length(setas)
+        e = setas(ei);
+        plot(mus, squeeze(D(ft, :, etas==e, metas==m)), 'Color', cmp(ei, :))
+    end
+    ax.Title.String=string(m);
+end
+
+%%
+i = 22;
+eidxs = 20:length(etas);
+dd = squeeze(D(3, :, eidxs, i));
+% [xk,yk] = meshgrid(-3:3);
+% K = exp(-(xk.^2 + yk.^2)/10); K = K/sum(K(:));
+% dd = conv2(dd,K,'same');
+[y, x] = meshgrid(etas(eidxs), mus);
+surf(x, y, dd, 'EdgeAlpha', 0.5)
+hold on
+light 
+light('position', [-1 -1 0])
+lighting gouraud 
+material shiny 
+xlabel mu
+ylabel eta
+zlabel AC
+title(metas(i))
+% zlim([0, 1])
+% set(gca,'Ydir','reverse')
+hold off
+% contour(dd)
+
 
 %% Plot a mu-F scatter with variable measurement noise and variable dynamical noise
 if false
@@ -76,12 +107,13 @@ if false
 end
 
 %%
+eidxs = 20:length(etas);
 features = [1, 3, 4];
 for fi = 1:length(features)
     f = features(fi);
     rho = [];
     for mi = 1:length(metas)
-        d = squeeze(D(f, :, :, mi));
+        d = squeeze(D(f, :, eidxs, mi));
         cmus = repmat(mus', 1, size(d, 2));
         rho(end+1) = corr(d(:), cmus(:), 'Type', 'Spearman');
     end
@@ -93,14 +125,15 @@ hold on
 plot(ax, metas, rhos{3}, 'linewidth', 2)
 plot(ax, metas, rhos{2}, 'linewidth', 2)
 plot(ax, metas, rhos{1}, 'color', 'k', 'linewidth', 2)
-ax.XLabel.String = "$$\xi$$";
+ax.XLabel.String = "$$\chi$$";
 ax.XLabel.Interpreter = "LaTeX";
 ax.YLabel.String = "$$\rho^\textrm{var}_\mu$$";
 ax.YLabel.Interpreter = "LaTeX";
-f.PaperPosition = [0 0 12 8];
+f.PaperPosition = [0 0 10 8];
 ax.Box = 1;
 ax.YLim = [0, 1];
-legend(ax, {'Standard deviation', 'AC\_1', 'RAD'})
+L = legend(ax, {'Standard deviation', 'AC\_1', 'RAD'}, 'Location', 'northwest');
+L.ItemTokenSize = [15, 18];
 
 saveas(f, "noisecomparison.svg")
 

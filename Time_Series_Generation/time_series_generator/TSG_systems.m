@@ -172,6 +172,22 @@ switch system_type
         end
 
         rout = abs(rout);
+       
+    case 'supercritical_hopf_radius_(strogatz)_brownian'
+        dW_ = dsp.ColoredNoise('brown', 'SamplesPerFrame', numpoints, 'NumChannels', Wl);
+        dW = dW_();
+        dW = dW ./ std(dW);
+        dW = dW';
+        for n = 2:numpoints - 1
+            r = r + (mu .* r - (r .^ 3)) .* dt + eta .* sqrt(dt) .* dW(:, n);
+
+            if n >= transient_cutoff && ~mod(n - transient_cutoff - 1, savestep)
+                rout(fails, 1 + (n - transient_cutoff - 1) ./ savestep) = r;
+            end
+
+        end
+
+        rout = abs(rout);
 
     case 'supercritical_hopf_radius_(strogatz)_multiplicative'
 
