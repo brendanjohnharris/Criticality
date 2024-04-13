@@ -11,7 +11,7 @@ The two new features we introduce in the paper are `CR_RAD_1`, available in [RAD
 The bulk of this repository is concerned with simulating dynamical systems with varying control parameters and noise strengths then analysing _hctsa_ features of the resulting time series; we provide a guide to this workflow in the following sections.
 First, in this section, we describe a procedure for reproducing the figures from the paper using code contained in the `paper/` directory.
 
-To add this repository to the matlab path, download [_hctsa_](https://zenodo.org/doi/10.5281/zenodo.3927083) v0.98 and run `startup()` in the _hctsa_ directory, then run [`add_all_subfolders.m`](add_all_subfolders.m) in the top-level _Criticality_ directory.
+To add this repository to the matlab path, download [_hctsa_](https://zenodo.org/doi/10.5281/zenodo.3927083) v0.98 and run `startup()` in the _hctsa_ directory, then run [`add_all_subfolders.m`](add_all_subfolders.m) in the top-level `Criticality` directory.
 To reproduce figures 1 to 5, first download the main dataset (produced with the workflow described below or hosted on [figshare](https://doi.org/10.6084/m9.figshare.23995104.v1)). Place the `time_series_data.mat` file at `papers/time_series_data.mat`, navigate to `paper/`, and run the script [`figures.m`](paper/figures.m).
 
 Supplemental figure 2 can be reproduced by running the following scripts (in order, in their respective directories):
@@ -19,10 +19,10 @@ Supplemental figure 2 can be reproduced by running the following scripts (in ord
 2. `paper/measurement_noise/measurement_noise_generator.m`: individually for the two input files specified in the script, to generate simulated data for various measurement noise strengths,
 3. `paper/other_systems/plot_systems.m` and `paper/measurement_noise/plot_measurement_noise.m`: to plot the results.
 
-Figure 6, describing our case study on tracking the visual cortical hierarchy from Neuropixels data, can be reproduced in Julia by activating and instantiating the project located at `paper/Criticality.jl/` then running the following scripts (in order):
+Figure 6, describing our case study on tracking the visual cortical hierarchy from Neuropixels data, can be reproduced in [Julia](https://github.com/JuliaLang/julia) by activating and instantiating the project located at `paper/Criticality.jl/` then running the following scripts (in order):
 1. `SessionSelection.jl`: filter recording sessions based on quality metrics and save the resulting session table,
 2. `DownloadData.jl` (optional; requires hpc): download all data files (~1 TB) for the selected sessions,
-3. `DistributeCriticality` (optional; requires hpc): compute feature values for all sessions in parallel. The results from this script are provided in `paper/Criticality.jl/data/`,
+3. `DistributeCriticality` (optional; requires hpc): compute feature values for all sessions in parallel. The results of this script are provided in `paper/Criticality.jl/data/`,
 4. `plot_DistributedCriticality.jl`: plot all analyses from the paper.
 5. `HierarchyPlot.jl`: plot the schematic of the mouse visual cortical hierarchy.
 
