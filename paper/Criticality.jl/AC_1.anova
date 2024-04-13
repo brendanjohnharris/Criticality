@@ -1,0 +1,13 @@
+Analysis of Variance
+
+Type 3 test / F test
+
+value_mean ~ 1 + structure + (1 | mouse_id)
+
+Table:
+────────────────────────────────────────────────
+             DOF  Res.DOF      F value  Pr(>|F|)
+────────────────────────────────────────────────
+(Intercept)    1      190  454704.6159    <1e-99
+structure      5      190       4.0798    0.0015
+────────────────────────────────────────────────

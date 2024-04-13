@@ -5,19 +5,20 @@ exec julia -t auto --project=$HOME/code/Criticality/paper/Criticality.jl/ "${BAS
 @info @__FILE__
 @info pwd()
 using CairoMakie
+using DSP
 using TimeseriesTools
-using Foresight
 import AllenNeuropixelsBase as AN
 import TimeseriesTools.Operators.𝒯
 using Catch22
-set_theme!(foresight(:dark, :serif, :physics))
+
 
 params = (;
-    sessionid=1119946360, # 1130113579, #1067588044, # 1128520325, #
+    sessionid=1130113579, #1119946360, #1067588044, # 1128520325, #
     epoch=:longest,
     pass=(1, 20),
     stimulus="spontaneous",
-    structures=["VISp", "VISl", "VISal", "VISrl", "VISpm", "VISam"]
+    structures=["VISp", "VISl", "VISrl", "VISal", "VISpm", "VISam"],
+    inbrain=200 # Discard channels less than 200 micros beneath the cortical surface
 )
 session = AN.Session(params[:sessionid])
 
@@ -34,7 +35,7 @@ begin # * Preprocess the theta oscillation
         _x = _x[1:ds:end, :]
     end
     a = Catch22.DN_Spread_Std.(y)
-    b = Catch22.ac[1].(y)
+    b = Catch22.AC[1].(y)
     c = Catch22.CR_RAD.(y)
 end
 

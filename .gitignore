@@ -7,7 +7,6 @@
 *.mex
 *.autosave
 **/results/**
-**/Data/**
 *.code-workspace
 *.pdf
 **/.CondaPkg/**
