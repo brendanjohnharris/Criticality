@@ -11,10 +11,11 @@ using Catch22
 using TimeseriesTools
 import Base.Iterators.flatten
 import CairoMakie.RGB
+import CairoMakie.Makie: @colorant_str
 
 Random.seed!(32)
 nulls = 1e6
-colors = [Makie.colorant"#D95319", Makie.colorant"#0072BD", Makie.colorant"black"]
+colors = [colorant"#D95319", colorant"#0072BD", colorant"black"]
 file = jldopen("$(@__DIR__)/Data/criticality.jld2")
 sessions = keys(file)
 badsessions = [s for s in sessions if isnothing(file[s])]
