@@ -1,11 +1,11 @@
 dryrun = false;
-load("inputs_template_dnm.mat", "inputs")
+load("inputs_template_dnm.mat", "inputs") % Or "inputs_template_snr.mat"
 system = inputs.system_type;
 
 if ~dryrun
     metas = 0.0:0.01:0.3;
-%     metas = 0.1:0.1:2;
-    
+    %     metas = 0.1:0.1:2;
+
     cp = -1:0.01:0.0; %
     inputs.cp_range = cp;
 
@@ -15,10 +15,12 @@ if ~dryrun
         inputs.parameters = meta;
         inputs.foldername = dirp;
         inputs.rngseed = randi(1000000);
+
         if isfolder(dirp)
-%             rmdir(dirp, 's')
+            %             rmdir(dirp, 's')
             continue
         end
+
         time_series_generator('input_struct', inputs);
         save(fullfile(dirp, 'inputs.mat'), 'inputs')
         cd(dirp)
@@ -29,4 +31,5 @@ if ~dryrun
         find_correlation('time_series_data.mat', 'Spearman', [-1, 0], 'time_series_data.mat');
         cd('../../../')
     end
+
 end

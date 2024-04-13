@@ -1,24 +1,47 @@
 # Criticality
+
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.8185428.svg)](https://doi.org/10.5281/zenodo.8185428)
 
-Simulate bifurcating dynamical systems, record time series and run [_hctsa_](https://github.com/benfulcher/hctsa) to produce features that characterise the dynamical system and its control parameter; then, run analyses to determine which features are most useful for predicting this parameter.
+Simulate bifurcating dynamical systems, record time series and run [_hctsa_](https://github.com/benfulcher/hctsa) to produce features that characterize the dynamical system and its control parameter; then, run analyses to determine which features are most useful for predicting this parameter.
 
-A script to reproduce the key figures of this project is available at [figures.m](paper/figures.m).
+## Reproducing figures
 
+This repository accompanies the paper "Tracking the distance to criticality in systems with unknown noise".
 The two new features we introduce in the paper are `CR_RAD_1`, available in [RAD.m](./Feature_Analysis/Custom_features/dynamicalDistributions/RAD.m), and `fitSupercriticalHopfRadius_1`, available in [fitSupercriticalHopfRadius.m](./Feature_Analysis/Custom_features/dynamicalDistributions/potentialDistributions.m).
+The bulk of this repository is concerned with simulating dynamical systems with varying control parameters and noise strengths then analysing _hctsa_ features of the resulting time series; we provide a guide to this workflow in the following sections.
+First, in this section, we describe a procedure for reproducing the figures from the paper using code contained in the `paper/` directory.
+
+To add this repository to the matlab path, download [_hctsa_](https://zenodo.org/doi/10.5281/zenodo.3927083) v0.98 and run `startup()` in the _hctsa_ directory, then run [`add_all_subfolders.m`](add_all_subfolders.m) in the top-level _Criticality_ directory.
+To reproduce figures 1 to 5, first download the main dataset (produced with the workflow described below or hosted on [figshare](https://doi.org/10.6084/m9.figshare.23995104.v1)). Place the `time_series_data.mat` file at `papers/time_series_data.mat`, navigate to `paper/`, and run the script [`figures.m`](paper/figures.m).
+
+Supplemental figure 2 can be reproduced by running the following scripts (in order, in their respective directories):
+1. `paper/other_systems/gensystem.m`: individually for the five systems specified in the script, to generate simulated data for various normal forms,
+2. `paper/measurement_noise/measurement_noise_generator.m`: individually for the two input files specified in the script, to generate simulated data for various measurement noise strengths,
+3. `paper/other_systems/plot_systems.m` and `paper/measurement_noise/plot_measurement_noise.m`: to plot the results.
+
+Figure 6, describing our case study on tracking the visual cortical hierarchy from Neuropixels data, can be reproduced in Julia by activating and instantiating the project located at `paper/Criticality.jl/` then running the following scripts (in order):
+1. `SessionSelection.jl`: filter recording sessions based on quality metrics and save the resulting session table,
+2. `DownloadData.jl` (optional; requires hpc): download all data files (~1 TB) for the selected sessions,
+3. `DistributeCriticality` (optional; requires hpc): compute feature values for all sessions in parallel. The results from this script are provided in `paper/Criticality.jl/data/`,
+4. `plot_DistributedCriticality.jl`: plot all analyses from the paper.
+5. `HierarchyPlot.jl`: plot the schematic of the mouse visual cortical hierarchy.
+
 
 ## Setup
+
 In addition to cloning this repository, _hctsa_ v0.98 should be [installed](https://hctsa-users.gitbook.io/hctsa-manual/) in a convenient location and the following modifications performed:
+
 - Add the -v7.3 flag to the save function on line `144` of `TS_init.m` (allowing for larger `.mat` files)
 - Change the maximum time series length to 10000000 on line `101` of `SQL_add.m` (allowing for longer time series)
-- Use `strcmp` to compare time series labels on lines 207 of `TS_combine`
+- Use `strcmp` to compare time series labels on line 207 of `TS_combine`
 - Comment out line `194` of `TS_Compute.m`
 
 A workflow begins by adding files to the Matlab path; run `startup()` in the _hctsa_ directory and `add_all_subfolders()` in the _Criticality_ directory.
 
-To reproduce main analyses, refer to the files `testTimeseries.m`, `testHCTSA.md` and `testAnalysis.m` in `./test/`. Below is an outline of a typical workflow: simulating dynamical systems, running _hctsa_ and analysing feature values.
+To reproduce the main analyses, refer to the files `testTimeseries.m`, `testHCTSA.md` and `testAnalysis.m` in `./test/`. Below is an outline of a typical workflow: simulating dynamical systems, running _hctsa_ and analysing feature values.
 
 ## Time Series
+
 Stochastic dynamical systems are simulated by the `./Time_Series_Generation/time_series_generator/time_series_generator.m` function using the Euler-Maruyama method. For an example time series with the default parameters:
 
 ```java
@@ -46,33 +69,41 @@ inputs = make_input_struct(false);
 ```
 
 ## hctsa
+
 If the `foldername` option is provided to `time_series_generator` then the time series will be saved into a _hctsa_ compatible `.mat` file (e.g. `timeseries.mat`). This can be directly transformed into an `HCTSA.mat` file, usually utilising all operations, with:
 
 ```java
 TS_init('timeseries.mat', [], [], 0);
 ```
+
 Serial _hctsa_ calculation can then be initiated with:
 
 ```java
 TS_compute(0, [], [], [], [], 1);
 ```
+
 Which will fill the `TS_DataMat` array in the `HCTSA.mat` file with time series feature values.
 
 ### Distributed Calculations
+
 For massive dynamical system simulations feature calculation can be performed on an HPC cluster; this repository allows distributed computation to be accomplished in three ways.
 
 #### distributed_hctsa
+
 If the time series array is not intractably large it can simply be transferred to a cluster and [distributed_hctsa](https://github.com/benfulcher/distributed_hctsa) (or the slightly modified version at `./PBS/Distributed_hctsa/modified/`) can be used to subset timeseries, calculate features and recombine the results (as detailed in `./docs/USydPhysicsHPC.md`). In this repository the _hctsa_ install directory is assumed to be `~/hctsa_v098/` and the self location is `~/Criticality/`.
 
 #### PBS Array jobs
+
 For larger datasets the process of saving, loading and dividing a single `HCTSA.mat` file becomes extremely slow, so the `save_cp_split` option of `time_series_generator` can be used to directly subset the timeseries at simulation. This option can be set to the number of jobs intended to run on the cluster, as long as this is smaller than the number of different control parameters represented in the dataset. Copying all the subdirectories produced to the cluster, following [the same initialisation](./docs/USydPhysicsHPC.md) of Matlab and _hctsa_ before running `PBS_array_TS_compute.sh` (in the same directory as the time series subdirectories) fills the `HCTSA.mat` subset files with feature values.
 
 Additionally, `time_series_generator` can itself be run on a cluster; `parameter_sweep.m` takes a template input structure and produces subdirectories that each contain an input file varying in the specified option. `PBS_generate_time_series.sh` can then be run on the cluster, in the folder containing these subdirectories, to fill them with a `timeseries.mat` file, after which `PBS_array_TS_compute.sh` can be used to calculate feature values.
 
 #### Integrated _hctsa_
-A (very) small number of analyses required datasets too large to save to disk; modified versions of `TS_init` (`./Modified_hctsa/light_TS_init.m`) and `TS_compute` (`./Modified_hctsa/light_TS_compute.m`) bypasses the usual save procedure and ***do not save time series***. These can be used in combination with the `parameter_sweep.m` and `PBS_generate_time_series.sh` files by setting the `integrated_hctsa` option of `time_series_generator` to non-default values (i.e each subdirectory with its own input file will simulate timeseries and calculate feature values, saving ***only*** `HCTSA.mat` subset files to disk-- ***without*** timeseries).
+
+A (very) small number of analyses required datasets too large to save to disk; modified versions of `TS_init` (`./Modified_hctsa/light_TS_init.m`) and `TS_compute` (`./Modified_hctsa/light_TS_compute.m`) bypasses the usual save procedure and _**do not save time series**_. These can be used in combination with the `parameter_sweep.m` and `PBS_generate_time_series.sh` files by setting the `integrated_hctsa` option of `time_series_generator` to non-default values (i.e each subdirectory with its own input file will simulate timeseries and calculate feature values, saving _**only**_ `HCTSA.mat` subset files to disk-- _**without**_ timeseries).
 
 ## Feature Analysis
+
 The majority of functions contained in this repository are for analysing the feature array-- `TS_DataMat`-- produced using _hctsa_ from time series datasets formatted by `time_series_generator`. Most operate on a `time_series_data` structure which is produced from an `HCTSA.mat`; many peripheral functions are unimportant but the central analyses are here outlined.
 
 Analysis begins with `./Feature_Analysis/save_data.m`; the working directory should contain an `HCTSA.mat` and an `inputs.mat` file. Then:
@@ -90,7 +121,7 @@ group_by_noise('time_series_data.mat', 'time_series_data.mat')
 find_correlation('time_series_data.mat', 'Pearson', [-1, 0], 'time_series_data.mat');
 ```
 
-`group_by_noise` observes the `Inputs` field of the `time_series_data` structure and organises the data such that each row represents one noise parameter (`eta`) and the rows are arranged by increasing control parameter (`cp`). `find_correlation` calculates the correlation for each set of timeseries (each at *one* `eta` value) against the range of `cp` values they represent; in the above example, the `Pearson` linear correlation between control parameters -1 and 0.
+`group_by_noise` observes the `Inputs` field of the `time_series_data` structure and organises the data such that each row represents one noise parameter (`eta`) and the rows are arranged by increasing control parameter (`cp`). `find_correlation` calculates the correlation for each set of timeseries (each at _one_ `eta` value) against the range of `cp` values they represent; in the above example, the `Pearson` linear correlation between control parameters -1 and 0.
 In both functions the first and last arguments are the source and destination of the data, respectively.
 
 `./Feature_Analysis/Analyse_data/` holds functions to score and rank features; the most useful are `get_feature_stats`, which accepts a row (and therefore one `eta` value) of `time_series_data`, and `get_combined_feature_stats`, which accepts the entire structure:

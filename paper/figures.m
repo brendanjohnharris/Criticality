@@ -19,40 +19,32 @@ tbl = get_combined_feature_stats(time_series_data, {'Absolute_Correlation'}, {'A
 %% Figure 2
 histogramStat(time_series_data, 'Absolute_Correlation', 'Absolute_Correlation_Mean');
 xlim([0, 1])
-set(gcf, 'visible', 'off'); 
+set(gcf, 'visible', 'off');
 set(gcf, 'Units', 'Inches', 'Position', [0, 0, 6, 5], 'PaperUnits', 'points');
-exportgraphics(gcf,'fig2a.pdf')
+exportgraphics(gcf, 'fig2a.pdf')
 
 tbl = sortrows(tbl, 'Absolute_Correlation_Mean', 'Descend', 'ComparisonMethod', 'abs', 'MissingPlacement', 'last');
 [pmat, ps, pnums] = pairwiseFeatureSimilarity(time_series_data, tbl.Operation_ID(1:100), 'spearman');
-set(gcf, 'visible', 'off'); 
+set(gcf, 'visible', 'off');
 set(gcf, 'Units', 'Inches', 'Position', [0, 0, 13, 13], 'PaperUnits', 'points');
-exportgraphics(gcf,'fig2b.pdf')
+exportgraphics(gcf, 'fig2b.pdf')
 [~, ~, idxs] = intersect(pnums, tbl.Operation_ID, 'stable');
 writetable(tbl(idxs, :), 'fixedNoiseClusters.xls')
 
 %% Figure 3
 histogramStat(time_series_data, 'Aggregated_Absolute_Correlation');
 xlim([0, 1])
-set(gcf, 'visible', 'off'); 
+set(gcf, 'visible', 'off');
 set(gcf, 'Units', 'Inches', 'Position', [0, 0, 6, 5], 'PaperUnits', 'points');
-exportgraphics(gcf,'fig3a.pdf')
+exportgraphics(gcf, 'fig3a.pdf')
 
 tbl = sortrows(tbl, 'Aggregated_Absolute_Correlation', 'Descend', 'ComparisonMethod', 'abs', 'MissingPlacement', 'last');
 [pmat, ps, pnums] = pairwiseFeatureSimilarity(time_series_data, tbl.Operation_ID(1:20), 'spearman');
-set(gcf, 'visible', 'off'); 
+set(gcf, 'visible', 'off');
 set(gcf, 'Units', 'Inches', 'Position', [0, 0, 13, 13], 'PaperUnits', 'points');
-exportgraphics(gcf,'fig3b.pdf')
+exportgraphics(gcf, 'fig3b.pdf')
 [~, ~, idxs] = intersect(pnums, tbl.Operation_ID, 'stable');
 writetable(tbl(idxs, :), 'variableNoiseClusters.xls')
-
-%%% Figure 4
-%ops = [19, 93, 1763, 3332, 3535, 6275];
-%time_series_data = normalise_time_series_data(time_series_data, [-1, 0]);
-%visualise_feature_fit(time_series_data, ops, 101)
-%set(gcf, 'visible', 'off'); 
-%set(gcf, 'Units', 'Inches', 'Position', [0, 0, 8, 8], 'PaperUnits', 'points');
-%exportgraphics(gcf,'fig4.pdf')
 
 %% Figure 5
 systemSchematic
@@ -67,3 +59,11 @@ idxs = BF_ClusterReorder(F');
 F = F(:, idxs);
 colormap(BF_getcmap('redyellowblue'))
 imagesc(F)
+
+%% Supplementary figure 1
+ops = [19, 93, 1763, 3332, 3535, 6275];
+time_series_data = normalise_time_series_data(time_series_data, [-1, 0]);
+visualise_feature_fit(time_series_data, ops, 101)
+set(gcf, 'visible', 'off');
+set(gcf, 'Units', 'Inches', 'Position', [0, 0, 8, 8], 'PaperUnits', 'points');
+exportgraphics(gcf, 'figs1.pdf')
