@@ -8,10 +8,10 @@ Simulate bifurcating dynamical systems, record time series and run [_hctsa_](htt
 
 This repository accompanies the paper "Tracking the distance to criticality in systems with unknown noise".
 The two new features we introduce in the paper are `CR_RAD_1`, available in [RAD.m](./Feature_Analysis/Custom_features/dynamicalDistributions/RAD.m), and `fitSupercriticalHopfRadius_1`, available in [fitSupercriticalHopfRadius.m](./Feature_Analysis/Custom_features/dynamicalDistributions/potentialDistributions.m).
-The bulk of this repository is concerned with simulating dynamical systems with varying control parameters and noise strengths then analysing _hctsa_ features of the resulting time series; we provide a guide to this workflow in the following sections.
+The bulk of this repository is concerned with simulating dynamical systems with varying control parameters and noise strengths then analyzing _hctsa_ features of the resulting time series; we provide a guide to this workflow in the following sections.
 First, in this section, we describe a procedure for reproducing the figures from the paper using code contained in the `paper/` directory.
 
-To add this repository to the matlab path, download [_hctsa_](https://zenodo.org/doi/10.5281/zenodo.3927083) v0.98 and run `startup()` in the _hctsa_ directory, then run [`add_all_subfolders.m`](add_all_subfolders.m) in the top-level `Criticality` directory.
+To add this repository to the Matlab path, download [_hctsa_](https://zenodo.org/doi/10.5281/zenodo.3927083) v0.98 and run `startup()` in the _hctsa_ directory, then run [`add_all_subfolders.m`](add_all_subfolders.m) in the top-level `Criticality` directory.
 To reproduce figures 1 to 5, first download the main dataset (produced with the workflow described below or hosted on [figshare](https://doi.org/10.6084/m9.figshare.23995104.v1)). Place the `time_series_data.mat` file at `papers/time_series_data.mat`, navigate to `paper/`, and run the script [`figures.m`](paper/figures.m).
 
 Supplemental figure 2 can be reproduced by running the following scripts (in order, in their respective directories):
@@ -38,7 +38,7 @@ In addition to cloning this repository, _hctsa_ v0.98 should be [installed](http
 
 A workflow begins by adding files to the Matlab path; run `startup()` in the _hctsa_ directory and `add_all_subfolders()` in the _Criticality_ directory.
 
-To reproduce the main analyses, refer to the files `testTimeseries.m`, `testHCTSA.md` and `testAnalysis.m` in `./test/`. Below is an outline of a typical workflow: simulating dynamical systems, running _hctsa_ and analysing feature values.
+To reproduce the main analyses, refer to the files `testTimeseries.m`, `testHCTSA.md` and `testAnalysis.m` in `./test/`. Below is an outline of a typical workflow: simulating dynamical systems, running _hctsa_ and analyzing feature values.
 
 ## Time Series
 
@@ -104,7 +104,7 @@ A (very) small number of analyses required datasets too large to save to disk; m
 
 ## Feature Analysis
 
-The majority of functions contained in this repository are for analysing the feature array-- `TS_DataMat`-- produced using _hctsa_ from time series datasets formatted by `time_series_generator`. Most operate on a `time_series_data` structure which is produced from an `HCTSA.mat`; many peripheral functions are unimportant but the central analyses are here outlined.
+The majority of functions contained in this repository are for analyzing the feature array-- `TS_DataMat`-- produced using _hctsa_ from time series datasets formatted by `time_series_generator`. Most operate on a `time_series_data` structure which is produced from an `HCTSA.mat`; many peripheral functions are unimportant but the central analyses are here outlined.
 
 Analysis begins with `./Feature_Analysis/save_data.m`; the working directory should contain an `HCTSA.mat` and an `inputs.mat` file. Then:
 
