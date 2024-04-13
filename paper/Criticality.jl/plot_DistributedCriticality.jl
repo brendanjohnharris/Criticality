@@ -13,6 +13,7 @@ import Base.Iterators.flatten
 import CairoMakie.RGB
 
 Random.seed!(32)
+nulls = 1e6
 colors = [Makie.colorant"#D95319", Makie.colorant"#0072BD", Makie.colorant"black"]
 file = jldopen("$(@__DIR__)/Data/criticality.jld2")
 sessions = keys(file)
@@ -78,7 +79,7 @@ function pulldata(f; nulls=false)
             end
             p[i] = corkendall(_xss |> flatten |> flatten |> collect, ys)
         end
-        𝑝 = mean(ρ .< p)
+        𝑝 = mean(abs(ρ) .< abs.(p))
     else
         𝑝 = NaN
         ρs_sur = []
@@ -111,7 +112,7 @@ function pulldata(f; nulls=false)
 end
 
 function criticality_plot!(ax, D; session=nothing, color=:hierarchy, shift=0.0, medians=true, kwargs...)
-    f, F, structures, Ns, xs, ys, ρ, 𝑝, nulls, ρs = getindex.([D], [:f, :F, :structures, :Ns, :xs, :ys, :ρ, :𝑝, :nulls, :ρs])
+    f, F, structures, Ns, xs, ys, ρ, 𝑝, nulls, ρs, ρs_sur = getindex.([D], [:f, :F, :structures, :Ns, :xs, :ys, :ρ, :𝑝, :nulls, :ρs, :ρs_sur])
 
     if !isnothing(session) # Plot for a single mouse
         xs = deepcopy(F[session])
@@ -119,7 +120,7 @@ function criticality_plot!(ax, D; session=nothing, color=:hierarchy, shift=0.0, 
         xs = xs |> flatten |> collect
         ys = F[session] |> flatten |> collect
         ρ = ρs[session]
-        nulls = 0
+        𝑝 = mean(abs(ρ) .< abs.(getindex.(ρs_sur, session)))
     end
     begin # * Plot the distribution of values over cortical regions
         colormap = cgrad(:inferno; alpha=0.4)
@@ -151,10 +152,11 @@ end
 
 function criticality_boxplot!(ax, Ds; kwargs...)
     ρ = getindex.(Ds, :ρs)
-    ρ_sur = getindex.(Ds, :ρs_sur) |> flatten |> collect
+    ρ_sur = getindex.(Ds, :ρs_sur) .|> flatten .|> collect
 
     Δ = 0.15
     hlines!(ax, [0], color=:black, linestyle=:dash, linewidth=2)
+    @info "Sample size for boxplot data is n = $(length.(ρ)), or n = $(length.(ρ_sur)) for surrogates"
 
     for i in eachindex(ρ)
         boxplot!(ax, fill(i, length(ρ_sur[i])) .- Δ, (ρ_sur[i]); color=(colors[i], 0.3), strokecolor=colors[i], outliercolor=(colors[i], 0.5), width=0.25, show_outliers=false, strokestyle=:dash, kwargs...)
@@ -171,7 +173,8 @@ function criticality_boxplot!(ax, Ds; kwargs...)
     p2 = compare(ρ[3], ρ_sur[3]; tail)
     text!(ax, [1], [0.5]; text=L"%$(formatp(p0))", fontsize=12, align=(:center, :bottom))
     text!(ax, [2], [0.6]; text=L"%$(formatp(p1))", fontsize=12, align=(:center, :bottom))
-    text!(ax, [3], [0.85]; text=L"%$(formatp(p2))", fontsize=12, align=(:center, :bottom))
+    t = text!(ax, [2.55], [0.75]; text=L"%$(formatp(p2))", fontsize=12, align=(:center, :center))
+    translate!(t, Vec3f(0, 0, 1000))
 end
 
 if false # * All catch22 features
@@ -186,11 +189,11 @@ end
 begin # * Paper figure
     f = Figure(size=(720, 420))
     features = [:DN_Spread_Std, :AC_1, :CR_RAD]
-    Ds = pulldata.(features; nulls=1e6)
+    Ds = pulldata.(features; nulls)
     session = 16
     axargs = (; xgridvisible=false, ygridvisible=false, xminorticksvisible=false, xminorticks=IntervalsBetween(5), yminorticksvisible=true, yminorticks=IntervalsBetween(5), xtickalign=1, ytickalign=1, xminortickalign=1, yminortickalign=1)
 
-    ax1 = Axis(f[2, 1]; limits=((nothing, nothing), (-0.45, 1)), ylabel=L"\tau", ylabelsize=18, axargs...)
+    ax1 = Axis(f[2, 1]; limits=((nothing, nothing), (-0.85, 1.0)), ylabel=L"\tau", ylabelsize=18, axargs...)
     ax1.xticks = (1:length(features), string.(features))
 
     criticality_boxplot!(ax1, Ds; strokewidth=3, whiskerwidth=0.2)
